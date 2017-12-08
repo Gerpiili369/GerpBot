@@ -49,6 +49,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     message: 'Leenakop died'
                 });
                 break;
+            case 'echo':
+                bot.sendMessage({
+                    to: channelID,
+                    message: args
+                });
+                break;
         }
     }
 });
