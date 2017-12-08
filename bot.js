@@ -55,6 +55,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     message: args
                 });
                 break;
+            case 'getGerp':
+                bot.sendMessage({
+                    to: channelID,
+                    message: '<@!217953472715292672>'
+                });
+                break;
         }
     }
 });
