@@ -15,6 +15,7 @@ var bot = new Discord.Client({
 });
 
 var objectLib = {};
+getObjectFromJSON('help')
 
 bot.on('ready', evt => {
     logger.info('Connected');
@@ -29,6 +30,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         args = args.splice(1);
         switch (cmd) {
+            case 'help':
+                bot.sendMessage({
+                    to: channelID,
+                    message: 'Some commands:',
+                    embed: objectLib.help
+                });
+                break;
             case 'ping':
                 bot.sendMessage({
                     to: channelID,

@@ -1,0 +1,21 @@
+{
+    "color": 6826080,
+    "thumbnail": {
+        "url": ""
+    },
+    "title": "title",
+    "url": "https://www.twitch.tv/gerpiili369",
+    "footer": {
+        "text": "t1a"
+    },
+    "fields": [{
+        "name": "this neim",
+        "value": "neim daet"
+    },{
+        "name": "eees",
+        "value": "text"
+    },{
+        "name": "ds",
+        "value": "moar text"
+    }]
+}
