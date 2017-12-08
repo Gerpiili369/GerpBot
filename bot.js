@@ -46,7 +46,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'nerfThis':
                 bot.sendMessage({
                     to: channelID,
-                    message: 'Leenakop died'
+                    message: '<@!305716128615759873> was the sole victim'
                 });
                 break;
             case 'echo':
