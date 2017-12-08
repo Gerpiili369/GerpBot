@@ -14,6 +14,8 @@ var bot = new Discord.Client({
     autorun: true
 });
 
+var objectLib = {};
+
 bot.on('ready', evt => {
     logger.info('Connected');
     logger.info('Logged in as: ');
@@ -42,3 +44,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         }
     }
 });
+
+function getObjectFromJSON (file) {
+    if (!fs.access('objectLib/' + file + '.json', err => {return err})) {
+        fs.readFile('objectLib/' + file + '.json', 'utf-8', (err, data) => {
+            objectLib[file] = JSON.parse(data)
+        });
+    }
+}
