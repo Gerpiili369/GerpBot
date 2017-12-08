@@ -32,6 +32,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     message: 'Pong!'
                 });
                 break;
+            case 'nerfThis':
+                bot.sendMessage({
+                    to: channelID,
+                    message: 'Leenakop died'
+                });
+                break;
         }
     }
 });
