@@ -3,19 +3,25 @@
     "thumbnail": {
         "url": ""
     },
-    "title": "title",
-    "url": "https://www.twitch.tv/gerpiili369",
+    "title": "GerpBot",
+    "url": "https://github.com/Gerpiili369/GerpBot",
     "footer": {
-        "text": "t1a"
+        "text": "<footer content here>"
     },
     "fields": [{
-        "name": "this neim",
-        "value": "neim daet"
+        "name": "`gb! help` -command",
+        "value": "Displays this message."
     },{
-        "name": "eees",
-        "value": "text"
+        "name": "`gb! ping` -command",
+        "value": "Pong!"
     },{
-        "name": "ds",
-        "value": "moar text"
+        "name": "`gb! nerfThis` -command",
+        "value": "Activates D.Va's ultimate ability \"Self destruct\"."
+    },{
+        "name": "`gb! echo <message> ...` -command",
+        "value": "GerpBot responds with argument determined message. This command may have *some* issues."
+    },{
+        "name": "`gb! getGerp` -command",
+        "value": "@mentions Gerpiili369"
     }]
 }
