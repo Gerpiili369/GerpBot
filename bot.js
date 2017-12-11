@@ -92,7 +92,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     default:
                     bot.sendMessage({
                         to: channelID,
-                        message: "Automatic complimenting turned OFF."
+                        message: "Missing arguments. Usage: `gb! autoCompliment <on || off> `."
                     });
                 }
                 break;
