@@ -16,6 +16,9 @@ var bot = new Discord.Client({
 
 var objectLib = {};
 getObjectFromJSON('help')
+getObjectFromJSON('compliments');
+
+var autoComplimentOn = true;
 
 bot.on('ready', evt => {
     logger.info('Connected');
@@ -24,6 +27,15 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
+    if (userID == 327577082500743168 && autoComplimentOn == true) {
+        let lenght = objectLib.compliments.length;
+
+        bot.sendMessage({
+            to: channelID,
+            message: `<@!${userID}> ` + objectLib.compliments[Math.floor(Math.random()*lenght)]
+        });
+    }
+
     if (message.substring(0, 3) == 'gb!') {
         var args = message.substring(4).split(' ');
         var cmd = args[0];
@@ -60,6 +72,29 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     to: channelID,
                     message: '<@!217953472715292672>'
                 });
+                break;
+            case 'autoCompliment':
+                switch (args[0]) {
+                    case "on":
+                        autoComplimentOn = true;
+                        bot.sendMessage({
+                            to: channelID,
+                            message: "Automatic complimenting turned ON."
+                        });
+                        break;
+                    case "off":
+                        autoCompliment = false;
+                        bot.sendMessage({
+                            to: channelID,
+                            message: "Automatic complimenting turned OFF."
+                        });
+                        break;
+                    default:
+                    bot.sendMessage({
+                        to: channelID,
+                        message: "Automatic complimenting turned OFF."
+                    });
+                }
                 break;
         }
     }
