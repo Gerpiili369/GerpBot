@@ -15,7 +15,7 @@ var bot = new Discord.Client({
 });
 
 var objectLib = {};
-getObjectFromJSON('help')
+getObjectFromJSON('help');
 getObjectFromJSON('compliments');
 
 var autoComplimentOn = true;
