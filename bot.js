@@ -64,7 +64,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'echo':
                 bot.sendMessage({
                     to: channelID,
-                    message: args
+                    message: args.join(' ')
                 });
                 break;
             case 'getGerp':
