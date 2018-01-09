@@ -24,6 +24,8 @@ bot.on('ready', evt => {
     logger.info('Connected');
     logger.info('Logged in as: ');
     logger.info(bot.username + ' - (' + bot.id + ')');
+
+    afterLogin();
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
@@ -99,6 +101,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         }
     }
 });
+
+function afterLogin() {
+    bot.setPresence({
+        game: {
+            name: 'gb! help',
+            type: 0
+        }
+    });
+}
 
 function getObjectFromJSON (file) {
     if (!fs.access('objectLib/' + file + '.json', err => {if (err) logger.error(err);})) {
