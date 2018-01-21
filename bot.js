@@ -38,8 +38,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         });
     }
 
-    if (message.substring(0, 3) == 'gb!') {
-        var args = message.substring(4).split(' ');
+    if (message.substring(0, 21) == '<@388670149127045121>') {
+        var args = message.substring(22).split(' ');
         var cmd = args[0];
 
         args = args.splice(1);
