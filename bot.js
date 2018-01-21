@@ -14,7 +14,7 @@ var bot = new Discord.Client({
     autorun: true
 });
 
-var objectLib = getLib(['help','compliments','defaultRes'])
+var objectLib = getLib(['help','compliments','defaultRes',"games"])
 
 var autoComplimentOn = true;
 
@@ -108,12 +108,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 });
 
 function afterLogin() {
-    bot.setPresence({
-        game: {
-            name: 'gb! help',
-            type: 0
-        }
-    });
+    let lenght = objectLib.games.length;
+    setInterval(() => {
+        bot.setPresence({
+            game: {
+                name: objectLib.games[Math.floor(Math.random()*lenght)],
+                type: 0
+            }
+        });
+    }, 60000)
 }
 
 function getLib(list) {
