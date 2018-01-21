@@ -14,9 +14,7 @@ var bot = new Discord.Client({
     autorun: true
 });
 
-var objectLib = {};
-getObjectFromJSON('help');
-getObjectFromJSON('compliments');
+var objectLib = getLib(['help','compliments'])
 
 var autoComplimentOn = true;
 
@@ -111,11 +109,19 @@ function afterLogin() {
     });
 }
 
-function getObjectFromJSON (file) {
+function getLib(list) {
+    let tempLib = {}
+    list.forEach(p => {
+        getObjectFromJSON(p,tempLib);
+    });
+    return tempLib;
+}
+
+function getObjectFromJSON (file,tempLib) {
     if (!fs.access('objectLib/' + file + '.json', err => {if (err) logger.error(err);})) {
         fs.readFile('objectLib/' + file + '.json', 'utf-8', (err, data) => {
             if (err) logger.error(err);
-            else objectLib[file] = JSON.parse(data)
+            else tempLib[file] = JSON.parse(data);
         });
     }
 }
