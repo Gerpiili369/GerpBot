@@ -14,7 +14,7 @@ var bot = new Discord.Client({
     autorun: true
 });
 
-var objectLib = getLib(['help','compliments'])
+var objectLib = getLib(['help','compliments','defaultRes'])
 
 var autoComplimentOn = true;
 
@@ -95,6 +95,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         message: "Missing arguments. Usage: `gb! autoCompliment <on || off> `."
                     });
                 }
+                break;
+            default:
+                let lenght = objectLib.defaultRes.length;
+                bot.sendMessage({
+                    to: channelID,
+                    message: objectLib.defaultRes[Math.floor(Math.random()*lenght)]
+                });
                 break;
         }
     }
