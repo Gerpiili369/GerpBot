@@ -123,17 +123,13 @@ function afterLogin() {
 
 function getLib(list) {
     let tempLib = {}
-    list.forEach(p => {
-        getObjectFromJSON(p,tempLib);
+    list.forEach(file => {
+        if (!fs.access(`objectLib/${file}.json`, err => {if (err) logger.error(err);})) {
+            fs.readFile(`objectLib/${file}.json`, 'utf-8', (err, data) => {
+                if (err) logger.error(err);
+                else tempLib[file] = JSON.parse(data);
+            });
+        }
     });
     return tempLib;
-}
-
-function getObjectFromJSON (file,tempLib) {
-    if (!fs.access('objectLib/' + file + '.json', err => {if (err) logger.error(err);})) {
-        fs.readFile('objectLib/' + file + '.json', 'utf-8', (err, data) => {
-            if (err) logger.error(err);
-            else tempLib[file] = JSON.parse(data);
-        });
-    }
 }
