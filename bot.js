@@ -109,6 +109,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     }
 });
 
+bot.on('disconnect', (err, code) => {
+   logger.warn(`Disconnected! error: ${err}, code: ${code}`)
+   bot.connect();
+});
+
 function afterLogin() {
     let lenght = objectLib.games.length;
     setInterval(() => {
