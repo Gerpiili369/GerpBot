@@ -19,9 +19,11 @@ var objectLib = getLib(['help','compliments','defaultRes',"games"])
 var autoComplimentOn = true;
 
 bot.on('ready', evt => {
-    logger.info('Connected');
-    logger.info('Logged in as: ');
-    logger.info(bot.username + ' - (' + bot.id + ')');
+    logger.info(`
+        Connected
+        Logged in as:
+        ${bot.username} - (${bot.id})
+    `);
 
     afterLogin();
 });
@@ -32,7 +34,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         bot.sendMessage({
             to: channelID,
-            message: `<@!${userID}> ` + objectLib.compliments[Math.floor(Math.random()*lenght)]
+            message: `<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*lenght)]}`
         });
     }
 
