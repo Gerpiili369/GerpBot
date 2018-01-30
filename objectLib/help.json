@@ -9,22 +9,22 @@
         "text": "<footer content here>"
     },
     "fields": [{
-        "name": "`gb! help` -command",
+        "name": "`@GerpBot help` -command",
         "value": "Displays this message."
     },{
-        "name": "`gb! ping` -command",
+        "name": "`@GerpBot ping` -command",
         "value": "Pong!"
     },{
-        "name": "`gb! nerfThis` -command",
+        "name": "`@GerpBot nerfThis` -command",
         "value": "Activates D.Va's ultimate ability \"Self destruct\"."
     },{
-        "name": "`gb! echo <message> ...` -command",
+        "name": "`@GerpBot echo <message> ...` -command",
         "value": "GerpBot responds with argument determined message. This command may have *some* issues."
     },{
-        "name": "`gb! getGerp` -command",
+        "name": "`@GerpBot getGerp` -command",
         "value": "@mentions Gerpiili369"
     },{
-        "name": "`gb! autoCompliment <on || off> ` -command",
+        "name": "`@GerpBot autoCompliment <on || off> ` -command",
         "value": "Our little secret :3"
     }]
 }
