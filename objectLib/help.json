@@ -24,7 +24,7 @@
         "name": "`@GerpBot getGerp`",
         "value": "@mentions Gerpiili369"
     },{
-        "name": "`@GerpBot autoCompliment <on || off> `",
+        "name": "`@GerpBot autoCompliment [ on | off ]`",
         "value": "Our little secret :3"
     }]
 }

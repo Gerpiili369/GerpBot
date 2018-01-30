@@ -92,10 +92,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         });
                         break;
                     default:
-                    bot.sendMessage({
-                        to: channelID,
-                        message: "Missing arguments. Usage: `gb! autoCompliment <on || off> `."
-                    });
+                        bot.sendMessage({
+                            to: channelID,
+                            message: "Missing arguments. Usage: `@GerpBot autoCompliment [ on | off ]`."
+                        });
+                        break;
                 }
                 break;
             default:
