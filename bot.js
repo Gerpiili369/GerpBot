@@ -18,7 +18,13 @@ var objectLib = getLib(['help','compliments','defaultRes',"games"])
 
 var autoComplimentOn = true;
 
+var timeOf = {
+    startUp: new Date()
+};
+
 bot.on('ready', evt => {
+    timeOf.connection = new Date();
+
     logger.info(`
         Connected
         Logged in as:
@@ -75,6 +81,20 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     message: '<@!217953472715292672>'
                 });
                 break;
+            case 'uptime':
+                if (typeof timeOf[args[0]] != 'undefined') {
+                    let uptime = calculateUptime(timeOf[args[0]],new Date());
+                    bot.sendMessage({
+                        to: channelID,
+                        message: `Time since "${args[0]}":\t \`${uptime.d} day(s), ${uptime.h} hour(s), ${uptime.min} minute(s), ${uptime.s} second(s)\``
+                    });
+                } else {
+                    bot.sendMessage({
+                        to: channelID,
+                        message: "Missing arguments. Usage: `@GerpBot uptime [ startUp | connection | lastCommand ]`."
+                    });
+                }
+                break;
             case 'autoCompliment':
                 switch (args[0]) {
                     case "on":
@@ -107,13 +127,30 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 });
                 break;
         }
+        timeOf.lastCommand = new Date();
     }
 });
 
 bot.on('disconnect', (err, code) => {
-   logger.warn(`Disconnected! error: ${err}, code: ${code}`)
-   bot.connect();
+    logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${calculateUptime(timeOf.connection,new Date())})`)
+    bot.connect();
 });
+
+function calculateUptime(start,end) {
+    let uptime = {};
+
+    uptime.ms = end - start;
+    uptime.s = Math.floor(uptime.ms / 1000);
+    uptime.ms -= uptime.s * 1000;
+    uptime.min = Math.floor(uptime.s / 60);
+    uptime.s -= uptime.min * 60;
+    uptime.h = Math.floor(uptime.min / 60);
+    uptime.min -= uptime.h * 60;
+    uptime.d = Math.floor(uptime.h / 24);
+    uptime.h -= uptime.d * 24;
+
+    return uptime;
+}
 
 function afterLogin() {
     let lenght = objectLib.games.length;
