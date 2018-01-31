@@ -19,11 +19,11 @@ var objectLib = getLib(['help','compliments','defaultRes',"games"])
 var autoComplimentOn = true;
 
 var timeOf = {
-    startUp: new Date()
+    startUp: Date.now()
 };
 
 bot.on('ready', evt => {
-    timeOf.connection = new Date();
+    timeOf.connection = Date.now();
 
     logger.info(`
         Connected
@@ -83,7 +83,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'uptime':
                 if (typeof timeOf[args[0]] != 'undefined') {
-                    let uptime = calculateUptime(timeOf[args[0]],new Date());
+                    let uptime = calculateUptime(timeOf[args[0]],Date.now());
                     bot.sendMessage({
                         to: channelID,
                         message: `Time since "${args[0]}":\t \`${uptime.d} day(s), ${uptime.h} hour(s), ${uptime.min} minute(s), ${uptime.s} second(s)\``
@@ -127,12 +127,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 });
                 break;
         }
-        timeOf.lastCommand = new Date();
+        timeOf.lastCommand = Date.now();
     }
 });
 
 bot.on('disconnect', (err, code) => {
-    logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${calculateUptime(timeOf.connection,new Date())})`)
+    logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${calculateUptime(timeOf.connection,Date.now())})`)
     bot.connect();
 });
 
