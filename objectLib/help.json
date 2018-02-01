@@ -27,6 +27,9 @@
         "name": "`@GerpBot uptime [ startUp | connection | lastCommand ]`",
         "value": "Get uptime since a specific event"
     },{
+        "name": "`@GerpBot vote  <def|gold @mention> <emoji1>[=<option1>] ...`",
+        "value": "Starts a vote. A really cool one"
+    },{
         "name": "`@GerpBot autoCompliment [ on | off ]`",
         "value": "Our little secret :3"
     }]
