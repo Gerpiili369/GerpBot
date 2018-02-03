@@ -200,7 +200,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     }, (err, res) => {
                         // if (err) console.log(err);
                     });
-                },evt.d.embeds[0].fields.indexOf(e)*350);
+                },evt.d.embeds[0].fields.indexOf(e)*500);
             });
         }
     }
