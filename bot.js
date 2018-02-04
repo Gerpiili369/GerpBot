@@ -202,6 +202,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     });
                 },evt.d.embeds[0].fields.indexOf(e)*500);
             });
+
+            bot.pinMessage({
+                channelID: channelID,
+                messageID: evt.d.id
+            });
         }
     }
 });
