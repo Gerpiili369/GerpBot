@@ -36,6 +36,8 @@ bot.on('ready', evt => {
 
 bot.on('message', (user, userID, channelID, message, evt) => {
     if (userID == 327577082500743168 && autoComplimentOn == true) {
+        bot.simulateTyping(channelID);
+
         let lenght = objectLib.compliments.length;
 
         bot.sendMessage({
@@ -45,6 +47,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     }
 
     if (message.substring(0, 21) == '<@388670149127045121>') {
+        bot.simulateTyping(channelID);
+
         var args = message.substring(22).split(' ');
         var cmd = args[0];
 
