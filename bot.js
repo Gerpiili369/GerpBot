@@ -1,6 +1,6 @@
-var Discord = require('discord.io');
-var logger = require('winston');
-var auth = require('./auth.json');
+const Discord = require('discord.io');
+const logger = require('winston');
+const auth = require('./auth.json');
 const fs = require('fs');
 
 logger.remove(logger.transports.Console);
@@ -9,15 +9,13 @@ logger.add(logger.transports.Console, {
 });
 logger.level = 'debug';
 
-var bot = new Discord.Client({
+const objectLib = getLib(['help','compliments','defaultRes',"games"])
+const bot = new Discord.Client({
     token: auth.token,
     autorun: true
 });
 
-var objectLib = getLib(['help','compliments','defaultRes',"games"])
-
 var autoComplimentOn = true;
-
 var timeOf = {
     startUp: Date.now()
 };
