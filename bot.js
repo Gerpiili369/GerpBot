@@ -38,10 +38,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         let lenght = objectLib.compliments.length;
 
-        bot.sendMessage({
-            to: channelID,
-            message: `<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*lenght)]}`
-        });
+        msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*lenght)]}`);
     }
 
     if (message.substring(0, 21) == '<@388670149127045121>') {
@@ -53,48 +50,26 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         args = args.splice(1);
         switch (cmd) {
             case 'help':
-                bot.sendMessage({
-                    to: channelID,
-                    message: 'Some commands:',
-                    embed: objectLib.help
-                });
+                msg(channelID,'Some commands:',objectLib.help);
                 break;
             case 'ping':
-                bot.sendMessage({
-                    to: channelID,
-                    message: 'Pong!'
-                });
+                msg(channelID,'Pong!');
                 break;
             case 'nerfThis':
-                bot.sendMessage({
-                    to: channelID,
-                    message: '<@!305716128615759873> was the sole victim'
-                });
+                msg(channelID,'<@!305716128615759873> was the sole victim');
                 break;
             case 'echo':
-                bot.sendMessage({
-                    to: channelID,
-                    message: args.join(' ')
-                });
+                msg(channelID,args.join(' '));
                 break;
             case 'getGerp':
-                bot.sendMessage({
-                    to: channelID,
-                    message: '<@!217953472715292672>'
-                });
+                msg(channelID,'<@!217953472715292672>');
                 break;
             case 'uptime':
                 if (typeof timeOf[args[0]] != 'undefined') {
                     let uptime = calculateUptime(timeOf[args[0]],Date.now());
-                    bot.sendMessage({
-                        to: channelID,
-                        message: `Time since "${args[0]}":\t \`${uptime.d} day(s), ${uptime.h} hour(s), ${uptime.min} minute(s), ${uptime.s} second(s)\``
-                    });
+                    msg(channelID,`Time since "${args[0]}":\t \`${uptime.d} day(s), ${uptime.h} hour(s), ${uptime.min} minute(s), ${uptime.s} second(s)\``);
                 } else {
-                    bot.sendMessage({
-                        to: channelID,
-                        message: "Missing arguments. Usage: `@GerpBot uptime [ startUp | connection | lastCommand ]`."
-                    });
+                    msg(channelID,"Missing arguments. Usage: `@GerpBot uptime [ startUp | connection | lastCommand ]`.");
                 }
                 break;
             case 'vote':
@@ -142,48 +117,29 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     });
                 }
                 if (syntaxErr == '') {
-                    bot.sendMessage({
-                        to: channelID,
-                        message: '@everyone',
-                        embed: ve
-                    });
+                    msg(channelID,'@everyone',);
                 } else {
-                    bot.sendMessage({
-                        to: channelID,
-                        message: syntaxErr
-                    },(err, res) => {if (err) console.log(err)});
+                    msg(channelID,syntaxErr);
                 }
                 break;
             case 'autoCompliment':
                 switch (args[0]) {
                     case "on":
                         autoComplimentOn = true;
-                        bot.sendMessage({
-                            to: channelID,
-                            message: "Automatic complimenting turned ON."
-                        });
+                        msg(channelID,"Automatic complimenting turned ON.");
                         break;
                     case "off":
                         autoCompliment = false;
-                        bot.sendMessage({
-                            to: channelID,
-                            message: "Automatic complimenting turned OFF."
-                        });
+                        msg(channelID,"Automatic complimenting turned OFF.");
                         break;
                     default:
-                        bot.sendMessage({
-                            to: channelID,
-                            message: "Missing arguments. Usage: `@GerpBot autoCompliment [ on | off ]`."
-                        });
+                        msg(channelID,"Missing arguments. Usage: `@GerpBot autoCompliment [ on | off ]`.");
                         break;
                 }
                 break;
             default:
                 let lenght = objectLib.defaultRes.length;
-                bot.sendMessage({
-                    to: channelID,
-                    message: objectLib.defaultRes[Math.floor(Math.random()*lenght)]
-                });
+                msg(channelID,objectLib.defaultRes[Math.floor(Math.random()*lenght)]);
                 break;
         }
         timeOf.lastCommand = Date.now();
@@ -217,6 +173,14 @@ bot.on('disconnect', (err, code) => {
     logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${calculateUptime(timeOf.connection,Date.now())})`)
     bot.connect();
 });
+
+function msg(channel,msg,embed) {
+    bot.sendMessage({
+        to: channel,
+        message: msg,
+        embed: embed
+    });
+}
 
 function calculateUptime(start,end) {
     let uptime = {};
