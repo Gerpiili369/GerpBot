@@ -239,13 +239,13 @@ function getJSON(file,location = '') {
     switch (typeof file) {
         case 'object':
             file.forEach(file => {
-                if (!fs.access(`${location}${file}.json`, err => {if (err) logger.error(err);})) {
+                if (fs.existsSync(`${location}${file}.json`)) {
                     tempObj[file] = JSON.parse(fs.readFileSync(`${location}${file}.json`, 'utf-8', err => {if (err) logger.error(err);}));
                 }
             });
             break;
         case 'string':
-            if (!fs.access(`${location}${file}.json`, err => {if (err) logger.error(err);})) {
+            if (fs.existsSync(`${location}${file}.json`)) {
                 return JSON.parse(fs.readFileSync(`${location}${file}.json`, 'utf-8', err => {if (err) logger.error(err);}));
             }
             break;
