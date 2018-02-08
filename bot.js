@@ -218,19 +218,13 @@ function getJSON(file,location = '') {
         case 'object':
             file.forEach(file => {
                 if (!fs.access(`${location}${file}.json`, err => {if (err) logger.error(err);})) {
-                    fs.readFile(`${location}${file}.json`, 'utf-8', (err, data) => {
-                        if (err) logger.error(err);
-                        else tempObj[file] = JSON.parse(data);
-                    });
+                    tempObj[file] = JSON.parse(fs.readFileSync(`${location}${file}.json`, 'utf-8', err => {if (err) logger.error(err);}));
                 }
             });
             break;
         case 'string':
             if (!fs.access(`${location}${file}.json`, err => {if (err) logger.error(err);})) {
-                fs.readFile(`${location}${file}.json`, 'utf-8', (err, data) => {
-                    if (err) logger.error(err);
-                    else tempObj = JSON.parse(data);
-                });
+                return JSON.parse(fs.readFileSync(`${location}${file}.json`, 'utf-8', err => {if (err) logger.error(err);}));
             }
             break;
         default:
