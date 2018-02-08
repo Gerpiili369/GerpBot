@@ -23,12 +23,8 @@ var timeOf = {
 bot.on('ready', evt => {
     timeOf.connection = Date.now();
 
-    logger.info(`
-        Connected
-        Logged in as:
-        ${bot.username} - (${bot.id})
-    `);
-
+    logger.info(`${bot.username} (user ${bot.id}) ready for world domination!`);
+    
     afterLogin();
 });
 
