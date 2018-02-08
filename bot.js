@@ -9,7 +9,7 @@ logger.add(logger.transports.Console, {
 });
 logger.level = 'debug';
 
-const objectLib = getLib(['help','compliments','defaultRes',"games"])
+const objectLib = getJSON(['help','compliments','defaultRes','games'],'objectLib/')
 const bot = new Discord.Client({
     token: auth.token,
     autorun: true
@@ -211,15 +211,29 @@ function afterLogin() {
     }, 60000)
 }
 
-function getLib(list) {
-    let tempLib = {}
-    list.forEach(file => {
-        if (!fs.access(`objectLib/${file}.json`, err => {if (err) logger.error(err);})) {
-            fs.readFile(`objectLib/${file}.json`, 'utf-8', (err, data) => {
-                if (err) logger.error(err);
-                else tempLib[file] = JSON.parse(data);
+function getJSON(file,location = '') {
+    let tempObj = {}
+
+    switch (typeof file) {
+        case 'object':
+            file.forEach(file => {
+                if (!fs.access(`${location}${file}.json`, err => {if (err) logger.error(err);})) {
+                    fs.readFile(`${location}${file}.json`, 'utf-8', (err, data) => {
+                        if (err) logger.error(err);
+                        else tempObj[file] = JSON.parse(data);
+                    });
+                }
             });
-        }
-    });
-    return tempLib;
+            break;
+        case 'string':
+            if (!fs.access(`${location}${file}.json`, err => {if (err) logger.error(err);})) {
+                fs.readFile(`${location}${file}.json`, 'utf-8', (err, data) => {
+                    if (err) logger.error(err);
+                    else tempObj = JSON.parse(data);
+                });
+            }
+            break;
+        default:
+    }
+    return tempObj;
 }
