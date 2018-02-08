@@ -39,11 +39,6 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
-    if (settings.autoCompliment.targets.indexOf(`<@!${userID}>`) != -1 && settings.autoCompliment.enabled == true) {
-        bot.simulateTyping(channelID);
-        msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
-    }
-
     if (message.substring(0, 21) == '<@388670149127045121>') {
         bot.simulateTyping(channelID);
 
@@ -176,6 +171,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
         }
         timeOf.lastCommand = Date.now();
+    } else if (settings.autoCompliment.targets.indexOf(`<@!${userID}>`) != -1 && settings.autoCompliment.enabled == true) {
+        bot.simulateTyping(channelID);
+        msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
     }
 
     if (userID == bot.id && typeof evt.d.embeds[0] != 'undefined') {
