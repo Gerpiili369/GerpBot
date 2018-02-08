@@ -140,7 +140,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         msg(channelID,'Automatic complimenting turned OFF.');
                         break;
                     case 'list':
-                        msg(channelID,`List of cool people: ${settings.autoCompliment.targets.join(', ')}`)
+                        msg(channelID,``,{
+                            title: 'List of cool people:',
+                            description: `${settings.autoCompliment.targets.join('\n')}`
+                        })
                         break;
                     case 'add':
                         if (args[1] != undefined) {
