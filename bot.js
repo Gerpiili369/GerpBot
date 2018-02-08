@@ -264,5 +264,5 @@ function getJSON(file,location = '') {
 }
 
 function updateSettings() {
-    fs.writeFile('settings.json', JSON.stringify(settings), err => {if (err) console.log(err)});
+    fs.writeFile('settings.json', JSON.stringify(settings), err => {if (err) logger.error(err)});
 }
