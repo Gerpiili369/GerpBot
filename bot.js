@@ -20,6 +20,16 @@ var timeOf = {
     startUp: Date.now()
 };
 
+if (settings.autoCompliment === undefined) {
+    console.log('empty shit');
+    settings = {
+        autoCompliment: {
+            enabled: true,
+            targets: []
+        }
+    }
+}
+
 bot.on('ready', evt => {
     timeOf.connection = Date.now();
 
