@@ -30,7 +30,7 @@
         "name": "`@GerpBot vote  <def|gold @mention> <emoji1>[=<option1>] ...`",
         "value": "Starts a vote. A really cool one"
     },{
-        "name": "`@GerpBot autoCompliment [ on | off ]`",
+        "name": "`@GerpBot autoCompliment < sample | on | off | add | remove | list > [ @mention ]`",
         "value": "Our little secret :3"
     }]
 }

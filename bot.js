@@ -15,7 +15,6 @@ const bot = new Discord.Client({
     autorun: true
 });
 
-var autoComplimentOn = true;
 var settings = getJSON('settings');
 var timeOf = {
     startUp: Date.now()
@@ -34,7 +33,7 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
-    if (userID == 327577082500743168 && autoComplimentOn == true) {
+    if (settings.autoCompliment.targets.indexOf(`<@!${userID}>`) != -1 && settings.autoCompliment.enabled == true) {
         bot.simulateTyping(channelID);
 
         let lenght = objectLib.compliments.length;
@@ -126,18 +125,45 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'autoCompliment':
                 switch (args[0]) {
+                    case 'sample':
+                        msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
+                        break;
                     case "on":
-                        autoComplimentOn = true;
+                        settings.autoCompliment.enabled = true;
                         msg(channelID,"Automatic complimenting turned ON.");
                         break;
                     case "off":
-                        autoCompliment = false;
+                        settings.autoCompliment.enabled = false;
                         msg(channelID,"Automatic complimenting turned OFF.");
                         break;
+                    case "list":
+                        msg(channelID,`List of cool people: ${settings.autoCompliment.targets.join(', ')}`)
+                        break;
+                    case "add":
+                        if (args[1] != undefined) {
+                            if (settings.autoCompliment.targets.indexOf(args[1]) == -1) {
+                                settings.autoCompliment.targets.push(args[1]);
+                                msg(channelID,`User ${args[1]} is now cool`)
+                            } else {
+                                msg(channelID,`User ${args[1]} is already cool!`)
+                            }
+                            break;
+                        }
+                    case "remove":
+                        if (args[1] != undefined) {
+                            if (settings.autoCompliment.targets.indexOf(args[1]) != -1) {
+                                settings.autoCompliment.targets.splice(settings.autoCompliment.targets.indexOf(args[1]), 1);
+                                msg(channelID,`User ${args[1]} ain't cool no more!`)
+                            } else {
+                                msg(channelID,`User ${args[1]} was never cool to begin with!`)
+                            }
+                            break;
+                        }
                     default:
-                        msg(channelID,"Missing arguments. Usage: `@GerpBot autoCompliment [ on | off ]`.");
+                        msg(channelID,"Missing arguments. Usage: `@GerpBot autoCompliment < sample | on | off | add | remove | list > [ @mention ]`.");
                         break;
                 }
+                updateSettings();
                 break;
             default:
                 let lenght = objectLib.defaultRes.length;
