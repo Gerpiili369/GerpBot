@@ -16,6 +16,7 @@ const bot = new Discord.Client({
 });
 
 var autoComplimentOn = true;
+var settings = getJSON('settings');
 var timeOf = {
     startUp: Date.now()
 };
@@ -230,4 +231,8 @@ function getJSON(file,location = '') {
         default:
     }
     return tempObj;
+}
+
+function updateSettings() {
+    fs.writeFile('settings.json', JSON.stringify(settings), err => {if (err) console.log(err)});
 }
