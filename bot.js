@@ -67,9 +67,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'uptime':
                 if (typeof timeOf[args[0]] != 'undefined') {
                     let uptime = calculateUptime(timeOf[args[0]],Date.now());
-                    msg(channelID,`Time since "${args[0]}":\t \`${uptime.d} day(s), ${uptime.h} hour(s), ${uptime.min} minute(s), ${uptime.s} second(s)\``);
+                    msg(channelID,`Time since '${args[0]}':\t \`${uptime.d} day(s), ${uptime.h} hour(s), ${uptime.min} minute(s), ${uptime.s} second(s)\``);
                 } else {
-                    msg(channelID,"Missing arguments. Usage: `@GerpBot uptime [ startUp | connection | lastCommand ]`.");
+                    msg(channelID,'Missing arguments. Usage: `@GerpBot uptime [ startUp | connection | lastCommand ]`.');
                 }
                 break;
             case 'vote':
@@ -82,20 +82,20 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 };
 
                 if (args[0] == 'def') {
-                    ve.description = "**Let's do a vote!**";
+                    ve.description = '**Let\'s do a vote!**';
                     options = args.splice(1);
                 } else if (args[0] == 'gold') {
                     ve.description = `**Let's vote for ${args[1]}'s next golden gun!**`;
                     options = args.splice(2);
                 } else {
-                    msg(channelID,`${args[0]} not allowed. Use "def" or "gold"`);
+                    msg(channelID,`${args[0]} not allowed. Use 'def' or 'gold'`);
                     break;
                 }
 
                 ve.description += `\n*requested by:\n<@${userID}>*`
 
                 if (options.length < 1) {
-                    msg(channelID,"Options were not included! Example: `@GerpBot vote def :thinking:=genius`");
+                    msg(channelID,'Options were not included! Example: `@GerpBot vote def :thinking:=genius`');
                     break;
                 }
                 options.forEach(e => {
@@ -114,7 +114,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             });
                         }
                     } else {
-                        msg(channelID,"Some options not defined! Example: `@GerpBot vote def :thinking:=genius`");
+                        msg(channelID,'Some options not defined! Example: `@GerpBot vote def :thinking:=genius`');
                         ve.error = true;
                     }
                 });
@@ -128,18 +128,18 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     case 'sample':
                         msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
                         break;
-                    case "on":
+                    case 'on':
                         settings.autoCompliment.enabled = true;
-                        msg(channelID,"Automatic complimenting turned ON.");
+                        msg(channelID,'Automatic complimenting turned ON.');
                         break;
-                    case "off":
+                    case 'off':
                         settings.autoCompliment.enabled = false;
-                        msg(channelID,"Automatic complimenting turned OFF.");
+                        msg(channelID,'Automatic complimenting turned OFF.');
                         break;
-                    case "list":
+                    case 'list':
                         msg(channelID,`List of cool people: ${settings.autoCompliment.targets.join(', ')}`)
                         break;
-                    case "add":
+                    case 'add':
                         if (args[1] != undefined) {
                             if (settings.autoCompliment.targets.indexOf(args[1]) == -1) {
                                 settings.autoCompliment.targets.push(args[1]);
@@ -149,7 +149,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             }
                             break;
                         }
-                    case "remove":
+                    case 'remove':
                         if (args[1] != undefined) {
                             if (settings.autoCompliment.targets.indexOf(args[1]) != -1) {
                                 settings.autoCompliment.targets.splice(settings.autoCompliment.targets.indexOf(args[1]), 1);
@@ -160,7 +160,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             break;
                         }
                     default:
-                        msg(channelID,"Missing arguments. Usage: `@GerpBot autoCompliment < sample | on | off | add | remove | list > [ @mention ]`.");
+                        msg(channelID,'Missing arguments. Usage: `@GerpBot autoCompliment < sample | on | off | add | remove | list > [ @mention ]`.');
                         break;
                 }
                 updateSettings();
