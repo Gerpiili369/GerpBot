@@ -35,10 +35,7 @@ bot.on('ready', evt => {
 bot.on('message', (user, userID, channelID, message, evt) => {
     if (settings.autoCompliment.targets.indexOf(`<@!${userID}>`) != -1 && settings.autoCompliment.enabled == true) {
         bot.simulateTyping(channelID);
-
-        let lenght = objectLib.compliments.length;
-
-        msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*lenght)]}`);
+        msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
     }
 
     if (message.substring(0, 21) == '<@388670149127045121>') {
@@ -166,8 +163,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 updateSettings();
                 break;
             default:
-                let lenght = objectLib.defaultRes.length;
-                msg(channelID,objectLib.defaultRes[Math.floor(Math.random()*lenght)]);
+                msg(channelID,objectLib.defaultRes[Math.floor(Math.random()*objectLib.defaultRes.length)]);
                 break;
         }
         timeOf.lastCommand = Date.now();
@@ -227,11 +223,10 @@ function calculateUptime(start,end) {
 }
 
 function afterLogin() {
-    let lenght = objectLib.games.length;
     setInterval(() => {
         bot.setPresence({
             game: {
-                name: objectLib.games[Math.floor(Math.random()*lenght)],
+                name: objectLib.games[Math.floor(Math.random()*objectLib.games.length)],
                 type: 0
             }
         });
