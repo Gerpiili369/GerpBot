@@ -33,13 +33,19 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
-    if (message.substring(0, 21) == '<@388670149127045121>') {
+    let serverID = bot.channels[channelID].guild_id
+
+    if (message.substring(0, 21) == `<@${bot.id}>` || message.substring(0,22) == `<@!${bot.id}>`) {
         bot.simulateTyping(channelID);
 
-        var args = message.substring(22).split(' ');
+        if (message.substring(2,3) == '!') {
+            var args = message.substring(23).split(' ');
+        } else {
+            var args = message.substring(22).split(' ');
+        }
         var cmd = args[0];
-
         args = args.splice(1);
+
         switch (cmd) {
             case 'help':
                 msg(channelID,'Some commands:',objectLib.help);
