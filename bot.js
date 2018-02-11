@@ -20,14 +20,8 @@ var timeOf = {
     startUp: Date.now()
 };
 
-if (settings.autoCompliment === undefined) {
-    console.log('empty shit');
-    settings = {
-        autoCompliment: {
-            enabled: true,
-            targets: []
-        }
-    }
+if (settings.servers === undefined) {
+    settings.servers = {}
 }
 
 bot.on('ready', evt => {
@@ -127,23 +121,23 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
                         break;
                     case 'on':
-                        settings.autoCompliment.enabled = true;
+                        settings.servers[serverID].autoCompliment.enabled = true;
                         msg(channelID,'Automatic complimenting turned ON.');
                         break;
                     case 'off':
-                        settings.autoCompliment.enabled = false;
+                        settings.servers[serverID].autoCompliment.enabled = false;
                         msg(channelID,'Automatic complimenting turned OFF.');
                         break;
                     case 'list':
                         msg(channelID,``,{
                             title: 'List of cool people:',
-                            description: `${settings.autoCompliment.targets.join('\n')}`
+                            description: `${settings.servers[serverID].autoCompliment.targets.join('\n')}`
                         })
                         break;
                     case 'add':
                         if (args[1] != undefined) {
-                            if (settings.autoCompliment.targets.indexOf(args[1]) == -1) {
-                                settings.autoCompliment.targets.push(args[1]);
+                            if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) == -1) {
+                                settings.servers[serverID].autoCompliment.targets.push(args[1]);
                                 msg(channelID,`User ${args[1]} is now cool`)
                             } else {
                                 msg(channelID,`User ${args[1]} is already cool!`)
@@ -152,8 +146,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         }
                     case 'remove':
                         if (args[1] != undefined) {
-                            if (settings.autoCompliment.targets.indexOf(args[1]) != -1) {
-                                settings.autoCompliment.targets.splice(settings.autoCompliment.targets.indexOf(args[1]), 1);
+                            if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) != -1) {
+                                settings.servers[serverID].autoCompliment.targets.splice(settings.servers[serverID].
+                                    utoCompliment.targets.indexOf(args[1]), 1);
                                 msg(channelID,`User ${args[1]} ain't cool no more!`)
                             } else {
                                 msg(channelID,`User ${args[1]} was never cool to begin with!`)
@@ -171,7 +166,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
         }
         timeOf.lastCommand = Date.now();
-    } else if (settings.autoCompliment.targets.indexOf(`<@!${userID}>`) != -1 && settings.autoCompliment.enabled == true) {
+    } else if (settings.servers[serverID].autoCompliment.targets.indexOf(`<@!${userID}>`) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
         bot.simulateTyping(channelID);
         msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
     }
@@ -238,6 +233,23 @@ function afterLogin() {
             }
         });
     }, 60000)
+
+    let requests = Object.keys(bot.servers).map(server => {
+        if (typeof settings.servers[server] == 'undefined') {
+            settings.servers[server] = {
+                autoCompliment: {
+                    enabled: true,
+                    targets: []
+                }
+            }
+        }
+
+        return new Promise(resolve => {
+            resolve();
+        });
+    });
+
+    Promise.all(requests).then(updateSettings);
 }
 
 function getJSON(file,location = '') {
