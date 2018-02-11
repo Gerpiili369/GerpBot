@@ -246,9 +246,17 @@ function afterLogin() {
                 autoCompliment: {
                     enabled: true,
                     targets: []
-                }
+                },
+                roleID: undefined
             }
         }
+
+        bot.servers[server].members[bot.id].roles.forEach(role => {
+            role = bot.servers[server].roles[role]
+            if (role.name === bot.username) {
+                settings.servers[server].roleID = role.id
+            }
+        });
 
         return new Promise(resolve => {
             resolve();
