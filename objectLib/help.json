@@ -32,5 +32,8 @@
     },{
         "name": "`@GerpBot autoCompliment < sample | on | off | add | remove | list > [ @mention ]`",
         "value": "Our little secret :3"
+    },{
+        "name": "`@GerpBot effect < rainbow | shuffle >`",
+        "value": "Toggles @GerpBot name effects"
     }]
 }

@@ -167,6 +167,36 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 }
                 updateSettings();
                 break;
+            case 'effect':
+                if (settings.servers[serverID].roleID != undefined) {
+                    switch (args[0]) {
+                        case 'rainbow':
+                            if (settings.servers[serverID].effects.rainbow) {
+                                settings.servers[serverID].effects.rainbow = false
+                                msg(channelID,'Rainbow effect deactivated!')
+                            } else {
+                                settings.servers[serverID].effects.rainbow = true
+                                msg(channelID,'Rainbow effect activated!')
+                            }
+                            break;
+                        case 'shuffle':
+                            if (settings.servers[serverID].effects.shuffle) {
+                                settings.servers[serverID].effects.shuffle = false
+                                msg(channelID,'Shuffle effect deactivated!')
+                            } else {
+                                settings.servers[serverID].effects.shuffle = true
+                                msg(channelID,'Shuffle effect activated!')
+                            }
+                            break;
+                        default:
+                            msg(channelID,'Shuffle or rainbow?')
+                            break;
+                    }
+                    updateSettings();
+                } else {
+                    msg(channelID,'Please create me my own role (with some permissions pls)');
+                }
+                break;
             default:
                 msg(channelID,objectLib.defaultRes[Math.floor(Math.random()*objectLib.defaultRes.length)]);
                 break;
@@ -247,6 +277,10 @@ function afterLogin() {
                     enabled: true,
                     targets: []
                 },
+                effects: {
+                    rainbow: false,
+                    shuffle: false
+                },
                 roleID: undefined
             }
         }
@@ -263,7 +297,53 @@ function afterLogin() {
         });
     });
 
-    Promise.all(requests).then(updateSettings);
+    Promise.all(requests).then(checkEffects);
+}
+
+function checkEffects() {
+    let colors = ['#ff0000','#ff6a00','#ffff00','#00ff00','#0000ff','#ff00ff'];
+    let i = 0;
+    setInterval(() => {
+        if (i >= colors.length) i = 0;
+        let newName = bot.username.split('');
+        newName.forEach(l => {
+            random = Math.floor(Math.random()*newName.length);
+            let help = newName[random];
+            newName[random] = l;
+            newName[newName.indexOf(l)] = help;
+        });
+
+        for (server in settings.servers) {
+            if (typeof bot.servers[server] != 'undefined') {
+                if (settings.servers[server].effects.rainbow) {
+                    editColor(server,colors[i]);
+                } else if (typeof settings.servers[server].roleID != 'undefined' && bot.servers[server].roles[settings.servers[server].roleID].color != 16738816) editColor(server,'#ff6a00');
+
+                if (settings.servers[server].effects.shuffle) {
+                    editNick(server,newName.join(''));
+                } else if (typeof bot.servers[server].members[bot.id].nick != 'undefined' && bot.servers[server].members[bot.id].nick != null) editNick(server,bot.username);
+            }
+        }
+        i++;
+    },2000);
+
+    function editColor (server,color) {
+        bot.editRole({
+            serverID: server,
+            roleID: settings.servers[server].roleID,
+            color: color
+        }, err => {if (err) logger.error(err,'');});
+    }
+
+    function editNick (server,newName) {
+        bot.editNickname({
+            serverID: server,
+            userID: bot.id,
+            nick: newName
+        }, err => {if (err) logger.error(err,'');})
+    }
+
+    updateSettings();
 }
 
 function getJSON(file,location = '') {
