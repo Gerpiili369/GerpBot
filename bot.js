@@ -15,6 +15,7 @@ const bot = new Discord.Client({
     autorun: true
 });
 
+var online = false;
 var settings = getJSON('settings');
 var timeOf = {
     startUp: Date.now()
@@ -23,6 +24,8 @@ var timeOf = {
 if (settings.servers === undefined) {
     settings.servers = {}
 }
+
+startLoops();
 
 bot.on('ready', evt => {
     timeOf.connection = Date.now();
@@ -232,6 +235,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 });
 
 bot.on('disconnect', (err, code) => {
+    online = false;
     logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${calculateUptime(timeOf.connection,Date.now())})`)
     bot.connect();
 });
@@ -261,15 +265,6 @@ function calculateUptime(start,end) {
 }
 
 function afterLogin() {
-    setInterval(() => {
-        bot.setPresence({
-            game: {
-                name: objectLib.games[Math.floor(Math.random()*objectLib.games.length)],
-                type: 0
-            }
-        });
-    }, 60000)
-
     let requests = Object.keys(bot.servers).map(server => {
         if (typeof settings.servers[server] == 'undefined') {
             settings.servers[server] = {
@@ -297,34 +292,48 @@ function afterLogin() {
         });
     });
 
-    Promise.all(requests).then(checkEffects);
+    Promise.all(requests).then(() => {
+        online = true;
+        updateSettings();
+    });
 }
 
-function checkEffects() {
+function startLoops() {
+    setInterval(() => {
+        bot.setPresence({
+            game: {
+                name: objectLib.games[Math.floor(Math.random()*objectLib.games.length)],
+                type: 0
+            }
+        });
+    }, 60000)
+
     let colors = ['#ff0000','#ff6a00','#ffff00','#00ff00','#0000ff','#ff00ff'];
     let i = 0;
     setInterval(() => {
-        if (i >= colors.length) i = 0;
-        let newName = bot.username.split('');
-        newName.forEach(l => {
-            random = Math.floor(Math.random()*newName.length);
-            let help = newName[random];
-            newName[random] = l;
-            newName[newName.indexOf(l)] = help;
-        });
+        if (online) {
+            if (i >= colors.length) i = 0;
+            let newName = bot.username.split('');
+            newName.forEach(l => {
+                random = Math.floor(Math.random()*newName.length);
+                let help = newName[random];
+                newName[random] = l;
+                newName[newName.indexOf(l)] = help;
+            });
 
-        for (server in settings.servers) {
-            if (typeof bot.servers[server] != 'undefined') {
-                if (settings.servers[server].effects.rainbow) {
-                    editColor(server,colors[i]);
-                } else if (typeof settings.servers[server].roleID != 'undefined' && bot.servers[server].roles[settings.servers[server].roleID].color != 16738816) editColor(server,'#ff6a00');
+            for (server in settings.servers) {
+                if (typeof bot.servers[server] != 'undefined') {
+                    if (settings.servers[server].effects.rainbow) {
+                        editColor(server,colors[i]);
+                    } else if (typeof settings.servers[server].roleID != 'undefined' && bot.servers[server].roles[settings.servers[server].roleID].color != 16738816) editColor(server,'#ff6a00');
 
-                if (settings.servers[server].effects.shuffle) {
-                    editNick(server,newName.join(''));
-                } else if (typeof bot.servers[server].members[bot.id].nick != 'undefined' && bot.servers[server].members[bot.id].nick != null) editNick(server,bot.username);
+                    if (settings.servers[server].effects.shuffle) {
+                        editNick(server,newName.join(''));
+                    } else if (typeof bot.servers[server].members[bot.id].nick != 'undefined' && bot.servers[server].members[bot.id].nick != null) editNick(server,bot.username);
+                }
             }
+            i++;
         }
-        i++;
     },2000);
 
     function editColor (server,color) {
@@ -342,8 +351,6 @@ function checkEffects() {
             nick: newName
         }, err => {if (err) logger.error(err,'');})
     }
-
-    updateSettings();
 }
 
 function getJSON(file,location = '') {
