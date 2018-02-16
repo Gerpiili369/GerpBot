@@ -216,13 +216,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (e.value.substring(e.value.length-1) == '>') e.value = e.value.substring(0,e.value.length-1)
 
                 setTimeout(() => {
-                    bot.addReaction({
-                        channelID: channelID,
-                        messageID: evt.d.id,
-                        reaction: e.value
-                    }, (err, res) => {
-                        // if (err) console.log(err);
-                    });
+                    emojiResponse(e.value);
                 },evt.d.embeds[0].fields.indexOf(e)*500);
             });
 
@@ -231,6 +225,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 messageID: evt.d.id
             });
         }
+    }
+
+    function emojiResponse(emoji) {
+        bot.addReaction({
+            channelID: channelID,
+            messageID: evt.d.id,
+            reaction: emoji
+        }, (err, res) => {
+            if (err) logger(err,'');
+        });
     }
 });
 
