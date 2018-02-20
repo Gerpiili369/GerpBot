@@ -38,5 +38,8 @@
     },{
         "name": "`@GerpBot effect < rainbow | shuffle >`",
         "value": "Toggles @GerpBot name effects"
+    },{
+        "name": "`@GerpBot handle < name >`",
+        "value": "Changes @GerpBot's nickname"
     }]
 }

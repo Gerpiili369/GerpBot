@@ -222,6 +222,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID,'Please create me my own role (with some permissions pls)');
                 }
                 break;
+            case 'handle':
+                if (args[0]) {
+                    msg(channelID,`I will now be known as "${args[0]}"`);
+                    settings.servers[serverID].nick = args[0];
+                } else msg(channelID,'Argument required!')
+                break;
             default:
                 msg(channelID,objectLib.defaultRes[Math.floor(Math.random()*objectLib.defaultRes.length)]);
                 break;
@@ -305,6 +311,7 @@ function afterLogin() {
                     rainbow: false,
                     shuffle: false
                 },
+                nick: bot.username,
                 roleID: undefined
             }
         }
@@ -342,13 +349,6 @@ function startLoops() {
     setInterval(() => {
         if (online) {
             if (i >= colors.length) i = 0;
-            let newName = bot.username.split('');
-            newName.forEach(l => {
-                random = Math.floor(Math.random()*newName.length);
-                let help = newName[random];
-                newName[random] = l;
-                newName[newName.indexOf(l)] = help;
-            });
 
             for (server in settings.servers) {
                 if (typeof bot.servers[server] != 'undefined') {
@@ -357,8 +357,15 @@ function startLoops() {
                     } else if (typeof settings.servers[server].roleID != 'undefined' && bot.servers[server].roles[settings.servers[server].roleID].color != 16738816) editColor(server,'#ff6a00');
 
                     if (settings.servers[server].effects.shuffle) {
+                        let newName = settings.servers[server].nick.split('');
+                        newName.forEach(l => {
+                            random = Math.floor(Math.random()*newName.length);
+                            let help = newName[random];
+                            newName[random] = l;
+                            newName[newName.indexOf(l)] = help;
+                        });
                         editNick(server,newName.join(''));
-                    } else if (typeof bot.servers[server].members[bot.id].nick != 'undefined' && bot.servers[server].members[bot.id].nick != null) editNick(server,bot.username);
+                    } else if (typeof bot.servers[server].members[bot.id].nick != 'undefined' && bot.servers[server].members[bot.id].nick != null) editNick(server,settings.servers[server].nick);
                 }
             }
             i++;
