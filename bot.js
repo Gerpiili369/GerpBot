@@ -226,6 +226,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (args[0]) {
                     msg(channelID,`I will now be known as "${args[0]}"`);
                     settings.servers[serverID].nick = args[0];
+                    editNick(serverID,args[0]);
                 } else msg(channelID,'Argument required!')
                 break;
             default:
@@ -372,21 +373,22 @@ function startLoops() {
         }
     },2000);
 
-    function editColor (server,color) {
-        bot.editRole({
-            serverID: server,
-            roleID: settings.servers[server].roleID,
-            color: color
-        }, err => {if (err) logger.error(err,'');});
-    }
+}
 
-    function editNick (server,newName) {
-        bot.editNickname({
-            serverID: server,
-            userID: bot.id,
-            nick: newName
-        }, err => {if (err) logger.error(err,'');})
-    }
+function editColor (server,color) {
+    bot.editRole({
+        serverID: server,
+        roleID: settings.servers[server].roleID,
+        color: color
+    }, err => {if (err) logger.error(err,'');});
+}
+
+function editNick (server,newName) {
+    bot.editNickname({
+        serverID: server,
+        userID: bot.id,
+        nick: newName
+    }, err => {if (err) logger.error(err,'');})
 }
 
 function getJSON(file,location = '') {
