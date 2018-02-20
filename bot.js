@@ -31,7 +31,7 @@ bot.on('ready', evt => {
     timeOf.connection = Date.now();
 
     logger.info(`${bot.username} (user ${bot.id}) ready for world domination!`);
-    
+
     afterLogin();
 });
 
