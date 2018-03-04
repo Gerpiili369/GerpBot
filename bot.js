@@ -137,7 +137,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'uptime':
                 if (typeof timeOf[args[0]] != 'undefined') {
                     let uptime = calculateUptime(timeOf[args[0]],Date.now());
-                    msg(channelID,`Time since '${args[0]}':\t \`${uptime.d} day(s), ${uptime.h} hour(s), ${uptime.min} minute(s), ${uptime.s} second(s)\``);
+                    msg(channelID,`Time since '${args[0]}':
+\`${
+    (uptime.d > 0) ? `${uptime.d} day(s), ` : ''
+}${
+    (uptime.h > 0) ? `${uptime.h} hour(s), ` : ''
+}${
+    (uptime.min > 0) ? `${uptime.min} minute(s), ` : ''
+}${
+    uptime.s
+} second(s)\``);
                 } else {
                     msg(channelID,'Missing arguments. Usage: `@GerpBot uptime [ startUp | connection | lastCommand ]`.');
                 }
