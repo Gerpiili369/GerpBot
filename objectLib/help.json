@@ -12,6 +12,9 @@
         "name": "`@GerpBot help`",
         "value": "Displays this message."
     },{
+        "name": "`@GerpBot server`",
+        "value": "Gives information about the server"
+    },{
         "name": "`@GerpBot ping`",
         "value": "Pong!"
     },{

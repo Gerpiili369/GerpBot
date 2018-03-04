@@ -53,6 +53,75 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'help':
                 msg(channelID,'Some commands:',objectLib.help);
                 break;
+            case 'server':
+                let si = {
+                    members: {
+                        online: 0,
+                        idle: 0,
+                        dnd: 0,
+                        offline: 0,
+                        bots: 0
+                    },
+                    channels: {
+                        0: 0,
+                        2: 0,
+                        4: 0
+                    },
+                    age: calculateUptime(sfToDate(serverID),new Date())
+                }
+
+                for (member in bot.servers[serverID].members) {
+                    if (!bot.users[member].bot) {
+                        let status = bot.servers[serverID].members[member].status;
+                        if (!status) status = 'offline'
+                        si.members[status]++
+                    } else si.members.bots++
+                }
+
+                for (channel in bot.servers[serverID].channels) {
+                    let type = bot.servers[serverID].channels[channel].type;
+                    if (type == 0 || type == 2 || type == 4)
+                    si.channels[type]++;
+                }
+
+                let ie = {
+                    title: `Information about "${bot.servers[serverID].name}"`,
+                    description: `**Created by:** <@!${bot.servers[serverID].owner_id}>
+**Creation date:** \`${sfToDate(serverID)}\`
+**Age:** \`${
+    (si.age.d > 0) ? `${si.age.d} day(s), ` : ''
+}${
+    (si.age.h > 0) ? `${si.age.h} hour(s), ` : ''
+}${
+    si.age.min
+} min(s)\``,
+                    color: 16738816,
+                    timestamp: bot.servers[serverID].joined_at,
+                    footer: {
+                        icon_url: `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`,
+                        text: `${settings.servers[serverID].nick} joined this server on`
+                    },
+                    thumbnail: {
+                        url: `https://cdn.discordapp.com/icons/${serverID}/${bot.servers[serverID].icon}.png`
+                    },
+                    fields: [
+                        {
+                            name: 'Members:',
+                            value: `✅ Online: ${si.members.online}\n💤 Idle: ${si.members.idle}\n⛔ Do not disturb: ${si.members.dnd}\n⚫ Offline: ${si.members.offline}`
+                        },
+                        {
+                            name: 'Channels:',
+                            value: `💬 Text: ${si.channels[0]}\n🎙️ Voice: ${si.channels[2]}\n📁 Category: ${si.channels[4]}`
+                        },
+                        {
+                            name: 'More stuff:',
+                            value: `Roles: ${Object.keys(bot.servers[serverID].roles).length}, Emojis: ${Object.keys(bot.servers[serverID].emojis).length}/50, Bots: ${si.members.bots}`
+                        }
+                    ]
+                }
+
+                msg(channelID,'Here you go:',ie);
+                break;
             case 'ping':
                 msg(channelID,'Pong!');
                 break;
@@ -297,6 +366,10 @@ function calculateUptime(start,end) {
     uptime.h -= uptime.d * 24;
 
     return uptime;
+}
+
+function sfToDate(id) {
+    return new Date(id / Math.pow(2,22) + 1420070400000)
 }
 
 function afterLogin() {
