@@ -89,6 +89,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     description: `**Created by:** <@!${bot.servers[serverID].owner_id}>
 **Creation date:** \`${sfToDate(serverID)}\`
 **Age:** \`${
+    (si.age.y > 0) ? `${si.age.y} year(s), ` : ''
+}${
     (si.age.d > 0) ? `${si.age.d} day(s), ` : ''
 }${
     (si.age.h > 0) ? `${si.age.h} hour(s), ` : ''
@@ -139,6 +141,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     let uptime = calculateUptime(timeOf[args[0]],Date.now());
                     msg(channelID,`Time since '${args[0]}':
 \`${
+    (uptime.y > 0) ? `${uptime.y} year(s), ` : ''
+}${
     (uptime.d > 0) ? `${uptime.d} day(s), ` : ''
 }${
     (uptime.h > 0) ? `${uptime.h} hour(s), ` : ''
@@ -373,6 +377,8 @@ function calculateUptime(start,end) {
     uptime.min -= uptime.h * 60;
     uptime.d = Math.floor(uptime.h / 24);
     uptime.h -= uptime.d * 24;
+    uptime.y = Math.floor(uptime.d / 365);
+    uptime.d -= uptime.y * 365;
 
     return uptime;
 }
