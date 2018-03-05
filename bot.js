@@ -39,7 +39,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     let serverID = bot.channels[channelID].guild_id
 
     if (message.substring(0, 21) == `<@${bot.id}>` || message.substring(0,22) == `<@!${bot.id}>`) {
-        bot.simulateTyping(channelID);
+        bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
 
         if (message.substring(2,3) == '!') {
             var args = message.substring(23).split(' ');
@@ -390,7 +390,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         }
         timeOf.lastCommand = Date.now();
     } else if (settings.servers[serverID].autoCompliment.targets.indexOf(`<@!${userID}>`) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
-        bot.simulateTyping(channelID);
+        bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
         msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
     }
 
@@ -409,7 +409,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             bot.pinMessage({
                 channelID: channelID,
                 messageID: evt.d.id
-            });
+            }, err => {if (err) logger.error(err,'');});
         }
     }
 
@@ -418,9 +418,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             channelID: channelID,
             messageID: evt.d.id,
             reaction: emoji
-        }, (err, res) => {
-            if (err) logger(err,'');
-        });
+        }, err => {if (err) logger.error(err,'');});
     }
 });
 
@@ -435,7 +433,7 @@ function msg(channel,msg,embed) {
         to: channel,
         message: msg,
         embed: embed
-    });
+    }, err => {if (err) logger.error(err,'');});
 }
 
 function calculateUptime(start,end) {
@@ -559,13 +557,13 @@ function getJSON(file,location = '') {
         case 'object':
             file.forEach(file => {
                 if (fs.existsSync(`${location}${file}.json`)) {
-                    tempObj[file] = JSON.parse(fs.readFileSync(`${location}${file}.json`, 'utf-8', err => {if (err) logger.error(err);}));
+                    tempObj[file] = JSON.parse(fs.readFileSync(`${location}${file}.json`, 'utf-8', err => {if (err) logger.error(err,'');}));
                 }
             });
             break;
         case 'string':
             if (fs.existsSync(`${location}${file}.json`)) {
-                return JSON.parse(fs.readFileSync(`${location}${file}.json`, 'utf-8', err => {if (err) logger.error(err);}));
+                return JSON.parse(fs.readFileSync(`${location}${file}.json`, 'utf-8', err => {if (err) logger.error(err,'');}));
             }
             break;
         default:
@@ -574,5 +572,5 @@ function getJSON(file,location = '') {
 }
 
 function updateSettings() {
-    if (JSON.stringify(settings) != '') fs.writeFile('settings.json', JSON.stringify(settings), err => {if (err) logger.error(err)});
+    if (JSON.stringify(settings) != '') fs.writeFile('settings.json', JSON.stringify(settings), err => {if (err) logger.error(err,'')});
 }
