@@ -126,6 +126,77 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 msg(channelID,'Here you go:',ie);
                 break;
+            case 'user':
+                if (args[0]) {
+                    if (args[0].substring(2,3) == '!') {
+                        args[0] = args[0].substring(3,21);
+                    } else {
+                        args[0] = args[0].substring(2,20);
+                    }
+                    let ui = {
+                        id: args[0],
+                        roles: [],
+                        age: calculateUptime(sfToDate(args[0]),new Date())
+                    }
+
+                    Object.keys(bot.servers[serverID].roles).forEach(e => {
+                        if (bot.servers[serverID].members[ui.id].roles.indexOf(e) != -1)
+                        ui.roles[bot.servers[serverID].roles[e].position] = '<@&'+e+'>'
+                    });
+
+                    let cleanRoll = [];
+                    ui.roles.forEach(e => {if (e) cleanRoll.push(e)});
+                    ui.roles = cleanRoll.reverse();
+
+                    let ue = {
+                        title: `Information about "${bot.users[ui.id].username}#${bot.users[ui.id].discriminator}"`,
+                        description: `**Also known as:** "<@!${ui.id}>"
+**User created:** \`${sfToDate(ui.id)}\`
+**Age:** \`${
+    (ui.age.y > 0) ? `${ui.age.y} year(s), ` : ''
+}${
+    (ui.age.d > 0) ? `${ui.age.d} day(s), ` : ''
+}${
+    (ui.age.h > 0) ? `${ui.age.h} hour(s), ` : ''
+}${
+    ui.age.min
+} min(s)\``,
+                        color: bot.servers[serverID].members[ui.id].color,
+                        timestamp: new Date(bot.servers[serverID].members[ui.id].joined_at),
+                        footer: {
+                            icon_url: `https://cdn.discordapp.com/icons/${serverID}/${bot.servers[serverID].icon}.png`,
+                            text: `${bot.users[ui.id].username} joined this server on`
+                        },
+                        thumbnail: {
+                            url: `https://cdn.discordapp.com/avatars/${ui.id}/${bot.users[ui.id].avatar}.png`
+                        }
+                    }
+
+                    let status = '';
+                    switch (bot.servers[serverID].members[ui.id].status) {
+                        case 'online':
+                            status = '✅ Online'
+                            break;
+                        case 'idle':
+                            status = '💤 Idle'
+                            break;
+                        case 'dnd':
+                            status = '⛔ Do not disturb'
+                            break;
+                        default:
+                            status = '⚫ Offline'
+                            break;
+                    }
+                    ue.description += `\n**Status:** ${status}`
+
+                    if (ui.roles.length > 0) ue.description +='\n**Roles:** '
+                    ui.roles.forEach(e => {
+                        ue.description += ` ${e}`
+                    });
+
+                    msg(channelID,'High quality spying:',ue);
+                } else msg(channelID,'I would give you the info you seek, but it is clear you don\'t even know what you want')
+                break;
             case 'ping':
                 msg(channelID,'Pong!');
                 break;

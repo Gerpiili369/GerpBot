@@ -15,6 +15,9 @@
         "name": "`@GerpBot server`",
         "value": "Gives information about the server"
     },{
+        "name": "`@GerpBot user <@mention>`",
+        "value": "Gives information about a user"
+    },{
         "name": "`@GerpBot ping`",
         "value": "Pong!"
     },{
