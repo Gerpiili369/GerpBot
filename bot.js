@@ -425,7 +425,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 bot.on('disconnect', (err, code) => {
     online = false;
     logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${calculateUptime(timeOf.connection,Date.now())})`)
-    bot.connect();
+    setTimeout(() => {
+        bot.connect();
+    },5000)
 });
 
 function msg(channel,msg,embed) {
