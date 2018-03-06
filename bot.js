@@ -39,6 +39,12 @@ bot.on('ready', evt => {
 bot.on('message', (user, userID, channelID, message, evt) => {
     let serverID = bot.channels[channelID].guild_id
 
+    let admin = false;
+    if (userID == bot.servers[serverID].owner_id) admin = true;
+    else bot.servers[serverID].members[userID].roles.forEach(e => {
+        if (bot.servers[serverID].roles[e]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
+    });
+
     if (message.substring(0, 21) == `<@${bot.id}>` || message.substring(0,22) == `<@!${bot.id}>`) {
         bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
 
@@ -286,12 +292,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
                         break;
                     case 'on':
-                        settings.servers[serverID].autoCompliment.enabled = true;
-                        msg(channelID,'Automatic complimenting turned ON.');
+                        if (admin) {
+                            settings.servers[serverID].autoCompliment.enabled = true;
+                            msg(channelID,'Automatic complimenting turned ON.');
+                        } else msg(channelID,'Request denied! Not admin');
                         break;
                     case 'off':
-                        settings.servers[serverID].autoCompliment.enabled = false;
-                        msg(channelID,'Automatic complimenting turned OFF.');
+                        if (admin) {
+                            settings.servers[serverID].autoCompliment.enabled = false;
+                            msg(channelID,'Automatic complimenting turned OFF.');
+                        } else msg(channelID,'Request denied! Not admin');
                         break;
                     case 'list':
                         msg(channelID,``,{
@@ -301,23 +311,27 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         break;
                     case 'add':
                         if (args[1] != undefined) {
-                            if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) == -1) {
-                                settings.servers[serverID].autoCompliment.targets.push(args[1]);
-                                msg(channelID,`User ${args[1]} is now cool`)
-                            } else {
-                                msg(channelID,`User ${args[1]} is already cool!`)
-                            }
+                            if (admin) {
+                                if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) == -1) {
+                                    settings.servers[serverID].autoCompliment.targets.push(args[1]);
+                                    msg(channelID,`User ${args[1]} is now cool`)
+                                } else {
+                                    msg(channelID,`User ${args[1]} is already cool!`)
+                                }
+                            } else {msg(channelID,'Request denied! Not admin');}
                             break;
                         }
                     case 'remove':
                         if (args[1] != undefined) {
-                            if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) != -1) {
-                                settings.servers[serverID].autoCompliment.targets.splice(settings.servers[serverID].
+                            if (admin) {
+                                if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) != -1) {
+                                    settings.servers[serverID].autoCompliment.targets.splice(settings.servers[serverID].
                                     utoCompliment.targets.indexOf(args[1]), 1);
-                                msg(channelID,`User ${args[1]} ain't cool no more!`)
-                            } else {
-                                msg(channelID,`User ${args[1]} was never cool to begin with!`)
-                            }
+                                    msg(channelID,`User ${args[1]} ain't cool no more!`)
+                                } else {
+                                    msg(channelID,`User ${args[1]} was never cool to begin with!`)
+                                }
+                            } else {msg(channelID,'Request denied! Not admin');}
                             break;
                         }
                     default:
@@ -327,63 +341,68 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 updateSettings();
                 break;
             case 'shit':
-                switch (args[0]) {
-                    case 'set':
-                        if (args[1] != undefined && args[1].length === 22) {
-                            args[1] = args[1].substring(3,21);
-                            settings.servers[serverID].autoShit = args[1];
-                            msg(channelID,`<@&${args[1]}> has been chosen to be shit`);
-
-                        } else {
-                            msg(channelID,`*Set hit the fan*`);
-                        }
-                        break;
-                    case 'clean':
-                        settings.servers[serverID].autoShit = null;
-                        msg(channelID,`Shit has been cleaned up...`);
-                        break;
-                    default:
-                        msg(channelID,'Missing arguments. Usage: `@GerpBot autoShit < set [ @role ] | clean >`.');
-                        break;
-                }
-                updateSettings();
-                break;
-            case 'effect':
-                if (settings.servers[serverID].roleID != undefined) {
+                if (admin) {
                     switch (args[0]) {
-                        case 'rainbow':
-                            if (settings.servers[serverID].effects.rainbow) {
-                                settings.servers[serverID].effects.rainbow = false
-                                msg(channelID,'Rainbow effect deactivated!')
+                        case 'set':
+                            if (args[1] != undefined && args[1].length === 22) {
+                                args[1] = args[1].substring(3,21);
+                                settings.servers[serverID].autoShit = args[1];
+                                msg(channelID,`<@&${args[1]}> has been chosen to be shit`);
+
                             } else {
-                                settings.servers[serverID].effects.rainbow = true
-                                msg(channelID,'Rainbow effect activated!')
+                                msg(channelID,`*Set hit the fan*`);
                             }
                             break;
-                        case 'shuffle':
-                            if (settings.servers[serverID].effects.shuffle) {
-                                settings.servers[serverID].effects.shuffle = false
-                                msg(channelID,'Shuffle effect deactivated!')
-                            } else {
-                                settings.servers[serverID].effects.shuffle = true
-                                msg(channelID,'Shuffle effect activated!')
-                            }
+                        case 'clean':
+                            settings.servers[serverID].autoShit = null;
+                            msg(channelID,`Shit has been cleaned up...`);
                             break;
                         default:
-                            msg(channelID,'Shuffle or rainbow?')
+                            msg(channelID,'Missing arguments. Usage: `@GerpBot autoShit < set [ @role ] | clean >`.');
                             break;
+                    updateSettings();}
+                } else msg(channelID,'Request denied! Not admin');
+                break;
+            case 'effect':
+                if (admin) {
+                    if (settings.servers[serverID].roleID != undefined) {
+                        switch (args[0]) {
+                            case 'rainbow':
+                                if (settings.servers[serverID].effects.rainbow) {
+                                    settings.servers[serverID].effects.rainbow = false
+                                    msg(channelID,'Rainbow effect deactivated!')
+                                } else {
+                                    settings.servers[serverID].effects.rainbow = true
+                                    msg(channelID,'Rainbow effect activated!')
+                                }
+                                break;
+                            case 'shuffle':
+                                if (settings.servers[serverID].effects.shuffle) {
+                                    settings.servers[serverID].effects.shuffle = false
+                                    msg(channelID,'Shuffle effect deactivated!')
+                                } else {
+                                    settings.servers[serverID].effects.shuffle = true
+                                    msg(channelID,'Shuffle effect activated!')
+                                }
+                                break;
+                            default:
+                                msg(channelID,'Shuffle or rainbow?')
+                                break;
+                        }
+                        updateSettings();
+                    } else {
+                        msg(channelID,'Please create me my own role (with some permissions pls)');
                     }
-                    updateSettings();
-                } else {
-                    msg(channelID,'Please create me my own role (with some permissions pls)');
-                }
+                } else msg(channelID,'Request denied! Not admin');
                 break;
             case 'handle':
-                if (args[0]) {
-                    msg(channelID,`I will now be known as "${args[0]}"`);
-                    settings.servers[serverID].nick = args[0];
-                    editNick(serverID,args[0]);
-                } else msg(channelID,'Argument required!')
+                if (admin) {
+                    if (args[0]) {
+                        msg(channelID,`I will now be known as "${args[0]}"`);
+                        settings.servers[serverID].nick = args[0];
+                        editNick(serverID,args[0]);
+                    } else msg(channelID,'Argument required!')
+                } else msg(channelID,'Request denied! Not admin');
                 break;
             default:
                 msg(channelID,objectLib.defaultRes[Math.floor(Math.random()*objectLib.defaultRes.length)]);
