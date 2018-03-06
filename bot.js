@@ -5,7 +5,8 @@ const fs = require('fs');
 
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
-    colorize: true
+    colorize: true,
+    timestamp: true
 });
 logger.level = 'debug';
 
