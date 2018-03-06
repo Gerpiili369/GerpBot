@@ -37,6 +37,8 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
+    if (userID == bot.id) return;
+
     let serverID = bot.channels[channelID].guild_id
 
     let admin = false;
