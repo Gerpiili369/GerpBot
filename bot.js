@@ -37,18 +37,16 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
-    if (userID == bot.id) return;
-
     let serverID = bot.channels[channelID].guild_id
 
-    let admin = false;
-    if (userID == bot.servers[serverID].owner_id) admin = true;
-    else bot.servers[serverID].members[userID].roles.forEach(e => {
-        if (bot.servers[serverID].roles[e]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
-    });
-
-    if (message.substring(0, 21) == `<@${bot.id}>` || message.substring(0,22) == `<@!${bot.id}>`) {
+    if ((message.substring(0, 21) == `<@${bot.id}>` || message.substring(0,22) == `<@!${bot.id}>`) && userID != bot.id) {
         bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
+
+        let admin = false;
+        if (userID == bot.servers[serverID].owner_id) admin = true;
+        else bot.servers[serverID].members[userID].roles.forEach(v => {
+            if (bot.servers[serverID].roles[v]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
+        });
 
         if (message.substring(2,3) == '!') {
             var args = message.substring(23).split(' ');
