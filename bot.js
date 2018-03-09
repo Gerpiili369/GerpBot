@@ -74,7 +74,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         2: 0,
                         4: 0
                     },
-                    age: calculateUptime(sfToDate(serverID),new Date())
+                    age: calculateUptime(sfToDate(serverID))
                 };
 
                 for (member in bot.servers[serverID].members) {
@@ -136,7 +136,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     let ui = {
                         id: args[0],
                         roles: [],
-                        age: calculateUptime(sfToDate(args[0]),new Date())
+                        age: calculateUptime(sfToDate(args[0]))
                     };
 
                     Object.keys(bot.servers[serverID].roles).forEach(v => {
@@ -205,7 +205,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'uptime':
                 if (typeof timeOf[args[0]] != 'undefined') {
-                    let uptime = calculateUptime(timeOf[args[0]],Date.now());
+                    let uptime = calculateUptime(timeOf[args[0]]);
                     msg(channelID,`Time since '${args[0]}': \`` +
                         `${(uptime.y > 0) ? `${uptime.y} year(s), ` : ''}` +
                         `${(uptime.d > 0) ? `${uptime.d} day(s), ` : ''}` +
@@ -425,7 +425,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
 bot.on('disconnect', (err, code) => {
     online = false;
-    logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${calculateUptime(timeOf.connection,Date.now())})`);
+    logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${calculateUptime(timeOf.connection)})`);
     setTimeout(() => {
         bot.connect();
     },5000);
@@ -439,7 +439,7 @@ function msg(channel,msg,embed) {
     }, err => {if (err) logger.error(err,'');});
 }
 
-function calculateUptime(start,end) {
+function calculateUptime(start,end = Date.now()) {
     let uptime = {};
 
     uptime.ms = end - start;
