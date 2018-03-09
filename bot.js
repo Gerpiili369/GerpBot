@@ -10,7 +10,7 @@ logger.add(logger.transports.Console, {
 });
 logger.level = 'debug';
 
-const objectLib = getJSON(['help','compliments','defaultRes','games'],'objectLib/')
+const objectLib = getJSON(['help','compliments','defaultRes','games'],'objectLib/');
 const bot = new Discord.Client({
     token: auth.token,
     autorun: true
@@ -22,9 +22,7 @@ var timeOf = {
     startUp: Date.now()
 };
 
-if (settings.servers === undefined) {
-    settings.servers = {}
-}
+if (settings.servers === undefined) settings.servers = {};
 
 startLoops();
 
@@ -37,7 +35,7 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
-    let serverID = bot.channels[channelID].guild_id
+    let serverID = bot.channels[channelID].guild_id;
 
     if ((message.substring(0, 21) == `<@${bot.id}>` || message.substring(0,22) == `<@!${bot.id}>`) && userID != bot.id) {
         bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
@@ -77,35 +75,30 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         4: 0
                     },
                     age: calculateUptime(sfToDate(serverID),new Date())
-                }
+                };
 
                 for (member in bot.servers[serverID].members) {
                     if (!bot.users[member].bot) {
                         let status = bot.servers[serverID].members[member].status;
                         if (!status) status = 'offline'
-                        si.members[status]++
-                    } else si.members.bots++
+                        si.members[status]++;
+                    } else si.members.bots++;
                 }
 
                 for (channel in bot.servers[serverID].channels) {
                     let type = bot.servers[serverID].channels[channel].type;
-                    if (type == 0 || type == 2 || type == 4)
-                    si.channels[type]++;
+                    if (type == 0 || type == 2 || type == 4) si.channels[type]++;
                 }
 
                 let ie = {
                     title: `Information about "${bot.servers[serverID].name}"`,
-                    description: `**Created by:** <@!${bot.servers[serverID].owner_id}>
-**Creation date:** \`${sfToDate(serverID)}\`
-**Age:** \`${
-    (si.age.y > 0) ? `${si.age.y} year(s), ` : ''
-}${
-    (si.age.d > 0) ? `${si.age.d} day(s), ` : ''
-}${
-    (si.age.h > 0) ? `${si.age.h} hour(s), ` : ''
-}${
-    si.age.min
-} min(s)\``,
+                    description: `**Created by:** <@!${bot.servers[serverID].owner_id}>\n` +
+                        `**Creation date:** \`${sfToDate(serverID)}\`\n` +
+                        `**Age:** \`` +
+                        `${(si.age.y > 0) ? `${si.age.y} year(s), ` : ''}` +
+                        `${(si.age.d > 0) ? `${si.age.d} day(s), ` : ''}` +
+                        `${(si.age.h > 0) ? `${si.age.h} hour(s), ` : ''}` +
+                        `${si.age.min} min(s)\``,
                     color: bot.servers[serverID].members[userID].color,
                     timestamp: bot.servers[serverID].joined_at,
                     footer: {
@@ -129,7 +122,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             value: `Roles: ${Object.keys(bot.servers[serverID].roles).length}, Emojis: ${Object.keys(bot.servers[serverID].emojis).length}/50, Bots: ${si.members.bots}`
                         }
                     ]
-                }
+                };
 
                 msg(channelID,'Here you go:',ie);
                 break;
@@ -144,11 +137,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         id: args[0],
                         roles: [],
                         age: calculateUptime(sfToDate(args[0]),new Date())
-                    }
+                    };
 
                     Object.keys(bot.servers[serverID].roles).forEach(v => {
                         if (bot.servers[serverID].members[ui.id].roles.indexOf(v) != -1)
-                        ui.roles[bot.servers[serverID].roles[v].position] = '<@&'+v+'>'
+                        ui.roles[bot.servers[serverID].roles[v].position] = '<@&'+v+'>';
                     });
 
                     let cleanRoll = [];
@@ -157,17 +150,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                     let ue = {
                         title: `Information about "${bot.users[ui.id].username}#${bot.users[ui.id].discriminator}"`,
-                        description: `**Also known as:** "<@!${ui.id}>"
-**User created:** \`${sfToDate(ui.id)}\`
-**Age:** \`${
-    (ui.age.y > 0) ? `${ui.age.y} year(s), ` : ''
-}${
-    (ui.age.d > 0) ? `${ui.age.d} day(s), ` : ''
-}${
-    (ui.age.h > 0) ? `${ui.age.h} hour(s), ` : ''
-}${
-    ui.age.min
-} min(s)\``,
+                        description: `**Also known as:** "<@!${ui.id}>"\n` +
+                            `**User created:** \`${sfToDate(ui.id)}\`\n` +
+                            `**Age:** \`` +
+                            `${(ui.age.y > 0) ? `${ui.age.y} year(s), ` : ''}` +
+                            `${(ui.age.d > 0) ? `${ui.age.d} day(s), ` : ''}` +
+                            `${(ui.age.h > 0) ? `${ui.age.h} hour(s), ` : ''}` +
+                            `${ui.age.min} min(s)\``,
                         color: bot.servers[serverID].members[ui.id].color,
                         timestamp: new Date(bot.servers[serverID].members[ui.id].joined_at),
                         footer: {
@@ -177,32 +166,30 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         thumbnail: {
                             url: `https://cdn.discordapp.com/avatars/${ui.id}/${bot.users[ui.id].avatar}.png`
                         }
-                    }
+                    };
 
                     let status = '';
                     switch (bot.servers[serverID].members[ui.id].status) {
                         case 'online':
-                            status = '✅ Online'
+                            status = '✅ Online';
                             break;
                         case 'idle':
-                            status = '💤 Idle'
+                            status = '💤 Idle';
                             break;
                         case 'dnd':
-                            status = '⛔ Do not disturb'
+                            status = '⛔ Do not disturb';
                             break;
                         default:
-                            status = '⚫ Offline'
+                            status = '⚫ Offline';
                             break;
                     }
-                    ue.description += `\n**Status:** ${status}`
+                    ue.description += `\n**Status:** ${status}`;
 
-                    if (ui.roles.length > 0) ue.description +='\n**Roles:** '
-                    ui.roles.forEach(v => {
-                        ue.description += ` ${v}`
-                    });
+                    if (ui.roles.length > 0) ue.description +='\n**Roles:** ';
+                    ui.roles.forEach(v => ue.description += ` ${v}`);
 
                     msg(channelID,'High quality spying:',ue);
-                } else msg(channelID,'I would give you the info you seek, but it is clear you don\'t even know what you want')
+                } else msg(channelID,'I would give you the info you seek, but it is clear you don\'t even know what you want');
                 break;
             case 'ping':
                 msg(channelID,'Pong!');
@@ -219,18 +206,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'uptime':
                 if (typeof timeOf[args[0]] != 'undefined') {
                     let uptime = calculateUptime(timeOf[args[0]],Date.now());
-                    msg(channelID,`Time since '${args[0]}':
-\`${
-    (uptime.y > 0) ? `${uptime.y} year(s), ` : ''
-}${
-    (uptime.d > 0) ? `${uptime.d} day(s), ` : ''
-}${
-    (uptime.h > 0) ? `${uptime.h} hour(s), ` : ''
-}${
-    (uptime.min > 0) ? `${uptime.min} minute(s), ` : ''
-}${
-    uptime.s
-} second(s)\``);
+                    msg(channelID,`Time since '${args[0]}': \`` +
+                        `${(uptime.y > 0) ? `${uptime.y} year(s), ` : ''}` +
+                        `${(uptime.d > 0) ? `${uptime.d} day(s), ` : ''}` +
+                        `${(uptime.h > 0) ? `${uptime.h} hour(s), ` : ''}` +
+                        `${(uptime.min > 0) ? `${uptime.min} minute(s), ` : ''}` +
+                        `${uptime.s} second(s)\``
+                    );
                 } else {
                     msg(channelID,'Missing arguments. Usage: `@GerpBot uptime [ startUp | connection | lastCommand ]`.');
                 }
@@ -255,7 +237,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     break;
                 }
 
-                ve.description += `\n*requested by:\n<@${userID}>*`
+                ve.description += `\n*requested by:\n<@${userID}>*`;
 
                 if (options.length < 1) {
                     msg(channelID,'Options were not included! Example: `@GerpBot vote def :thinking:=genius`');
@@ -307,16 +289,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         msg(channelID,``,{
                             title: 'List of cool people:',
                             description: `${settings.servers[serverID].autoCompliment.targets.join('\n')}`
-                        })
+                        });
                         break;
                     case 'add':
                         if (args[1] != undefined) {
                             if (admin) {
                                 if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) == -1) {
                                     settings.servers[serverID].autoCompliment.targets.push(args[1]);
-                                    msg(channelID,`User ${args[1]} is now cool`)
+                                    msg(channelID,`User ${args[1]} is now cool`);
                                 } else {
-                                    msg(channelID,`User ${args[1]} is already cool!`)
+                                    msg(channelID,`User ${args[1]} is already cool!`);
                                 }
                             } else {msg(channelID,'Request denied! Not admin');}
                             break;
@@ -327,9 +309,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) != -1) {
                                     settings.servers[serverID].autoCompliment.targets.splice(settings.servers[serverID].
                                     utoCompliment.targets.indexOf(args[1]), 1);
-                                    msg(channelID,`User ${args[1]} ain't cool no more!`)
+                                    msg(channelID,`User ${args[1]} ain't cool no more!`);
                                 } else {
-                                    msg(channelID,`User ${args[1]} was never cool to begin with!`)
+                                    msg(channelID,`User ${args[1]} was never cool to begin with!`);
                                 }
                             } else {msg(channelID,'Request denied! Not admin');}
                             break;
@@ -348,7 +330,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 args[1] = args[1].substring(3,21);
                                 settings.servers[serverID].autoShit = args[1];
                                 msg(channelID,`<@&${args[1]}> has been chosen to be shit`);
-
                             } else {
                                 msg(channelID,`*Set hit the fan*`);
                             }
@@ -360,7 +341,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         default:
                             msg(channelID,'Missing arguments. Usage: `@GerpBot autoShit < set [ @role ] | clean >`.');
                             break;
-                    updateSettings();}
+                    updateSettings();
+                    }
                 } else msg(channelID,'Request denied! Not admin');
                 break;
             case 'effect':
@@ -369,24 +351,24 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         switch (args[0]) {
                             case 'rainbow':
                                 if (settings.servers[serverID].effects.rainbow) {
-                                    settings.servers[serverID].effects.rainbow = false
-                                    msg(channelID,'Rainbow effect deactivated!')
+                                    settings.servers[serverID].effects.rainbow = false;
+                                    msg(channelID,'Rainbow effect deactivated!');
                                 } else {
-                                    settings.servers[serverID].effects.rainbow = true
-                                    msg(channelID,'Rainbow effect activated!')
+                                    settings.servers[serverID].effects.rainbow = true;
+                                    msg(channelID,'Rainbow effect activated!');
                                 }
                                 break;
                             case 'shuffle':
                                 if (settings.servers[serverID].effects.shuffle) {
-                                    settings.servers[serverID].effects.shuffle = false
-                                    msg(channelID,'Shuffle effect deactivated!')
+                                    settings.servers[serverID].effects.shuffle = false;
+                                    msg(channelID,'Shuffle effect deactivated!');
                                 } else {
-                                    settings.servers[serverID].effects.shuffle = true
-                                    msg(channelID,'Shuffle effect activated!')
+                                    settings.servers[serverID].effects.shuffle = true;
+                                    msg(channelID,'Shuffle effect activated!');
                                 }
                                 break;
                             default:
-                                msg(channelID,'Shuffle or rainbow?')
+                                msg(channelID,'Shuffle or rainbow?');
                                 break;
                         }
                         updateSettings();
@@ -401,7 +383,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         msg(channelID,`I will now be known as "${args[0]}"`);
                         settings.servers[serverID].nick = args[0];
                         editNick(serverID,args[0]);
-                    } else msg(channelID,'Argument required!')
+                    } else msg(channelID,'Argument required!');
                 } else msg(channelID,'Request denied! Not admin');
                 break;
             default:
@@ -419,7 +401,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     if (userID == bot.id && typeof evt.d.embeds[0] != 'undefined') {
         if (typeof evt.d.embeds[0].footer != 'undefined' && evt.d.embeds[0].footer.text == 'Vote generated by your\'s truly') {
             evt.d.embeds[0].fields.forEach((v,i) => {
-                if (v.value.substring(v.value.length-1) == '>') v.value = v.value.substring(0,v.value.length-1)
+                if (v.value.substring(v.value.length-1) == '>') v.value = v.value.substring(0,v.value.length-1);
                 setTimeout(() => {
                     emojiResponse(v.value);
                 },i*500);
@@ -443,10 +425,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
 bot.on('disconnect', (err, code) => {
     online = false;
-    logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${calculateUptime(timeOf.connection,Date.now())})`)
+    logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${calculateUptime(timeOf.connection,Date.now())})`);
     setTimeout(() => {
         bot.connect();
-    },5000)
+    },5000);
 });
 
 function msg(channel,msg,embed) {
@@ -476,7 +458,7 @@ function calculateUptime(start,end) {
 }
 
 function sfToDate(id) {
-    return new Date(id / Math.pow(2,22) + 1420070400000)
+    return new Date(id / Math.pow(2,22) + 1420070400000);
 }
 
 function afterLogin() {
@@ -494,13 +476,13 @@ function afterLogin() {
                 },
                 nick: bot.username,
                 roleID: undefined
-            }
+            };
         }
 
         bot.servers[server].members[bot.id].roles.forEach(v => {
-            let role = bot.servers[server].roles[v]
+            let role = bot.servers[server].roles[v];
             if (role.name === bot.username) {
-                settings.servers[server].roleID = role.id
+                settings.servers[server].roleID = role.id;
             }
         });
 
@@ -523,7 +505,7 @@ function startLoops() {
                 type: 0
             }
         });
-    }, 60000)
+    }, 60000);
 
     let colors = ['#ff0000','#ff6a00','#ffff00','#00ff00','#0000ff','#ff00ff'];
     let i = 0;
@@ -568,11 +550,11 @@ function editNick (server,newName) {
         serverID: server,
         userID: bot.id,
         nick: newName
-    }, err => {if (err) logger.error(err,'');})
+    }, err => {if (err) logger.error(err,'');});
 }
 
 function getJSON(file,location = '') {
-    let tempObj = {}
+    let tempObj = {};
 
     switch (typeof file) {
         case 'object':
