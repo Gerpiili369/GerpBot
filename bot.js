@@ -341,8 +341,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         default:
                             msg(channelID,'Missing arguments. Usage: `@GerpBot autoShit < set [ @role ] | clean >`.');
                             break;
-                    updateSettings();
                     }
+                    updateSettings();
                 } else msg(channelID,'Request denied! Not admin');
                 break;
             case 'effect':
