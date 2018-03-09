@@ -307,8 +307,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (args[1] != undefined) {
                             if (admin) {
                                 if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) != -1) {
-                                    settings.servers[serverID].autoCompliment.targets.splice(settings.servers[serverID].
-                                    utoCompliment.targets.indexOf(args[1]), 1);
+                                    settings.servers[serverID].autoCompliment.targets.splice(settings.servers[serverID].autoCompliment.targets.indexOf(args[1]), 1);
                                     msg(channelID,`User ${args[1]} ain't cool no more!`);
                                 } else {
                                     msg(channelID,`User ${args[1]} was never cool to begin with!`);
