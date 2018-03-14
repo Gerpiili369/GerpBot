@@ -194,6 +194,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'ping':
                 msg(channelID,'Pong!');
                 break;
+            case 'pi':
+                msg(channelID, `Here it is: \`${Math.PI}...\``);
+                break;
             case 'nerfThis':
                 msg(channelID,'<@!305716128615759873> was the sole victim');
                 break;

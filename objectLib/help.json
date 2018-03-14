@@ -21,6 +21,9 @@
         "name": "`@GerpBot ping`",
         "value": "Pong!"
     },{
+        "name": "`@GerpBot pi`",
+        "value": "Gives you the π"
+    },{
         "name": "`@GerpBot nerfThis`",
         "value": "Activates D.Va's ultimate ability \"Self destruct\"."
     },{
