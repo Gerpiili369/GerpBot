@@ -413,6 +413,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         }
     }
 
+    /**
+     * @arg {String} emoji
+     */
     function emojiResponse(emoji) {
         bot.addReaction({
             channelID: channelID,
@@ -430,6 +433,11 @@ bot.on('disconnect', (err, code) => {
     },5000);
 });
 
+/**
+ * @arg {Snowflake} channel
+ * @arg {String} msg
+ * @arg {Embed} [embed]
+ */
 function msg(channel,msg,embed) {
     bot.sendMessage({
         to: channel,
@@ -438,6 +446,11 @@ function msg(channel,msg,embed) {
     }, err => {if (err) logger.error(err,'');});
 }
 
+/**
+ * @arg {Date} start
+ * @arg {Date} [end]
+ * @returns {Uptime}
+ */
 function calculateUptime(start,end = Date.now()) {
     let uptime = {};
 
@@ -456,6 +469,10 @@ function calculateUptime(start,end = Date.now()) {
     return uptime;
 }
 
+/**
+ * @arg {Snowflake} id
+ * @returns {Date}
+ */
 function sfToDate(id) {
     return new Date(id / Math.pow(2,22) + 1420070400000);
 }
@@ -536,6 +553,10 @@ function startLoops() {
 
 }
 
+/**
+ * @arg {Snowflake} server
+ * @arg {Number|String} color
+ */
 function editColor (server,color) {
     bot.editRole({
         serverID: server,
@@ -544,6 +565,10 @@ function editColor (server,color) {
     }, err => {if (err) logger.error(err,'');});
 }
 
+/**
+ * @arg {Snowflake} server
+ * @arg {String} newName
+ */
 function editNick (server,newName) {
     bot.editNickname({
         serverID: server,
@@ -552,6 +577,11 @@ function editNick (server,newName) {
     }, err => {if (err) logger.error(err,'');});
 }
 
+/**
+ * @arg {String|String[]} file
+ * @arg {String} [location]
+ * @returns {Object}
+ */
 function getJSON(file,location = '') {
     let tempObj = {};
 
@@ -576,3 +606,26 @@ function getJSON(file,location = '') {
 function updateSettings() {
     if (JSON.stringify(settings) != '') fs.writeFile('settings.json', JSON.stringify(settings), err => {if (err) logger.error(err,'')});
 }
+
+/**
+ * @typedef {String} Snowflake
+ * @typedef {Object} Uptime
+ * @property {number} ms
+ * @property {number} s
+ * @property {number} min
+ * @property {number} h
+ * @property {number} day
+ * @property {number} year
+ *
+ * @typedef {Object} Embed
+ * @property {String} [title]
+ * @property {String} [description]
+ * @property {String} [url]
+ * @property {Number|String} [color]
+ * @property {Date} [timestamp]
+ * @property {{icon_url?: String, text?: String}} [footer]
+ * @property {{url?: String]}} [thumbnail]
+ * @property {{url?: String}} [image]
+ * @property {{name: String, url?: String, icon_url?: String}} [author]
+ * @property {{name: String, value: String, inline?: Boolean}[]} [fields]
+ */
