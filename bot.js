@@ -35,16 +35,22 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
-    let serverID = bot.channels[channelID].guild_id;
+    let serverID, server = true;
+    if (bot.channels[channelID]) serverID = bot.channels[channelID].guild_id;
+    else if (bot.directMessages[channelID]) server = false;
+    else return;
+
 
     if ((message.substring(0, 21) == `<@${bot.id}>` || message.substring(0,22) == `<@!${bot.id}>`) && userID != bot.id) {
         bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
 
         let admin = false;
-        if (userID == bot.servers[serverID].owner_id) admin = true;
-        else bot.servers[serverID].members[userID].roles.forEach(v => {
-            if (bot.servers[serverID].roles[v]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
-        });
+        if (server) {
+            if (userID == bot.servers[serverID].owner_id) admin = true;
+            else bot.servers[serverID].members[userID].roles.forEach(v => {
+                if (bot.servers[serverID].roles[v]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
+            });
+        }
 
         if (message.substring(2,3) == '!') {
             var args = message.substring(23).split(' ');
@@ -57,10 +63,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         switch (cmd) {
             case 'help':
                 let help = objectLib.help;
-                help.color = bot.servers[serverID].members[userID].color;
+                help.color = server ? bot.servers[serverID].members[userID].color : 16738816;
                 msg(channelID,'Some commands:',help);
                 break;
             case 'server':
+                if (!server) {
+                    msg(channelID, 'This is a private conversation!')
+                    break;
+                }
+
                 let si = {
                     members: {
                         online: 0,
@@ -133,20 +144,17 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     } else {
                         args[0] = args[0].substring(2,20);
                     }
+
+                    if (!bot.users[args[0]]) {
+                        msg(channelID, 'User not found!');
+                        break;
+                    }
+
                     let ui = {
                         id: args[0],
                         roles: [],
                         age: calculateUptime(sfToDate(args[0]))
                     };
-
-                    Object.keys(bot.servers[serverID].roles).forEach(v => {
-                        if (bot.servers[serverID].members[ui.id].roles.indexOf(v) != -1)
-                        ui.roles[bot.servers[serverID].roles[v].position] = '<@&'+v+'>';
-                    });
-
-                    let cleanRoll = [];
-                    ui.roles.forEach(v => {if (v) cleanRoll.push(v)});
-                    ui.roles = cleanRoll.reverse();
 
                     let ue = {
                         title: `Information about "${bot.users[ui.id].username}#${bot.users[ui.id].discriminator}"`,
@@ -157,36 +165,48 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             `${(ui.age.d > 0) ? `${ui.age.d} day(s), ` : ''}` +
                             `${(ui.age.h > 0) ? `${ui.age.h} hour(s), ` : ''}` +
                             `${ui.age.min} min(s)\``,
-                        color: bot.servers[serverID].members[ui.id].color,
-                        timestamp: new Date(bot.servers[serverID].members[ui.id].joined_at),
-                        footer: {
-                            icon_url: `https://cdn.discordapp.com/icons/${serverID}/${bot.servers[serverID].icon}.png`,
-                            text: `${bot.users[ui.id].username} joined this server on`
-                        },
-                        thumbnail: {
-                            url: `https://cdn.discordapp.com/avatars/${ui.id}/${bot.users[ui.id].avatar}.png`
-                        }
+                        color: server ? bot.servers[serverID].members[ui.id].color : 16738816
                     };
 
-                    let status = '';
-                    switch (bot.servers[serverID].members[ui.id].status) {
-                        case 'online':
-                            status = '✅ Online';
-                            break;
-                        case 'idle':
-                            status = '💤 Idle';
-                            break;
-                        case 'dnd':
-                            status = '⛔ Do not disturb';
-                            break;
-                        default:
-                            status = '⚫ Offline';
-                            break;
+                    ue.thumbnail = {
+                        url: `https://cdn.discordapp.com/avatars/${ui.id}/${bot.users[ui.id].avatar}.png`
                     }
-                    ue.description += `\n**Status:** ${status}`;
 
-                    if (ui.roles.length > 0) ue.description +='\n**Roles:** ';
-                    ui.roles.forEach(v => ue.description += ` ${v}`);
+                    let cleanRoll = [], status = '';
+                    if (server) {
+                        ue.timestamp = new Date(bot.servers[serverID].members[ui.id].joined_at);
+                        ue.footer = {
+                            icon_url: `https://cdn.discordapp.com/icons/${serverID}/${bot.servers[serverID].icon}.png`,
+                            text: `${bot.users[ui.id].username} joined this server on`
+                        };
+
+                        Object.keys(bot.servers[serverID].roles).forEach(v => {
+                            if (bot.servers[serverID].members[ui.id].roles.indexOf(v) != -1)
+                            ui.roles[bot.servers[serverID].roles[v].position] = '<@&'+v+'>';
+                        });
+
+                        ui.roles.forEach(v => {if (v) cleanRoll.push(v)});
+                        ui.roles = cleanRoll.reverse();
+
+                        switch (bot.servers[serverID].members[ui.id].status) {
+                            case 'online':
+                                status = '✅ Online';
+                                break;
+                            case 'idle':
+                                status = '💤 Idle';
+                                break;
+                            case 'dnd':
+                                status = '⛔ Do not disturb';
+                                break;
+                            default:
+                                status = '⚫ Offline';
+                                break;
+                        }
+                        ue.description += `\n**Status:** ${status}`;
+
+                        if (ui.roles.length > 0) ue.description +='\n**Roles:** ';
+                        ui.roles.forEach(v => ue.description += ` ${v}`);
+                    };
 
                     msg(channelID,'High quality spying:',ue);
                 } else msg(channelID,'I would give you the info you seek, but it is clear you don\'t even know what you want');
@@ -223,7 +243,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'vote':
                 let options = [];
                 let ve = {
-                    color: bot.servers[serverID].members[userID].color,
+                    color: server ? bot.servers[serverID].members[userID].color : 16738816,
                     footer: { text: 'Vote generated by your\'s truly' },
                     fields: [],
                     error: false
@@ -272,6 +292,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 }
                 break;
             case 'autoCompliment':
+                if (!server) {
+                    msg(channelID, '**Feature not intended to be used in DM. Sending sample:**');
+                    args[0] = 'sample'
+                }
+
                 switch (args[0]) {
                     case 'sample':
                         msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
@@ -325,6 +350,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 updateSettings();
                 break;
             case 'shit':
+                if (!server) {
+                    msg(channelID, 'no u');
+                    emojiResponse('💩');
+                    break;
+                }
+
                 if (admin) {
                     switch (args[0]) {
                         case 'set':
@@ -348,6 +379,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID,'Request denied! Not admin');
                 break;
             case 'effect':
+                if (!server) {
+                    msg(channelID, 'I think that is a bad idea...');
+                    break;
+                }
+
                 if (admin) {
                     if (settings.servers[serverID].roleID != undefined) {
                         switch (args[0]) {
@@ -380,6 +416,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID,'Request denied! Not admin');
                 break;
             case 'handle':
+                if (!server) {
+                    msg(channelID, 'Fun fact: YOU CAN\'T HAVE NICKNAMES IN DM!!!')
+                    break;
+                }
+
                 if (admin) {
                     if (args[0]) {
                         msg(channelID,`I will now be known as "${args[0]}"`);
@@ -393,12 +434,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
         }
         timeOf.lastCommand = Date.now();
-    } else if (settings.servers[serverID].autoCompliment.targets.indexOf(`<@!${userID}>`) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
+    } else if (server && settings.servers[serverID].autoCompliment.targets.indexOf(`<@!${userID}>`) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
         bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
         msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
     }
 
-    if (typeof settings.servers[serverID].autoShit == 'string' && bot.servers[serverID].members[userID].roles.indexOf(settings.servers[serverID].autoShit) != -1) emojiResponse('💩');
+    if (server && typeof settings.servers[serverID].autoShit == 'string' && bot.servers[serverID].members[userID].roles.indexOf(settings.servers[serverID].autoShit) != -1) emojiResponse('💩');
 
     if (userID == bot.id && typeof evt.d.embeds[0] != 'undefined') {
         if (typeof evt.d.embeds[0].footer != 'undefined' && evt.d.embeds[0].footer.text == 'Vote generated by your\'s truly') {
