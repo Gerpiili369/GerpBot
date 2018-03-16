@@ -350,8 +350,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (admin) {
                     switch (args[0]) {
                         case 'set':
-                            args[1] = snowmaker(args[1]);
                             if (args[1] != undefined) {
+                                args[1] = snowmaker(args[1]);
                                 settings.servers[serverID].autoShit = args[1];
                                 msg(channelID,`<@&${args[1]}> has been chosen to be shit`);
                             } else {
