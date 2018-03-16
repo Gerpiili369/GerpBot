@@ -40,8 +40,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     else if (bot.directMessages[channelID]) server = false;
     else return;
 
-
-    if ((message.substring(0, 21) == `<@${bot.id}>` || message.substring(0,22) == `<@!${bot.id}>`) && userID != bot.id) {
+    if (snowmaker(message.split(' ')[0]) == bot.id && userID != bot.id) {
         bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
 
         let admin = false;
@@ -52,13 +51,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             });
         }
 
-        if (message.substring(2,3) == '!') {
-            var args = message.substring(23).split(' ');
-        } else {
-            var args = message.substring(22).split(' ');
-        }
-        var cmd = args[0];
-        args = args.splice(1);
+        var args = message.split(' ');
+        var cmd = args[1];
+        args = args.splice(2);
 
         switch (cmd) {
             case 'help':
@@ -139,11 +134,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'user':
                 if (args[0]) {
-                    if (args[0].substring(2,3) == '!') {
-                        args[0] = args[0].substring(3,21);
-                    } else {
-                        args[0] = args[0].substring(2,20);
-                    }
+                    args[0] = snowmaker(args[0]);
 
                     if (!bot.users[args[0]]) {
                         msg(channelID, 'User not found!');
@@ -359,8 +350,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (admin) {
                     switch (args[0]) {
                         case 'set':
-                            if (args[1] != undefined && args[1].length === 22) {
-                                args[1] = args[1].substring(3,21);
+                            args[1] = snowmaker(args[1]);
+                            if (args[1] != undefined) {
                                 settings.servers[serverID].autoShit = args[1];
                                 msg(channelID,`<@&${args[1]}> has been chosen to be shit`);
                             } else {
@@ -519,6 +510,19 @@ function calculateUptime(start,end = Date.now()) {
  */
 function sfToDate(id) {
     return new Date(id / Math.pow(2,22) + 1420070400000);
+}
+
+/**
+ * @arg {String} input
+ * @returns {Snowflake}
+*/
+function snowmaker(input) {
+    let sf = [];
+
+    input = input.split(' ').join('').split('');
+    input.forEach((v,i,a) => {if (!isNaN(Number(v))) sf.push(v);});
+
+    return sf.join('');
 }
 
 function afterLogin() {
