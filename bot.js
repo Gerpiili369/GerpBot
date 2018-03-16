@@ -98,7 +98,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 let ie = {
                     title: `Information about "${bot.servers[serverID].name}"`,
-                    description: `**Created by:** <@!${bot.servers[serverID].owner_id}>\n` +
+                    description: `**Created by:** <@${bot.servers[serverID].owner_id}>\n` +
                         `**Creation date:** \`${sfToDate(serverID)}\`\n` +
                         `**Age:** \`` +
                         `${(si.age.y > 0) ? `${si.age.y} year(s), ` : ''}` +
@@ -149,7 +149,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                     let ue = {
                         title: `Information about "${bot.users[ui.id].username}#${bot.users[ui.id].discriminator}"`,
-                        description: `**Also known as:** "<@!${ui.id}>"\n` +
+                        description: `**Also known as:** "<@${ui.id}>"\n` +
                             `**User created:** \`${sfToDate(ui.id)}\`\n` +
                             `**Age:** \`` +
                             `${(ui.age.y > 0) ? `${ui.age.y} year(s), ` : ''}` +
@@ -209,13 +209,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 msg(channelID, `Here it is: \`${Math.PI}...\``);
                 break;
             case 'nerfThis':
-                msg(channelID,'<@!305716128615759873> was the sole victim');
+                msg(channelID,'<@305716128615759873> was the sole victim');
                 break;
             case 'echo':
                 msg(channelID,args.join(' '));
                 break;
             case 'getGerp':
-                msg(channelID,'<@!217953472715292672>');
+                msg(channelID,'<@217953472715292672>');
                 break;
             case 'uptime':
                 if (typeof timeOf[args[0]] != 'undefined') {
@@ -290,7 +290,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 switch (args[0]) {
                     case 'sample':
-                        msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
+                        msg(channelID,`<@${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
                         break;
                     case 'on':
                         if (admin) {
@@ -427,7 +427,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         timeOf.lastCommand = Date.now();
     } else if (server && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
         bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
-        msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
+        msg(channelID,`<@${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
     }
 
     if (server && typeof settings.servers[serverID].autoShit == 'string' && bot.servers[serverID].members[userID].roles.indexOf(settings.servers[serverID].autoShit) != -1) emojiResponse('💩');
