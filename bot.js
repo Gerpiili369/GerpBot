@@ -608,6 +608,10 @@ function afterLogin() {
             }
         },
         newRound: (timeout = Math.floor(Math.random() * (10000 - 5000) + 5000)) => {
+            for (var player in settings.ile.players) {
+                settings.ile.players[player].checkIn = false;
+            }
+            settings.ile.gameState = 'waiting';
             settings.ile.end = Math.floor((Date.now()+timeout)/1000)*1000;
             settings.ile.sendEndtime();
         }
@@ -661,10 +665,7 @@ function startLoops() {
                 for (var player in settings.ile.players) {
                     if (settings.ile.players[player].joined) activePlayers = true;
                 }
-                if (activePlayers) {
-                    settings.ile.gameState = 'waiting';
-                    settings.ile.newRound();
-                }
+                if (activePlayers) settings.ile.newRound();
             }
         }
 
