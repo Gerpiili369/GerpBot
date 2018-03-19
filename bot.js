@@ -630,37 +630,37 @@ function startLoops() {
 
     setInterval(() => {
         if (online && typeof settings.ile != 'undefined') {
-            if (settings.ile.gameState == 'waiting' && Math.floor(Date.now()) > settings.ile.end) {
-                for (var player in settings.ile.players) {
-                    if (settings.ile.players[player].joined === true) {
-                        settings.ile.players[player].status = 'on time';
-                        msg(player, 'It is time');
+            if (settings.ile.gameState != 'unactive') {
+                if (settings.ile.gameState == 'waiting' && Math.floor(Date.now()) > settings.ile.end) {
+                    for (var player in settings.ile.players) {
+                        if (settings.ile.players[player].joined === true) {
+                            settings.ile.players[player].status = 'on time';
+                            msg(player, 'It is time');
+                        }
                     }
+                    settings.ile.gameState = 'lateWait';
                 }
-                settings.ile.gameState = 'lateWait';
-            }
 
-            if (settings.ile.gameState == 'lateWait' && Math.floor(Date.now()) > settings.ile.end + 5000) {
-                for (var player in settings.ile.players) {
-                    if (settings.ile.players[player].joined === true && !settings.ile.players[player].checkIn) {
-                        settings.ile.players[player].status = 'late';
-                        msg(player, 'You are late');
+                if (settings.ile.gameState == 'lateWait' && Math.floor(Date.now()) > settings.ile.end + 5000) {
+                    for (var player in settings.ile.players) {
+                        if (settings.ile.players[player].joined === true && !settings.ile.players[player].checkIn) {
+                            settings.ile.players[player].status = 'late';
+                            msg(player, 'You are late');
+                        }
                     }
+                    settings.ile.gameState = 'missingWait';
                 }
-                settings.ile.gameState = 'missingWait';
-            }
 
-            if (settings.ile.gameState == 'missingWait' && Math.floor(Date.now()) > settings.ile.end + 10000) {
-                for (var player in settings.ile.players) {
-                    if (settings.ile.players[player].joined === true && !settings.ile.players[player].checkIn) {
-                        settings.ile.players[player].status = 'missed';
-                        msg(player, 'You have missed the thing');
+                if (settings.ile.gameState == 'missingWait' && Math.floor(Date.now()) > settings.ile.end + 10000) {
+                    for (var player in settings.ile.players) {
+                        if (settings.ile.players[player].joined === true && !settings.ile.players[player].checkIn) {
+                            settings.ile.players[player].status = 'missed';
+                            msg(player, 'You have missed the thing');
+                        }
                     }
+                    settings.ile.gameState = 'unactive';
                 }
-                settings.ile.gameState = 'unactive';
-            }
-
-            if (settings.ile.gameState == 'unactive') {
+            } else {
                 let activePlayers = false;
                 for (var player in settings.ile.players) {
                     if (settings.ile.players[player].joined) activePlayers = true;
