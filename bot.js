@@ -282,6 +282,47 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID,'@everyone',ve);
                 }
                 break;
+            case 'ile':
+                switch (args[0]) {
+                    case 'join':
+                        if (typeof settings.ile.players[userID] == 'undefined') {
+                            settings.ile.players[userID] = {
+                                joined: false,
+                                checkIn: false,
+                                status: null,
+                                delay: {}
+                            }
+                        }
+
+                        if (!settings.ile.players[userID].joined) {
+                            settings.ile.players[userID].joined = true;
+                            msg(channelID, 'Welcome TO THE GAME!');
+                        } else {
+                            msg(channelID, 'Already here ya\'know.')
+                        }
+                        break;
+                    case 'leave':
+                        if (settings.ile.players[userID] && settings.ile.players[userID].joined) {
+                            settings.ile.players[userID].joined = false;
+                            msg(channelID, 'Freedom, I guess.');
+                        } else {
+                            msg(channelID, 'Nothing to leave!')
+                        }
+                        break;
+                    case 'here':
+                        if (settings.ile.players[userID] && settings.ile.players[userID].joined && Date.now() > settings.ile.end && settings.ile.players[userID].status != 'missed') {
+                            settings.ile.players[userID].checkIn = true;
+                            settings.ile.players[userID].delay = calculateUptime(settings.ile.end);
+                            msg(channelID, `You have checked in with the status: ${settings.ile.players[userID].status}, and with the time of ${settings.ile.players[userID].delay.h}:${settings.ile.players[userID].delay.min}:${settings.ile.players[userID].delay.s}`);
+                        } else {
+                            msg(channelID, 'That is cheating!');
+                        }
+                        break;
+                    default:
+                        msg(channelID, 'Something is missing...');
+                        break;
+                }
+                break;
             case 'autoCompliment':
                 if (!server) {
                     msg(channelID, '**Feature not intended to be used in DM. Sending sample:**');
@@ -555,6 +596,22 @@ function afterLogin() {
         online = true;
         updateSettings();
     });
+
+    if (typeof settings.ile == 'undefined') settings.ile = {
+        end: undefined,
+        players: {},
+        gameState: 'unactive', // unactive, waiting, lateWait, missingWait
+        sendEndtime: (channelID = false) => {
+            if (channelID) msg(channelID, `Next checkpoint: ${settings.ile.end}`)
+            else for (var player in settings.ile.players) {
+                if (settings.ile.players[player].joined) msg(player, `Next checkpoint: ${new Date(settings.ile.end)}`);
+            }
+        },
+        newRound: (timeout = Math.floor(Math.random() * (10000 - 5000) + 5000)) => {
+            settings.ile.end = Math.floor((Date.now()+timeout)/1000)*1000;
+            settings.ile.sendEndtime();
+        }
+    }
 }
 
 function startLoops() {
@@ -566,6 +623,52 @@ function startLoops() {
             }
         });
     }, 60000);
+
+    setInterval(() => {
+        if (online && typeof settings.ile != 'undefined') {
+            if (settings.ile.gameState == 'waiting' && Math.floor(Date.now()) > settings.ile.end) {
+                for (var player in settings.ile.players) {
+                    if (settings.ile.players[player].joined === true) {
+                        settings.ile.players[player].status = 'on time';
+                        msg(player, 'It is time');
+                    }
+                }
+                settings.ile.gameState = 'lateWait';
+            }
+
+            if (settings.ile.gameState == 'lateWait' && Math.floor(Date.now()) > settings.ile.end + 5000) {
+                for (var player in settings.ile.players) {
+                    if (settings.ile.players[player].joined === true && !settings.ile.players[player].checkIn) {
+                        settings.ile.players[player].status = 'late';
+                        msg(player, 'You are late');
+                    }
+                }
+                settings.ile.gameState = 'missingWait';
+            }
+
+            if (settings.ile.gameState == 'missingWait' && Math.floor(Date.now()) > settings.ile.end + 10000) {
+                for (var player in settings.ile.players) {
+                    if (settings.ile.players[player].joined === true && !settings.ile.players[player].checkIn) {
+                        settings.ile.players[player].status = 'missed';
+                        msg(player, 'You have missed the thing');
+                    }
+                }
+                settings.ile.gameState = 'unactive';
+            }
+
+            if (settings.ile.gameState == 'unactive') {
+                let activePlayers = false;
+                for (var player in settings.ile.players) {
+                    if (settings.ile.players[player].joined) activePlayers = true;
+                }
+                if (activePlayers) {
+                    settings.ile.gameState = 'waiting';
+                    settings.ile.newRound();
+                }
+            }
+        }
+
+    }, 1000);
 
     let colors = ['#ff0000','#ff6a00','#ffff00','#00ff00','#0000ff','#ff00ff'];
     let i = 0;
