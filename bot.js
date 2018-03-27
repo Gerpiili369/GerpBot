@@ -668,7 +668,6 @@ function startLoops() {
                 if (activePlayers) settings.ile.newRound();
             }
         }
-
     }, 1000);
 
     let colors = ['#ff0000','#ff6a00','#ffff00','#00ff00','#0000ff','#ff00ff'];
