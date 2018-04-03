@@ -11,7 +11,7 @@ logger.add(logger.transports.Console, {
 });
 logger.level = 'debug';
 
-const objectLib = getJSON(['help','compliments','defaultRes','games'],'objectLib/');
+const objectLib = getJSON(['help','compliments','defaultRes','games','answers'],'objectLib/');
 const bot = new Discord.Client({
     token: auth.token,
     autorun: true
@@ -232,6 +232,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else {
                     msg(channelID,'Missing arguments. Usage: `@GerpBot uptime [ startUp | connection | lastCommand ]`.');
                 }
+                break;
+            case 'ask':
+                if (args[0]) {
+                    delete args;
+                    msg(channelID,objectLib.answers[Math.floor(Math.random()*objectLib.answers.length)]);
+                } else msg(channelID, 'You didn\'t ask anything...');
                 break;
             case 'vote':
                 let options = [];
