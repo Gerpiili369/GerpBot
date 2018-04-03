@@ -2,6 +2,7 @@ const Discord = require('discord.io');
 const logger = require('winston');
 const auth = require('./auth.json');
 const fs = require('fs');
+const io = require('socket.io-client')
 
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
@@ -21,6 +22,7 @@ var settings = getJSON('settings');
 var timeOf = {
     startUp: Date.now()
 };
+var kps = {};
 
 if (settings.servers === undefined) settings.servers = {};
 
@@ -280,6 +282,205 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 if (!ve.error) {
                     msg(channelID,'@everyone',ve);
+                }
+                break;
+            case 'kps':
+                let url = 'http://plssave.help/kps';
+
+                if (typeof kps[userID] == 'undefined') {
+                    kps[userID] = {};
+                    kps[userID].gameActive = false;
+                    kps[userID].mem = {player: {theme: 'defeault', selection: null, result: null}, opponent: null};
+                    kps[userID].socket = io('http://plssave.help', {path: '/socket2'});
+
+                    kps[userID].socket.on('connect', () => {
+                        kps[userID].socket.emit('setName', `${bot.users[userID].username}#${bot.users[userID].discriminator}`);
+                    });
+
+                    kps[userID].socket.on('loginSucc', player => {
+                        kps[userID].mem.player = player;
+                    });
+
+                    kps[userID].socket.on('loginFail', data => msg(userID,'',kpsEmbed(data,0)));
+
+                    kps[userID].socket.on('startGame', data => {
+                        kps[userID].gameActive = true;
+                        kps[userID].opponent = data;
+                        msg(userID,'',kpsEmbed(data,4));
+                    });
+
+                    kps[userID].socket.on('toMainMenu', data => {
+                        kps[userID].gameActive = false;
+                        msg(userID,'',kpsEmbed(data,0));
+                    });
+
+                    kps[userID].socket.on('msgFromServer', data => msg(userID,'',kpsEmbed(data,0)));
+
+                    kps[userID].socket.on('result', (player, opponent) => {
+                        kps[userID].mem.player = player;
+                        kps[userID].mem.opponent = opponent;
+
+                        msg(userID,'',kpsEmbed('Oppnent\'s choice',5));
+                    });
+                }
+
+                if (kps[userID].socket.connected) kpsEmit(args);
+                else {
+                    kps[userID].socket.on('connect', () => kpsEmit(args));
+
+                    setTimeout(() => {
+                        if (!kps[userID].socket.connected) msg(userID,'Could not connect');
+                    }, 10000);
+                }
+
+                /**
+                 * @arg {String[]} args
+                 */
+                function kpsEmit(args) {
+                    let data = args[0];
+                    switch (data) {
+                        case 'play':
+                            data = 'other';
+                        case 'ai':
+                        case 'friend':
+                            if (!kps[userID].gameActive) {
+                                kps[userID].socket.emit('setMode', data, args[1]);
+                            } else {
+                                msg(userID,'This command is not available while in a game. Use `kps quit` to quit');
+                            }
+                            break;
+                        case 'rock':
+                        case 'paper':
+                        case 'scissors':
+                            if (!kps[userID].gameActive) kps[userID].socket.emit('setMode', 'ai');
+                            kps[userID].socket.emit('choose', data);
+                            break;
+                        case 'classic':
+                            kps[userID].socket.emit('setTheme', 'defeault');
+                            kps[userID].mem.player.theme = 'defeault';
+                            msg(userID,'',kpsEmbed('Theme updated',3));
+                            break;
+                        case 'horror':
+                            kps[userID].socket.emit('setTheme', data);
+                            kps[userID].mem.player.theme = data;
+                            msg(userID,'',kpsEmbed('Theme updated',3));
+                            break;
+                        case 'space':
+                            kps[userID].socket.emit('setTheme', 'fuckrulla');
+                            kps[userID].mem.player.theme = 'fuckrulla';
+                            msg(userID,'',kpsEmbed('Theme updated',3));
+                            break;
+                        case 'hand':
+                            kps[userID].socket.emit('setTheme', data);
+                            kps[userID].mem.player.theme = data;
+                            msg(userID,'',kpsEmbed('Theme updated',3));
+                            break;
+                        case 'quit':
+                            msg(userID,'',kpsEmbed('You left',0));
+                            kps[userID].socket.disconnect();
+                            kps[userID] = undefined;
+                            break;
+                        default:
+                            msg(userID,'Starting a game: `play, ai or friend <friendname>`\nChoosing: `rock, paper or scissors`\nTheme selection: `classic, horror, space and hand`\nTo quit: `quit`');
+                    }
+                }
+
+                /**
+                 * @arg {String} msg
+                 * @arg {Number} type
+                 * @return {Embed}
+                 */
+                function kpsEmbed(msg, type) {
+                    let player = kps[userID].mem.player;
+                    let embed = {
+                        title: msg,
+                        author: {
+                            name: 'KPS',
+                            url: 'http://plssave.help/PlayKPS'
+                        },
+                        fields: []
+                    };
+
+                    switch (player.theme) {
+                        case 'defeault':
+                            embed.author.icon_url = `${url}/img/icon.png`;
+                            embed.color = 3569575;
+                            break;
+                        case 'horror':
+                            embed.author.icon_url = `${url}/img/icon4.png`;
+                            embed.color = 7667712;
+                            break;
+                        case 'fuckrulla':
+                            embed.author.icon_url = `${url}/img/icon3.png`;
+                            embed.color = 32768;
+                            break;
+                        case 'hand':
+                            embed.author.icon_url = `${url}/img/icon2.png`;
+                            embed.color = 13027014;
+                            break;
+                    }
+
+                    switch (type) {
+                        case 5:
+                            addThumb(kps[userID].mem.opponent);
+                            addImage(false);
+                            // addScore();
+                            addFooter();
+                            break;
+                        case 4:
+                            addThumb('vs');
+                            addImage(true);
+                            addFooter()
+                            break;
+                        case 3:
+                            addThumb('vs');
+                            addImage(true);
+                            break;
+                        case 2:
+                            addThumb('vs');
+                            addFooter()
+                            break;
+                        case 1:
+                            addFooter();
+                            break;
+                    }
+
+                    return embed;
+
+                    /**
+                     * @arg {String} img
+                     */
+                    function addThumb(img) {
+                        embed.thumbnail = {url: `${url}/img/${player.theme}/${img}.png`};
+                    }
+
+                    /**
+                     * @arg {Boolean} background
+                     */
+                    function addImage(background) {
+                        if (background) {
+                            embed.image = {url: `${url}/img/${player.theme}/background${player.theme === 'defeault' ? '' : 'new'}.${player.theme === 'horror' ? 'png' : 'jpg'}`};
+                        } else {
+                            embed.image = {url: `${url}/img/${player.theme}/${player.result}.png`};
+                        }
+                    }
+
+                    function addScore() {
+                        let emojis = ['✅','⚠️','💢']
+
+                        emojis[0] = emojis[0].repeat(Math.round(player.points.wins/player.games*15));
+                        emojis[1] = emojis[1].repeat(Math.round(player.points.draws/player.games*15));
+                        emojis[2] = emojis[2].repeat(Math.round(player.points.losses/player.games*15));
+
+                        embed.fields.push({name: 'Current score:', value: emojis.join('')});
+                    }
+
+                    function addFooter() {
+                        embed.footer = {
+                            icon_url: `https://cdn.discordapp.com/avatars/${userID}/${bot.users[userID].avatar}.png`,
+                            text: `Wins: (${player.total.wins}), Draws: (${player.total.draws}), Losses: (${player.total.losses})`
+                        };
+                    }
                 }
                 break;
             case 'ile':

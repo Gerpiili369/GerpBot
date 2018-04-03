@@ -39,6 +39,9 @@
         "name": "`@GerpBot vote  <def|gold @mention> <emoji1>[=<option1>] ...`",
         "value": "Starts a vote. A really cool one"
     },{
+        "name": "`@GerpBot kps < play | ai | friend < name > | rock | paper | scissors | classic | horror | space | hand | quit >`",
+        "value": "Play KPS"
+    },{
         "name": "`@GerpBot autoCompliment < sample | on | off | add | remove | list > [ @mention ]`",
         "value": "Our little secret :3"
     },{
