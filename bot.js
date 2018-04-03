@@ -247,6 +247,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     options = args.splice(1);
                 } else if (args[0] == 'gold') {
                     ve.description = `**Let's vote for ${args[1]}'s next golden gun!**`;
+                    ve.thumbnail = {
+                        url: `https://cdn.discordapp.com/avatars/${snowmaker(args[1])}/${bot.users[snowmaker(args[1])].avatar}.png`
+                    }
                     options = args.splice(2);
                 } else {
                     msg(channelID,`${args[0]} not allowed. Use 'def' or 'gold'`);
