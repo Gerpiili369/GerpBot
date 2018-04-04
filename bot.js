@@ -676,6 +676,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         }
         timeOf.lastCommand = Date.now();
     } else {
+        if (message.indexOf('?') != -1) {
+            msg(channelID,objectLib.answers[Math.floor(Math.random()*objectLib.answers.length)]);
+        }
         if (server && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
             bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
             msg(channelID,`<@${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
