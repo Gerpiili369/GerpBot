@@ -538,6 +538,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     args[0] = 'sample'
                 }
 
+                if (args[1] != undefined) args[1] = snowmaker(args[1]);
+
                 switch (args[0]) {
                     case 'sample':
                         msg(channelID,`<@${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
@@ -555,9 +557,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         } else msg(channelID,'Request denied! Not admin');
                         break;
                     case 'list':
+                        let list = []
+                        settings.servers[serverID].autoCompliment.targets.forEach((v,i) => list[i] = `<@${v}>`)
                         msg(channelID,``,{
                             title: 'List of cool people:',
-                            description: `${settings.servers[serverID].autoCompliment.targets.join('\n')}`
+                            description: list.join('\n')
                         });
                         break;
                     case 'add':
@@ -565,9 +569,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (admin) {
                                 if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) == -1) {
                                     settings.servers[serverID].autoCompliment.targets.push(args[1]);
-                                    msg(channelID,`User ${args[1]} is now cool`);
+                                    msg(channelID,`User <@${args[1]}> is now cool`);
                                 } else {
-                                    msg(channelID,`User ${args[1]} is already cool!`);
+                                    msg(channelID,`User <@${args[1]}> is already cool!`);
                                 }
                             } else {msg(channelID,'Request denied! Not admin');}
                             break;
@@ -577,9 +581,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (admin) {
                                 if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) != -1) {
                                     settings.servers[serverID].autoCompliment.targets.splice(settings.servers[serverID].autoCompliment.targets.indexOf(args[1]), 1);
-                                    msg(channelID,`User ${args[1]} ain't cool no more!`);
+                                    msg(channelID,`User <@${args[1]}> ain't cool no more!`);
                                 } else {
-                                    msg(channelID,`User ${args[1]} was never cool to begin with!`);
+                                    msg(channelID,`User <@${args[1]}> was never cool to begin with!`);
                                 }
                             } else {msg(channelID,'Request denied! Not admin');}
                             break;
