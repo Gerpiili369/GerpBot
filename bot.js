@@ -532,6 +532,18 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         break;
                 }
                 break;
+            case 'autoAnswer':
+                if (server) {
+                    if (settings.servers[serverID].disableAnswers) {
+                        settings.servers[serverID].disableAnswers = false;
+                        msg(channelID,'Nothing can stop me now!');
+                    } else {
+                        settings.servers[serverID].disableAnswers = true;
+                        msg(channelID,'You weren\'t asking me? Well, ok then.');
+                    }
+                    updateSettings()
+                } else msg(channelID,'You can\'t escape me here!')
+                break;
             case 'autoCompliment':
                 if (!server) {
                     msg(channelID, '**Feature not intended to be used in DM. Sending sample:**');
@@ -680,7 +692,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         }
         timeOf.lastCommand = Date.now();
     } else {
-        if (message.indexOf('?') != -1) {
+        if (message.indexOf('?') != -1 && (!server || !settings.servers[serverID].disableAnswers)) {
             msg(channelID,objectLib.answers[Math.floor(Math.random()*objectLib.answers.length)]);
         }
         if (server && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
