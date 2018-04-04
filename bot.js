@@ -573,7 +573,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         settings.servers[serverID].autoCompliment.targets.forEach((v,i) => list[i] = `<@${v}>`)
                         msg(channelID,``,{
                             title: 'List of cool people:',
-                            description: list.join('\n')
+                            description: list.join('\n'),
+                            color: bot.servers[serverID].members[userID].color
                         });
                         break;
                     case 'add':
