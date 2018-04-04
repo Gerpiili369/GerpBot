@@ -235,7 +235,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'ask':
                 if (args[0]) {
-                    delete args;
                     msg(channelID,objectLib.answers[Math.floor(Math.random()*objectLib.answers.length)]);
                 } else msg(channelID, 'You didn\'t ask anything...');
                 break;
