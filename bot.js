@@ -688,14 +688,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID,'Request denied! Not admin');
                 break;
             default:
-                msg(channelID,objectLib.defaultRes[Math.floor(Math.random()*objectLib.defaultRes.length)]);
+                if (message.indexOf('?') != -1 && (!server || !settings.servers[serverID].disableAnswers)) {
+                    msg(channelID,objectLib.answers[Math.floor(Math.random()*objectLib.answers.length)]);
+                } else {
+                    msg(channelID,objectLib.defaultRes[Math.floor(Math.random()*objectLib.defaultRes.length)]);
+                }
                 break;
         }
         timeOf.lastCommand = Date.now();
     } else {
-        if (message.indexOf('?') != -1 && (!server || !settings.servers[serverID].disableAnswers)) {
-            msg(channelID,objectLib.answers[Math.floor(Math.random()*objectLib.answers.length)]);
-        }
         if (server && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
             bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
             msg(channelID,`<@${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
