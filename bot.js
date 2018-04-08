@@ -389,7 +389,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             kps[userID] = undefined;
                             break;
                         default:
-                            msg(userID,'Starting a game: `play | ai | friend <friendname>`\nChoosing: `rock | paper | scissors`\nTheme selection: `classic | horror | space | hand`\nTo quit: `quit`');
+                            msg(userID,'Starting a game: `play | ai | friend <friendname>`\nChoosing: `rock | paper | scissors`\nTheme selection: `classic | horror | space | hand`\nTo quit: `quit`\nDon\'t forget the @GerpBot kps');
                     }
                 }
 
