@@ -6,6 +6,7 @@ const
     io = require('socket.io-client'),
 
     snowTime = require('./scripts/snowTime.js'),
+    Ile = require('./scripts/ile.js');
 
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
@@ -18,7 +19,7 @@ const
     calculateUptime = snowTime.calculateUptime,
     sfToDate = snowTime.sfToDate,
     snowmaker = snowTime.snowmaker
-    objectLib = getJSON(['help','compliments','defaultRes','games','answers'],'objectLib/'),
+    objectLib = getJSON(['help','compliments','defaultRes','games','answers','ileAcronym'],'objectLib/'),
     bot = new Discord.Client({
         token: auth.token,
         autorun: true
@@ -31,10 +32,12 @@ var
         startUp: Date.now()
     },
     kps = {};
+    ile = new Ile(getJSON('ile'),objectLib.ileAcronym);
 
 if (settings.servers === undefined) settings.servers = {};
 
 startLoops();
+startIle();
 
 bot.on('ready', evt => {
     timeOf.connection = Date.now();
@@ -503,41 +506,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'ile':
                 switch (args[0]) {
                     case 'join':
-                        if (typeof settings.ile.players[userID] == 'undefined') {
-                            settings.ile.players[userID] = {
-                                joined: false,
-                                checkIn: false,
-                                status: null,
-                                delay: {}
-                            }
-                        }
-
-                        if (!settings.ile.players[userID].joined) {
-                            settings.ile.players[userID].joined = true;
-                            msg(channelID, 'Welcome TO THE GAME!');
-                        } else {
-                            msg(channelID, 'Already here ya\'know.')
-                        }
+                        msg(channelID,ile.join(userID));
                         break;
                     case 'leave':
-                        if (settings.ile.players[userID] && settings.ile.players[userID].joined) {
-                            settings.ile.players[userID].joined = false;
-                            msg(channelID, 'Freedom, I guess.');
-                        } else {
-                            msg(channelID, 'Nothing to leave!')
-                        }
+                        msg(channelID,ile.leave(userID));
                         break;
                     case 'here':
-                        if (settings.ile.players[userID] && settings.ile.players[userID].joined && Date.now() > settings.ile.end && settings.ile.players[userID].status != 'missed') {
-                            settings.ile.players[userID].checkIn = true;
-                            settings.ile.players[userID].delay = calculateUptime(settings.ile.end);
-                            msg(channelID, `You have checked in with the status: ${settings.ile.players[userID].status}, and with the time of ${settings.ile.players[userID].delay.h}:${settings.ile.players[userID].delay.min}:${settings.ile.players[userID].delay.s}`);
-                        } else {
-                            msg(channelID, 'That is cheating!');
-                        }
+                        msg(channelID,ile.attend(userID));
                         break;
                     default:
-                        msg(channelID, 'Something is missing...');
+                        msg(channelID,`${ile.getAcronym()}: command structure: \`ile join | leave | here \``);
                         break;
                 }
                 break;
@@ -793,26 +771,6 @@ function afterLogin() {
         online = true;
         updateSettings();
     });
-
-    if (typeof settings.ile == 'undefined') settings.ile = {
-        end: undefined,
-        players: {},
-        gameState: 'unactive', // unactive, waiting, lateWait, missingWait
-        sendEndtime: (channelID = false) => {
-            if (channelID) msg(channelID, `Next checkpoint: ${settings.ile.end}`)
-            else for (var player in settings.ile.players) {
-                if (settings.ile.players[player].joined) msg(player, `Next checkpoint: ${new Date(settings.ile.end)}`);
-            }
-        },
-        newRound: (timeout = Math.floor(Math.random() * (10000 - 5000) + 5000)) => {
-            for (var player in settings.ile.players) {
-                settings.ile.players[player].checkIn = false;
-            }
-            settings.ile.gameState = 'waiting';
-            settings.ile.end = Math.floor((Date.now()+timeout)/1000)*1000;
-            settings.ile.sendEndtime();
-        }
-    }
 }
 
 function startLoops() {
@@ -824,48 +782,6 @@ function startLoops() {
             }
         });
     }, 60000);
-
-    setInterval(() => {
-        if (online && typeof settings.ile != 'undefined') {
-            if (settings.ile.gameState != 'unactive') {
-                if (settings.ile.gameState == 'waiting' && Math.floor(Date.now()) > settings.ile.end) {
-                    for (var player in settings.ile.players) {
-                        if (settings.ile.players[player].joined === true) {
-                            settings.ile.players[player].status = 'on time';
-                            msg(player, 'It is time');
-                        }
-                    }
-                    settings.ile.gameState = 'lateWait';
-                }
-
-                if (settings.ile.gameState == 'lateWait' && Math.floor(Date.now()) > settings.ile.end + 5000) {
-                    for (var player in settings.ile.players) {
-                        if (settings.ile.players[player].joined === true && !settings.ile.players[player].checkIn) {
-                            settings.ile.players[player].status = 'late';
-                            msg(player, 'You are late');
-                        }
-                    }
-                    settings.ile.gameState = 'missingWait';
-                }
-
-                if (settings.ile.gameState == 'missingWait' && Math.floor(Date.now()) > settings.ile.end + 10000) {
-                    for (var player in settings.ile.players) {
-                        if (settings.ile.players[player].joined === true && !settings.ile.players[player].checkIn) {
-                            settings.ile.players[player].status = 'missed';
-                            msg(player, 'You have missed the thing');
-                        }
-                    }
-                    settings.ile.gameState = 'unactive';
-                }
-            } else {
-                let activePlayers = false;
-                for (var player in settings.ile.players) {
-                    if (settings.ile.players[player].joined) activePlayers = true;
-                }
-                if (activePlayers) settings.ile.newRound();
-            }
-        }
-    }, 1000);
 
     let colors = ['#ff0000','#ff6a00','#ffff00','#00ff00','#0000ff','#ff00ff'];
     let i = 0;
@@ -895,6 +811,19 @@ function startLoops() {
         }
     },2000);
 
+}
+
+function startIle() {
+    ile.start();
+    ile.on('msg', (channel, message) => {
+        if (online) msg(channel, message);
+        else logger.debug(message);
+    });
+    ile.on('save', data => {
+        fs.writeFile('ile.json', JSON.stringify(data, null, 4), err => {
+            if (err) logger.error(err,'');
+        });
+    });
 }
 
 /**
