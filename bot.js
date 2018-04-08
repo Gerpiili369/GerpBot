@@ -4,6 +4,7 @@ const auth = require('./auth.json');
 const fs = require('fs');
 const io = require('socket.io-client')
 
+const snowTime = require('./scripts/snowTime.js');
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
     colorize: true,
@@ -11,6 +12,10 @@ logger.add(logger.transports.Console, {
 });
 logger.level = 'debug';
 
+const
+    calculateUptime = snowTime.calculateUptime,
+    sfToDate = snowTime.sfToDate,
+    snowmaker = snowTime.snowmaker
 const objectLib = getJSON(['help','compliments','defaultRes','games','answers'],'objectLib/');
 const bot = new Discord.Client({
     token: auth.token,
@@ -749,50 +754,6 @@ function msg(channel,msg,embed) {
         message: msg,
         embed: embed
     }, err => {if (err) logger.error(err,'');});
-}
-
-/**
- * @arg {Date} start
- * @arg {Date} [end]
- * @returns {Uptime}
- */
-function calculateUptime(start,end = Date.now()) {
-    let uptime = {};
-
-    uptime.ms = end - start;
-    uptime.s = Math.floor(uptime.ms / 1000);
-    uptime.ms -= uptime.s * 1000;
-    uptime.min = Math.floor(uptime.s / 60);
-    uptime.s -= uptime.min * 60;
-    uptime.h = Math.floor(uptime.min / 60);
-    uptime.min -= uptime.h * 60;
-    uptime.d = Math.floor(uptime.h / 24);
-    uptime.h -= uptime.d * 24;
-    uptime.y = Math.floor(uptime.d / 365);
-    uptime.d -= uptime.y * 365;
-
-    return uptime;
-}
-
-/**
- * @arg {Snowflake} id
- * @returns {Date}
- */
-function sfToDate(id) {
-    return new Date(id / Math.pow(2,22) + 1420070400000);
-}
-
-/**
- * @arg {String} input
- * @returns {Snowflake}
-*/
-function snowmaker(input) {
-    let sf = [];
-
-    input = input.split(' ').join('').split('');
-    input.forEach((v,i,a) => {if (!isNaN(Number(v))) sf.push(v);});
-
-    return sf.join('');
 }
 
 function afterLogin() {
