@@ -47,7 +47,7 @@
         },
         {
             "name": "`@GerpBot ask < question >`",
-            "value": "Ask anything!"
+            "value": "Ask anything! Even works without the `ask` -part, if `?` is used instead: `@GerpBot [<question>] ? [<question>]`"
         },
         {
             "name": "`@GerpBot vote  <def|gold @mention> <emoji1>[=<option1>] ...`",
