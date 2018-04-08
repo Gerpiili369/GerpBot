@@ -230,7 +230,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         `${uptime.s} second(s)\``
                     );
                 } else {
-                    msg(channelID,'Missing arguments. Usage: `@GerpBot uptime [ startUp | connection | lastCommand ]`.');
+                    msg(channelID,'Missing arguments. Usage: `@GerpBot uptime startUp | connection | lastCommand`.');
                 }
                 break;
             case 'ask':
@@ -389,7 +389,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             kps[userID] = undefined;
                             break;
                         default:
-                            msg(userID,'Starting a game: `play, ai or friend <friendname>`\nChoosing: `rock, paper or scissors`\nTheme selection: `classic, horror, space and hand`\nTo quit: `quit`');
+                            msg(userID,'Starting a game: `play | ai | friend <friendname>`\nChoosing: `rock | paper | scissors`\nTheme selection: `classic | horror | space | hand`\nTo quit: `quit`');
                     }
                 }
 
@@ -602,7 +602,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             break;
                         }
                     default:
-                        msg(channelID,'Missing arguments. Usage: `@GerpBot autoCompliment < sample | on | off | add | remove | list > [ @mention ]`.');
+                        msg(channelID,'Missing arguments. Usage: `@GerpBot autoCompliment sample | on | off | add <@mention> | remove <@mention> | list`.');
                         break;
                 }
                 updateSettings();
@@ -630,7 +630,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             msg(channelID,`Shit has been cleaned up...`);
                             break;
                         default:
-                            msg(channelID,'Missing arguments. Usage: `@GerpBot autoShit < set [ @role ] | clean >`.');
+                            msg(channelID,'Missing arguments. Usage: `@GerpBot autoShit set <@role> | clean`.');
                             break;
                     }
                     updateSettings();
