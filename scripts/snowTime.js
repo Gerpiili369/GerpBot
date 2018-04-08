@@ -43,3 +43,14 @@ module.exports = {
         return sf.join('');
     }
 }
+
+/**
+* @typedef {String} Snowflake
+* @typedef {Object} Uptime
+* @property {number} ms
+* @property {number} s
+* @property {number} min
+* @property {number} h
+* @property {number} day
+* @property {number} year
+ */
