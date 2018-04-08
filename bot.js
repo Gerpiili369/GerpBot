@@ -1,10 +1,12 @@
-const Discord = require('discord.io');
-const logger = require('winston');
-const auth = require('./auth.json');
-const fs = require('fs');
-const io = require('socket.io-client')
+const
+    Discord = require('discord.io'),
+    logger = require('winston'),
+    auth = require('./auth.json'),
+    fs = require('fs'),
+    io = require('socket.io-client'),
 
-const snowTime = require('./scripts/snowTime.js');
+    snowTime = require('./scripts/snowTime.js'),
+
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
     colorize: true,
@@ -16,18 +18,19 @@ const
     calculateUptime = snowTime.calculateUptime,
     sfToDate = snowTime.sfToDate,
     snowmaker = snowTime.snowmaker
-const objectLib = getJSON(['help','compliments','defaultRes','games','answers'],'objectLib/');
-const bot = new Discord.Client({
-    token: auth.token,
-    autorun: true
-});
+    objectLib = getJSON(['help','compliments','defaultRes','games','answers'],'objectLib/'),
+    bot = new Discord.Client({
+        token: auth.token,
+        autorun: true
+    });
 
-var online = false;
-var settings = getJSON('settings');
-var timeOf = {
-    startUp: Date.now()
-};
-var kps = {};
+var
+    online = false,
+    settings = getJSON('settings'),
+    timeOf = {
+        startUp: Date.now()
+    },
+    kps = {};
 
 if (settings.servers === undefined) settings.servers = {};
 
