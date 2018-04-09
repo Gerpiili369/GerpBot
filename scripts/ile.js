@@ -16,13 +16,13 @@ module.exports = class Ile extends Emitter {
             this.end = undefined;
             this.time = {
                 between: {
-                    min: 20000,
-                    max: 20000
+                    min: 3600000,
+                    max: 18000000
                 },
                 before: {
-                    late: 5000,
-                    missed: 10000,
-                    newRound: 15000
+                    late: 180000,
+                    missed: 540000,
+                    newRound: 555000
                 }
             }
             this.players = {};
