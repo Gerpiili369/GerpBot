@@ -33,6 +33,7 @@ module.exports = class Ile extends Emitter {
 
     start() {
         if (this.activePlayers()) this.startRoundTimers();
+        else this.active = false;
     }
 
     startRoundTimers() {
