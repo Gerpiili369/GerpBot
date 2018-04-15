@@ -804,7 +804,7 @@ function startLoops() {
                             a[i] = help;
                         });
                         editNick(server,newName.join(''));
-                    } else if (typeof bot.servers[server].members[bot.id].nick != 'undefined' && bot.servers[server].members[bot.id].nick != null) editNick(server,settings.servers[server].nick);
+                    } else if (typeof bot.servers[server].members[bot.id].nick != 'undefined' && bot.servers[server].members[bot.id].nick != null && bot.servers[server].members[bot.id].nick != settings.servers[server].nick) editNick(server,settings.servers[server].nick);
                 }
             }
             i++;
