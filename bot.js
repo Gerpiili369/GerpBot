@@ -240,7 +240,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         `${uptime.s} second(s)\``
                     );
                 } else {
-                    msg(channelID,'Missing arguments. Usage: `@GerpBot uptime startUp | connection | lastCommand`.');
+                    msg(channelID,`Missing arguments. Usage: \`@${bot.username} uptime startUp | connection | lastCommand\`.`);
                 }
                 break;
             case 'ask':
@@ -274,7 +274,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 ve.description += `\n*requested by:\n<@${userID}>*`;
 
                 if (options.length < 1) {
-                    msg(channelID,'Options were not included! Example: `@GerpBot vote def :thinking:=genius`');
+                    msg(channelID,`Options were not included! Example: \`@${bot.username} vote def :thinking:=genius\``);
                     break;
                 }
                 options.forEach(v => {
@@ -293,7 +293,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             });
                         }
                     } else {
-                        msg(channelID,'Some options not defined! Example: `@GerpBot vote def :thinking:=genius`');
+                        msg(channelID,`Some options not defined! Example: \`@${bot.username} vote def :thinking:=genius\``);
                         ve.error = true;
                     }
                 });
@@ -399,7 +399,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             kps[userID] = undefined;
                             break;
                         default:
-                            msg(userID,'Starting a game: `play | ai | friend <friendname>`\nChoosing: `rock | paper | scissors`\nTheme selection: `classic | horror | space | hand`\nTo quit: `quit`\nDon\'t forget the @GerpBot kps');
+                            msg(userID,`Starting a game: \`play | ai | friend <friendname>\`\nChoosing: \`rock | paper | scissors\`\nTheme selection: \`classic | horror | space | hand\`\nTo quit: \`quit\`\nDon't forget the @${bot.username} kps`);
                     }
                 }
 
@@ -587,7 +587,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             break;
                         }
                     default:
-                        msg(channelID,'Missing arguments. Usage: `@GerpBot autoCompliment sample | on | off | add <@mention> | remove <@mention> | list`.');
+                        msg(channelID,`Missing arguments. Usage: \`@${bot.username} autoCompliment sample | on | off | add <@mention> | remove <@mention> | list\`.`);
                         break;
                 }
                 updateSettings();
@@ -615,7 +615,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             msg(channelID,`Shit has been cleaned up...`);
                             break;
                         default:
-                            msg(channelID,'Missing arguments. Usage: `@GerpBot autoShit set <@role> | clean`.');
+                            msg(channelID,`Missing arguments. Usage: \`@${bot.username} autoShit set <@role> | clean\`.`);
                             break;
                     }
                     updateSettings();
@@ -775,6 +775,10 @@ function afterLogin() {
 
 function updateHelp() {
     objectLib.help.thumbnail.url = `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`;
+    objectLib.help.fields.forEach(v => {
+        v.name = v.name.replace('GerpBot', bot.username);
+        v.value = v.value.replace('GerpBot', bot.username);
+    });
 }
 
 function startLoops() {
