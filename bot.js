@@ -112,11 +112,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     title: `Information about "${bot.servers[serverID].name}"`,
                     description: `**Created by:** <@${bot.servers[serverID].owner_id}>\n` +
                         `**Creation date:** \`${sfToDate(serverID)}\`\n` +
-                        `**Age:** \`` +
-                        `${(si.age.y > 0) ? `${si.age.y} year(s), ` : ''}` +
-                        `${(si.age.d > 0) ? `${si.age.d} day(s), ` : ''}` +
-                        `${(si.age.h > 0) ? `${si.age.h} hour(s), ` : ''}` +
-                        `${si.age.min} min(s)\``,
+                        `**Age:** ${uptimeToString(si.age)}\``,
                     color: bot.servers[serverID].members[userID].color,
                     timestamp: bot.servers[serverID].joined_at,
                     footer: {
@@ -163,11 +159,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         title: `Information about "${bot.users[ui.id].username}#${bot.users[ui.id].discriminator}"`,
                         description: `**Also known as:** "<@${ui.id}>"\n` +
                             `**User created:** \`${sfToDate(ui.id)}\`\n` +
-                            `**Age:** \`` +
-                            `${(ui.age.y > 0) ? `${ui.age.y} year(s), ` : ''}` +
-                            `${(ui.age.d > 0) ? `${ui.age.d} day(s), ` : ''}` +
-                            `${(ui.age.h > 0) ? `${ui.age.h} hour(s), ` : ''}` +
-                            `${ui.age.min} min(s)\``,
+                            `**Age:** ${uptimeToString(ui.age)}\``,
                         color: server ? bot.servers[serverID].members[ui.id].color : 16738816
                     };
 
@@ -232,12 +224,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'uptime':
                 if (typeof timeOf[args[0]] != 'undefined') {
                     let uptime = calculateUptime(timeOf[args[0]]);
-                    msg(channelID,`Time since '${args[0]}': \`` +
-                        `${(uptime.y > 0) ? `${uptime.y} year(s), ` : ''}` +
-                        `${(uptime.d > 0) ? `${uptime.d} day(s), ` : ''}` +
-                        `${(uptime.h > 0) ? `${uptime.h} hour(s), ` : ''}` +
-                        `${(uptime.min > 0) ? `${uptime.min} minute(s), ` : ''}` +
-                        `${uptime.s} second(s)\``
+                    msg(channelID,`Time since '${args[0]}': ${uptimeToString(uptime)}\``
                     );
                 } else {
                     msg(channelID,`Missing arguments. Usage: \`@${bot.username} uptime startUp | connection | lastCommand\`.`);
@@ -717,7 +704,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
 bot.on('disconnect', (err, code) => {
     online = false;
-    logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${calculateUptime(timeOf.connection)})`);
+    logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${uptimeToString(calculateUptime(timeOf.connection))})`);
     setTimeout(() => {
         bot.connect();
     },5000);
