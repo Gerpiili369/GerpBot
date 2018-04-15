@@ -17,6 +17,7 @@ logger.level = 'debug';
 
 const
     calculateUptime = snowTime.calculateUptime,
+    uptimeToString = snowTime.uptimeToString,
     sfToDate = snowTime.sfToDate,
     snowmaker = snowTime.snowmaker
     objectLib = getJSON(['help','compliments','defaultRes','games','answers','ileAcronym'],'objectLib/'),

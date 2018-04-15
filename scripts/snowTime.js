@@ -23,6 +23,20 @@ module.exports = {
     },
 
     /**
+    * @arg {Uptime} uptime
+    * @returns {string}
+    */
+    uptimeToString(uptime) {
+        let string =
+            `${(uptime.y > 0) ? `${uptime.y} year(s), ` : ''}` +
+            `${(uptime.d > 0) ? `${uptime.d} day(s), ` : ''}` +
+            `${(uptime.h > 0) ? `${uptime.h} hour(s), ` : ''}` +
+            `${(uptime.min > 0) ? `${uptime.min} minute(s), ` : ''}` +
+            `${uptime.s} second(s)`
+        return string;
+    },
+
+    /**
      * @arg {Snowflake} id
      * @returns {Date}
      */
