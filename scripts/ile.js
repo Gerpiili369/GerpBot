@@ -29,9 +29,11 @@ module.exports = class Ile extends Emitter {
         } else for (var variable in saveData) {
             this[variable] = saveData[variable];
         }
+        this.started = false;
     }
 
     start() {
+        this.started = true;
         if (this.activePlayers()) this.startRoundTimers();
         else this.active = false;
     }

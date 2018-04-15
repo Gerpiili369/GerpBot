@@ -37,7 +37,6 @@ var
 if (settings.servers === undefined) settings.servers = {};
 
 startLoops();
-startIle();
 
 bot.on('ready', evt => {
     timeOf.connection = Date.now();
@@ -738,6 +737,7 @@ function msg(channel,msg,embed) {
 
 function afterLogin() {
     updateHelp();
+    startIle();
     let requests = Object.keys(bot.servers).map(server => {
         if (typeof settings.servers[server] == 'undefined') {
             settings.servers[server] = {
@@ -822,16 +822,18 @@ function startLoops() {
 }
 
 function startIle() {
-    ile.start();
-    ile.on('msg', (channel, message) => {
-        if (online) msg(channel, message);
-        else logger.debug(message);
-    });
-    ile.on('save', data => {
-        fs.writeFile('ile.json', JSON.stringify(data, null, 4), err => {
-            if (err) logger.error(err,'');
+    if (!ile.started) {
+        ile.start();
+        ile.on('msg', (channel, message) => {
+            if (online) msg(channel, message);
+            else logger.debug(message);
         });
-    });
+        ile.on('save', data => {
+            fs.writeFile('ile.json', JSON.stringify(data, null, 4), err => {
+                if (err) logger.error(err,'');
+            });
+        });
+    }
 }
 
 /**
