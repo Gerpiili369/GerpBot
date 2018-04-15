@@ -670,6 +670,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     if (args[0]) {
                         msg(channelID,`I will now be known as "${args[0]}"`);
                         settings.servers[serverID].nick = args[0];
+                        updateSettings();
                         editNick(serverID,args[0]);
                     } else msg(channelID,'Argument required!');
                 } else msg(channelID,'Request denied! Not admin');
