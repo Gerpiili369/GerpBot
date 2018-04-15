@@ -615,7 +615,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             msg(channelID,`Shit has been cleaned up...`);
                             break;
                         default:
-                            msg(channelID,`Missing arguments. Usage: \`@${bot.username} autoShit set <@role> | clean\`.`);
+                            msg(channelID,`Missing arguments. Usage: \`@${bot.username} shit set <@role> | clean\`.`);
                             break;
                     }
                     updateSettings();
