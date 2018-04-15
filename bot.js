@@ -70,7 +70,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         switch (cmd) {
             case 'help':
-                objectLib.help.thumbnail.url = `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`
                 objectLib.help.color = server ? bot.servers[serverID].members[userID].color : 16738816;
                 msg(channelID,'Some commands:',objectLib.help);
                 break;
@@ -738,6 +737,7 @@ function msg(channel,msg,embed) {
 }
 
 function afterLogin() {
+    updateHelp();
     let requests = Object.keys(bot.servers).map(server => {
         if (typeof settings.servers[server] == 'undefined') {
             settings.servers[server] = {
@@ -771,6 +771,10 @@ function afterLogin() {
         online = true;
         updateSettings();
     });
+}
+
+function updateHelp() {
+    objectLib.help.thumbnail.url = `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`;
 }
 
 function startLoops() {
