@@ -71,9 +71,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         switch (cmd) {
             case 'help':
                 objectLib.help.thumbnail.url = `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`
-                let help = objectLib.help;
-                help.color = server ? bot.servers[serverID].members[userID].color : 16738816;
-                msg(channelID,'Some commands:',help);
+                objectLib.help.color = server ? bot.servers[serverID].members[userID].color : 16738816;
+                msg(channelID,'Some commands:',objectLib.help);
                 break;
             case 'server':
                 if (!server) {
