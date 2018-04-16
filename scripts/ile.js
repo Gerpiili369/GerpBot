@@ -2,6 +2,7 @@ const
     Emitter = require('events'),
     snowTime = require('./snowTime'),
     calculateUptime = snowTime.calculateUptime,
+    uptimeToString = snowTime.uptimeToString;
 
 module.exports = class Ile extends Emitter {
     /**
@@ -145,7 +146,7 @@ module.exports = class Ile extends Emitter {
         if (this.players[user] && this.players[user].joined && Date.now() > this.end && this.players[user].status != 'missed') {
             this.players[user].checkIn = true;
             this.players[user].delay = calculateUptime(this.end);
-            return `You have checked in with the status: ${this.players[user].status}, and with the delay of ${this.players[user].delay.h}h ${this.players[user].delay.min}min ${this.players[user].delay.s}s`;
+            return `You have checked in with the status: ${this.players[user].status}, and with the delay of ${uptimeToString(this.players[user].delay)}.`;
         } else {
             return 'That is cheating!';
         }
