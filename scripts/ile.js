@@ -1,5 +1,7 @@
-const Emitter = require('events');
-const calculateUptime = require('./snowTime').calculateUptime;
+const
+    Emitter = require('events'),
+    snowTime = require('./snowTime'),
+    calculateUptime = snowTime.calculateUptime,
 
 module.exports = class Ile extends Emitter {
     /**
