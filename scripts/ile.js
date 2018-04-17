@@ -74,7 +74,7 @@ module.exports = class Ile extends Emitter {
 
             if (this.activePlayers()) this.newRound();
             else this.active = false;
-        }, this.end - Date.now() + this.time.before.newRound)
+        }, this.end - Date.now() + this.time.before.newRound);
     }
 
     newRound() {
@@ -88,7 +88,7 @@ module.exports = class Ile extends Emitter {
         this.save();
     }
 
-    sendEndtime () {
+    sendEndtime() {
         for (var player in this.players) {
             if (this.players[player].joined) this.emit('msg',player,`Next checkpoint: ${new Date(this.end)}`);
         }
