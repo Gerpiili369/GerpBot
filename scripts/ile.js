@@ -95,6 +95,13 @@ module.exports = class Ile extends Emitter {
     }
 
     /**
+     * @returns {String}
+     */
+    getCheckpoint() {
+        return `Next checkpoint: ${new Date(this.end)}`;
+    }
+
+    /**
      * @returns {Boolean}
      */
     activePlayers() {
