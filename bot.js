@@ -499,8 +499,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     case 'here':
                         msg(channelID,ile.attend(userID));
                         break;
+                    case 'time':
+                        msg(channelID,ile.getCheckpoint());
+                        break;
                     default:
-                        msg(channelID,`${ile.getAcronym()}: command structure: \`ile join | leave | here \``);
+                        msg(channelID,`${ile.getAcronym()}: command structure: \`ile join | leave | here | time\``);
                         break;
                 }
                 break;
