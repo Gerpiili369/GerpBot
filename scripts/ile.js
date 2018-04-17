@@ -123,14 +123,18 @@ module.exports = class Ile extends Emitter {
             };
         }
 
+        let response;
         if (!this.players[user].joined) {
+            response = 'Welcome TO THE GAME!'
             this.players[user].joined = true;
             this.save();
             if (!this.active) this.newRound();
-            return `Welcome TO THE GAME!\nNext checkpoint: ${new Date(this.end)}`;
+            else response += `\n${this.getCheckpoint()}`;
         } else {
-            return 'Already here ya\'know.';
+            response = 'Already here ya\'know.';
         }
+
+        return response;
     }
 
     /**
