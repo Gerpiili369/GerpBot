@@ -90,7 +90,7 @@ module.exports = class Ile extends Emitter {
 
     sendEndtime() {
         for (var player in this.players) {
-            if (this.players[player].joined) this.emit('msg',player,`Next checkpoint: ${new Date(this.end)}`);
+            if (this.players[player].joined) this.emit('msg',player,this.getCheckpoint(player));
         }
     }
 
