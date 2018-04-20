@@ -815,9 +815,12 @@ function startLoops() {
 function startIle() {
     if (!ile.started) {
         ile.start();
-        ile.on('msg', (channel, message) => {
-            if (online) msg(channel, message);
-            else logger.debug(message);
+        ile.on('msg', (channel, message, embed) => {
+            if (typeof embed != 'undefined') embed.fields.forEach(v => {
+                let id = v.name.substring(v.name.indexOf('.') + 2);
+                v.name = v.name.replace(id,bot.users[id].username);
+            });
+            msg(channel, message, embed);
         });
         ile.on('save', data => {
             fs.writeFile('ile.json', JSON.stringify(data, null, 4), err => {

@@ -67,6 +67,11 @@ module.exports = class Ile extends Emitter {
                     setTimeout(() => {
                         this.save();
 
+                        for (var player in this.players) {
+                            if (this.players[player].checkIn) {
+                                this.emit('msg',player,'',this.scoreboardToEmbed(this.getScoreboard()));
+                            }
+                        }
                         if (this.activePlayers()) this.newRound();
                         else this.active = false;
                     }, this.time.before.newRound);
@@ -117,6 +122,7 @@ module.exports = class Ile extends Emitter {
                 joined: false,
                 checkIn: false,
                 status: null,
+                delayMs: null,
                 delay: {}
             };
         }
@@ -155,6 +161,7 @@ module.exports = class Ile extends Emitter {
         if (this.players[user] && this.players[user].joined && Date.now() > this.end && this.players[user].status != 'missed') {
             this.players[user].checkIn = true;
             this.players[user].delay = calculateUptime(this.end);
+            this.players[user].delayMs = calculateUptime(this.end,undefined,true).ms;
             this.save();
             return `You have checked in with the status: ${this.players[user].status}, and with the delay of ${uptimeToString(this.players[user].delay)}.`;
         } else {
@@ -169,6 +176,42 @@ module.exports = class Ile extends Emitter {
             time: this.time,
             players: this.players
         });
+    }
+
+    /**
+     * @return {Scoreboard}
+     */
+    getScoreboard() {
+        let scoreboard = [];
+        for (var player in this.players) {
+            if (this.players[player].checkIn) {
+                scoreboard.push({
+                    id: player,
+                    delay: this.players[player].delay
+                });
+            }
+        }
+        scoreboard.sort((a,b) => this.players[a.id].delayMs - this.players[b.id].delayMs);
+
+        return scoreboard;
+    }
+
+    /**
+     * @arg {Scoreboard} scoreboard
+     * @return {Embed}
+     */
+    scoreboardToEmbed(scoreboard) {
+        let embed = {
+            title: 'ILE Round Scoreboard',
+            fields: []
+        }
+        scoreboard.forEach((v,i) => {
+            embed.fields.push({
+                name: `${i+1}. ${v.id}`,
+                value: uptimeToString(v.delay)
+            });
+        });
+        return embed;
     }
 
     /**
@@ -188,7 +231,9 @@ module.exports = class Ile extends Emitter {
  * @property {Number} end
  * @property {{min: Number, max: Number}} time
  * @property {{late: Number, missed: Number, newRound: Number}} before
- * @property {{any?: {joined: Boolean, checkIn: Boolean, status: 'on time' | 'late' | 'missed', delay: Uptime?}...}} players
+ * @property {{any?: {joined: Boolean, checkIn: Boolean, status: 'on time' | 'late' | 'missed', delay: Uptime?, delayMs: Number?}...}} players
+ *
+ * @typedef {{id: Snowflake, delay: Uptime}[]} Scoreboard
  *
  * @typedef {Object} Uptime
  * @property {number} ms
@@ -198,4 +243,15 @@ module.exports = class Ile extends Emitter {
  * @property {number} day
  * @property {number} year
  *
+ * @typedef {Object} Embed
+ * @property {String} [title]
+ * @property {String} [description]
+ * @property {String} [url]
+ * @property {Number|String} [color]
+ * @property {Date} [timestamp]
+ * @property {{icon_url?: String, text?: String}} [footer]
+ * @property {{url?: String]}} [thumbnail]
+ * @property {{url?: String}} [image]
+ * @property {{name: String, url?: String, icon_url?: String}} [author]
+ * @property {{name: String, value: String, inline?: Boolean}[]} [fields]
  */
