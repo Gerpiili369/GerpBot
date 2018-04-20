@@ -155,6 +155,7 @@ module.exports = class Ile extends Emitter {
         if (this.players[user] && this.players[user].joined && Date.now() > this.end && this.players[user].status != 'missed') {
             this.players[user].checkIn = true;
             this.players[user].delay = calculateUptime(this.end);
+            this.save();
             return `You have checked in with the status: ${this.players[user].status}, and with the delay of ${uptimeToString(this.players[user].delay)}.`;
         } else {
             return 'That is cheating!';
