@@ -24,8 +24,8 @@ module.exports = class Ile extends Emitter {
                 },
                 before: {
                     late: 180000,
-                    missed: 540000,
-                    newRound: 555000
+                    missed: 360000,
+                    newRound: 15000
                 }
             }
             this.players = {};
@@ -37,44 +37,42 @@ module.exports = class Ile extends Emitter {
 
     start() {
         this.started = true;
-        if (this.activePlayers()) this.startRoundTimers();
+        if (this.activePlayers()) this.activateRound();
         else this.active = false;
     }
 
-    startRoundTimers() {
+    activateRound() {
         setTimeout(() => {
+            this.end = Date.now();
             for (var player in this.players) {
-                if (this.players[player].joined === true) {
+                if (this.players[player].joined === true && !this.players[player].checkIn) {
                     this.players[player].status = 'on time';
                     this.emit('msg',player,'It is time');
                 }
             }
+            setTimeout(() => {
+                for (var player in this.players) {
+                    if (this.players[player].joined === true && !this.players[player].checkIn) {
+                        this.players[player].status = 'late';
+                        this.emit('msg',player,'You are late');
+                    }
+                }
+                setTimeout(() => {
+                    for (var player in this.players) {
+                        if (this.players[player].joined === true && !this.players[player].checkIn) {
+                            this.players[player].status = 'missed';
+                            this.emit('msg',player,'You have missed the thing');
+                        }
+                    }
+                    setTimeout(() => {
+                        this.save();
+
+                        if (this.activePlayers()) this.newRound();
+                        else this.active = false;
+                    }, this.time.before.newRound);
+                }, this.time.before.missed);
+            }, this.time.before.late);
         }, this.end - Date.now());
-
-        setTimeout(() => {
-            for (var player in this.players) {
-                if (this.players[player].joined === true && !this.players[player].checkIn) {
-                    this.players[player].status = 'late';
-                    this.emit('msg',player,'You are late');
-                }
-            }
-        }, this.end - Date.now() + this.time.before.late);
-
-        setTimeout(() => {
-            for (var player in this.players) {
-                if (this.players[player].joined === true && !this.players[player].checkIn) {
-                    this.players[player].status = 'missed';
-                    this.emit('msg',player,'You have missed the thing');
-                }
-            }
-        }, this.end - Date.now() + this.time.before.missed);
-
-        setTimeout(() => {
-            this.save();
-
-            if (this.activePlayers()) this.newRound();
-            else this.active = false;
-        }, this.end - Date.now() + this.time.before.newRound);
     }
 
     newRound() {
@@ -83,7 +81,7 @@ module.exports = class Ile extends Emitter {
             this.players[player].checkIn = false;
         }
         this.end = Date.now() + Math.floor(Math.random() * (this.time.between.max - this.time.between.min)) + this.time.between.min;
-        this.startRoundTimers();
+        this.activateRound();
         this.sendEndtime();
         this.save();
     }
