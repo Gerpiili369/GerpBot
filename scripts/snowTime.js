@@ -4,10 +4,11 @@ module.exports = {
      * @arg {Date} [end]
      * @returns {Uptime}
      */
-    calculateUptime(start,end = Date.now()) {
+    calculateUptime(start,end = Date.now(),msOnly = false) {
         let uptime = {};
 
         uptime.ms = end - start;
+        if (msOnly) return uptime;
         uptime.s = Math.floor(uptime.ms / 1000);
         uptime.ms -= uptime.s * 1000;
         uptime.min = Math.floor(uptime.s / 60);
