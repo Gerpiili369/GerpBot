@@ -22,6 +22,10 @@
             "value": "Gives information about a user"
         },
         {
+            "name": "`@GerpBot role <@role>`",
+            "value": "Gives information about a role"
+        },
+        {
             "name": "`@GerpBot ping`",
             "value": "Pong!"
         },

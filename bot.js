@@ -206,6 +206,41 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID,'High quality spying:',ue);
                 } else msg(channelID,'I would give you the info you seek, but it is clear you don\'t even know what you want');
                 break;
+            case 'role':
+                if (!server) {
+                    msg(channelID, 'Please wait a moment. Let me just check that role in this PM.');
+                    break;
+                }
+
+                if (args[0]) {
+                    args[0] = snowmaker(args[0]);
+                    let role = bot.servers[serverID].roles[args[0]];
+
+                    if (!role) {
+                        msg(channelID, 'Role not found!');
+                        break;
+                    }
+
+                    let re = {
+                        title: `Information about "${role.name}"`,
+                        description: `<@&${role.id}>\n` +
+                            `**Role created:** \`${sfToDate(role.id)}\`\n` +
+                            `**Age:** ${uptimeToString(calculateUptime(sfToDate(role.id)))}\``,
+                        color: role.color
+                    };
+
+                    let rollMembers = [];
+                    for (var member in bot.servers[serverID].members) {
+                        if (bot.servers[serverID].members[member].roles.indexOf(role.id) != -1) rollMembers.push(member);
+                    }
+
+                    rollMembers.forEach(v => {
+                        re.description += `\n<@${v}>`;
+                    });
+
+                    msg(channelID,'Here is the gang:',re);
+                } else msg(channelID,'What is that supposed to be? It is called "role" not "roll"!');
+                break;
             case 'ping':
                 msg(channelID,'Pong!');
                 break;
