@@ -26,6 +26,10 @@
             "value": "Gives information about a role"
         },
         {
+            "name": "`@GerpBot raffle [everyone|here|<@role>] [<number of winners>]`",
+            "value": "Randomly selects users from given gategory"
+        },
+        {
             "name": "`@GerpBot ping`",
             "value": "Pong!"
         },

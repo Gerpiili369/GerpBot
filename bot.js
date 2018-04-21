@@ -241,6 +241,68 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID,'Here is the gang:',re);
                 } else msg(channelID,'What is that supposed to be? It is called "role" not "roll"!');
                 break;
+            case 'raffle':
+                if (!server) {
+                    msg(channelID, 'When you really think about it, how would that even work?');
+                    break;
+                }
+
+                if (!args[0]) args[0] = 'everyone';
+                let raffleList = [];
+
+                switch (args[0]) {
+                    case 'everyone':
+                        for (var member in bot.servers[serverID].members) raffleList.push(member);
+                        break;
+                    case 'here':
+                        for (var member in bot.servers[serverID].members) {
+                            let status = bot.servers[serverID].members[member].status;
+                            if (status && status != 'offline') raffleList.push(member);
+                        }
+                        break;
+                    default:
+                        args[0] = snowmaker(args[0]);
+                        let role = bot.servers[serverID].roles[args[0]];
+
+                        if (!role) {
+                            msg(channelID, 'Role not found!');
+                            return;
+                        }
+
+                        for (var member in bot.servers[serverID].members) {
+                            if (bot.servers[serverID].members[member].roles.indexOf(role.id) != -1) raffleList.push(member);
+                        }
+                }
+
+                if (args[1] && !isNaN(args[1])) ;
+                else args[1] = 1;
+
+                let winners = [];
+                for (var i = 0; i < args[1]; i++) {
+                    winners = winners.concat(raffleList.splice(Math.floor(Math.random()*raffleList.length),1));
+                }
+
+                let re = {
+                    title: 'Winners',
+                    description: '',
+                    color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                }
+
+                winners.forEach(v => {
+                    re.description += `\n<@${v}>`
+                });
+
+                if (winners.length === 1) {
+                    re.title = 'Winner';
+                    re.description = bot.users[winners[0]].username + re.description;
+                    re.color = bot.servers[serverID].members[winners[0]].color;
+                    re.thumbnail = {
+                        url: `https://cdn.discordapp.com/avatars/${winners[0]}/${bot.users[winners[0]].avatar}.png`
+                    }
+                }
+
+                msg(channelID,'',re);
+                break;
             case 'ping':
                 msg(channelID,'Pong!');
                 break;
