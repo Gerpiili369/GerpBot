@@ -19,7 +19,7 @@
         },
         {
             "name": "`@GerpBot user <@mention>`",
-            "value": "Gives information about a user"
+            "value": "Gives information about an user"
         },
         {
             "name": "`@GerpBot role <@role>`",
