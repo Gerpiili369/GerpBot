@@ -117,7 +117,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     timestamp: bot.servers[serverID].joined_at,
                     footer: {
                         icon_url: `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`,
-                        text: `${settings.servers[serverID].nick} joined this server on`
+                        text: `${settings.servers[serverID].nick != null ? settings.servers[serverID].nick : bot.username} joined this server on`
                     },
                     thumbnail: {
                         url: `https://cdn.discordapp.com/icons/${serverID}/${bot.servers[serverID].icon}.png`
@@ -754,10 +754,14 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (admin) {
                     if (args[0]) {
                         msg(channelID,`I will now be known as "${args[0]}"`);
-                        settings.servers[serverID].nick = args[0];
-                        updateSettings();
-                        editNick(serverID,args[0]);
-                    } else msg(channelID,'Argument required!');
+                    } else {
+                        args[0] = null;
+                        msg(channelID,'Nickanem reset.');
+                    }
+
+                    settings.servers[serverID].nick = args[0];
+                    updateSettings();
+                    editNick(serverID,args[0]);
                 } else msg(channelID,'Request denied! Not admin');
                 break;
             default:
