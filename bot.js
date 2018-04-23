@@ -1,7 +1,12 @@
-const Discord = require('discord.io');
-const logger = require('winston');
-const auth = require('./auth.json');
-const fs = require('fs');
+const
+    Discord = require('discord.io'),
+    logger = require('winston'),
+    auth = require('./auth.json'),
+    fs = require('fs'),
+    io = require('socket.io-client'),
+
+    snowTime = require('./scripts/snowTime.js'),
+    Ile = require('./scripts/ile.js');
 
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
@@ -10,17 +15,25 @@ logger.add(logger.transports.Console, {
 });
 logger.level = 'debug';
 
-const objectLib = getJSON(['help','compliments','defaultRes','games'],'objectLib/');
-const bot = new Discord.Client({
-    token: auth.token,
-    autorun: true
-});
+const
+    calculateUptime = snowTime.calculateUptime,
+    uptimeToString = snowTime.uptimeToString,
+    sfToDate = snowTime.sfToDate,
+    snowmaker = snowTime.snowmaker
+    objectLib = getJSON(['help','compliments','defaultRes','games','answers','ileAcronym'],'objectLib/'),
+    bot = new Discord.Client({
+        token: auth.token,
+        autorun: true
+    });
 
-var online = false;
-var settings = getJSON('settings');
-var timeOf = {
-    startUp: Date.now()
-};
+var
+    online = false,
+    settings = getJSON('settings'),
+    timeOf = {
+        startUp: Date.now()
+    },
+    kps = {};
+    ile = new Ile(getJSON('ile'),objectLib.ileAcronym);
 
 if (settings.servers === undefined) settings.servers = {};
 
@@ -40,8 +53,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     else if (bot.directMessages[channelID]) server = false;
     else return;
 
-
-    if ((message.substring(0, 21) == `<@${bot.id}>` || message.substring(0,22) == `<@!${bot.id}>`) && userID != bot.id) {
+    if (snowmaker(message.split(' ')[0]) == bot.id && userID != bot.id) {
         bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
 
         let admin = false;
@@ -52,19 +64,14 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             });
         }
 
-        if (message.substring(2,3) == '!') {
-            var args = message.substring(23).split(' ');
-        } else {
-            var args = message.substring(22).split(' ');
-        }
-        var cmd = args[0];
-        args = args.splice(1);
+        var args = message.split(' ');
+        var cmd = args[1];
+        args = args.splice(2);
 
         switch (cmd) {
             case 'help':
-                let help = objectLib.help;
-                help.color = server ? bot.servers[serverID].members[userID].color : 16738816;
-                msg(channelID,'Some commands:',help);
+                objectLib.help.color = server ? bot.servers[serverID].members[userID].color : 16738816;
+                msg(channelID,'Some commands:',objectLib.help);
                 break;
             case 'server':
                 if (!server) {
@@ -103,18 +110,14 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 let ie = {
                     title: `Information about "${bot.servers[serverID].name}"`,
-                    description: `**Created by:** <@!${bot.servers[serverID].owner_id}>\n` +
+                    description: `**Created by:** <@${bot.servers[serverID].owner_id}>\n` +
                         `**Creation date:** \`${sfToDate(serverID)}\`\n` +
-                        `**Age:** \`` +
-                        `${(si.age.y > 0) ? `${si.age.y} year(s), ` : ''}` +
-                        `${(si.age.d > 0) ? `${si.age.d} day(s), ` : ''}` +
-                        `${(si.age.h > 0) ? `${si.age.h} hour(s), ` : ''}` +
-                        `${si.age.min} min(s)\``,
+                        `**Age:** ${uptimeToString(si.age)}\``,
                     color: bot.servers[serverID].members[userID].color,
                     timestamp: bot.servers[serverID].joined_at,
                     footer: {
                         icon_url: `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`,
-                        text: `${settings.servers[serverID].nick} joined this server on`
+                        text: `${settings.servers[serverID].nick != null ? settings.servers[serverID].nick : bot.username} joined this server on`
                     },
                     thumbnail: {
                         url: `https://cdn.discordapp.com/icons/${serverID}/${bot.servers[serverID].icon}.png`
@@ -139,11 +142,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'user':
                 if (args[0]) {
-                    if (args[0].substring(2,3) == '!') {
-                        args[0] = args[0].substring(3,21);
-                    } else {
-                        args[0] = args[0].substring(2,20);
-                    }
+                    args[0] = snowmaker(args[0]);
 
                     if (!bot.users[args[0]]) {
                         msg(channelID, 'User not found!');
@@ -158,13 +157,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                     let ue = {
                         title: `Information about "${bot.users[ui.id].username}#${bot.users[ui.id].discriminator}"`,
-                        description: `**Also known as:** "<@!${ui.id}>"\n` +
+                        description: `**Also known as:** "<@${ui.id}>"\n` +
                             `**User created:** \`${sfToDate(ui.id)}\`\n` +
-                            `**Age:** \`` +
-                            `${(ui.age.y > 0) ? `${ui.age.y} year(s), ` : ''}` +
-                            `${(ui.age.d > 0) ? `${ui.age.d} day(s), ` : ''}` +
-                            `${(ui.age.h > 0) ? `${ui.age.h} hour(s), ` : ''}` +
-                            `${ui.age.min} min(s)\``,
+                            `**Age:** ${uptimeToString(ui.age)}\``,
                         color: server ? bot.servers[serverID].members[ui.id].color : 16738816
                     };
 
@@ -211,6 +206,103 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID,'High quality spying:',ue);
                 } else msg(channelID,'I would give you the info you seek, but it is clear you don\'t even know what you want');
                 break;
+            case 'role':
+                if (!server) {
+                    msg(channelID, 'Please wait a moment. Let me just check that role in this PM.');
+                    break;
+                }
+
+                if (args[0]) {
+                    args[0] = snowmaker(args[0]);
+                    let role = bot.servers[serverID].roles[args[0]];
+
+                    if (!role) {
+                        msg(channelID, 'Role not found!');
+                        break;
+                    }
+
+                    let re = {
+                        title: `Information about "${role.name}"`,
+                        description: `<@&${role.id}>\n` +
+                            `**Role created:** \`${sfToDate(role.id)}\`\n` +
+                            `**Age:** ${uptimeToString(calculateUptime(sfToDate(role.id)))}\``,
+                        color: role.color
+                    };
+
+                    let rollMembers = [];
+                    for (var member in bot.servers[serverID].members) {
+                        if (bot.servers[serverID].members[member].roles.indexOf(role.id) != -1) rollMembers.push(member);
+                    }
+
+                    rollMembers.forEach(v => {
+                        re.description += `\n<@${v}>`;
+                    });
+
+                    msg(channelID,'Here is the gang:',re);
+                } else msg(channelID,'What is that supposed to be? It is called "role" not "roll"!');
+                break;
+            case 'raffle':
+                if (!server) {
+                    msg(channelID, 'When you really think about it, how would that even work?');
+                    break;
+                }
+
+                if (!args[0]) args[0] = 'everyone';
+                let raffleList = [];
+
+                switch (args[0]) {
+                    case 'everyone':
+                        for (var member in bot.servers[serverID].members) raffleList.push(member);
+                        break;
+                    case 'here':
+                        for (var member in bot.servers[serverID].members) {
+                            let status = bot.servers[serverID].members[member].status;
+                            if (status && status != 'offline') raffleList.push(member);
+                        }
+                        break;
+                    default:
+                        args[0] = snowmaker(args[0]);
+                        let role = bot.servers[serverID].roles[args[0]];
+
+                        if (!role) {
+                            msg(channelID, 'Role not found!');
+                            return;
+                        }
+
+                        for (var member in bot.servers[serverID].members) {
+                            if (bot.servers[serverID].members[member].roles.indexOf(role.id) != -1) raffleList.push(member);
+                        }
+                }
+
+                if (args[1] && !isNaN(args[1])) ;
+                else args[1] = 1;
+
+                let winners = [];
+                for (var i = 0; i < args[1]; i++) {
+                    winners = winners.concat(raffleList.splice(Math.floor(Math.random()*raffleList.length),1));
+                }
+
+                let re = {
+                    title: 'Winners',
+                    description: '',
+                    color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                }
+
+                winners.forEach(v => {
+                    re.description += `\n<@${v}>`
+                });
+
+                if (winners.length === 1) {
+                    re.title = 'Winner';
+                    re.description = bot.users[winners[0]].username + re.description;
+                    re.color = bot.servers[serverID].members[winners[0]].color;
+                    re.thumbnail = {
+                        url: `https://cdn.discordapp.com/avatars/${winners[0]}/${bot.users[winners[0]].avatar}.png`
+                    }
+                }
+
+                msg(channelID,'',re);
+                break;
             case 'ping':
                 msg(channelID,'Pong!');
                 break;
@@ -218,27 +310,27 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 msg(channelID, `Here it is: \`${Math.PI}...\``);
                 break;
             case 'nerfThis':
-                msg(channelID,'<@!305716128615759873> was the sole victim');
+                msg(channelID,'<@305716128615759873> was the sole victim');
                 break;
             case 'echo':
                 msg(channelID,args.join(' '));
                 break;
             case 'getGerp':
-                msg(channelID,'<@!217953472715292672>');
+                msg(channelID,'<@217953472715292672>');
                 break;
             case 'uptime':
                 if (typeof timeOf[args[0]] != 'undefined') {
                     let uptime = calculateUptime(timeOf[args[0]]);
-                    msg(channelID,`Time since '${args[0]}': \`` +
-                        `${(uptime.y > 0) ? `${uptime.y} year(s), ` : ''}` +
-                        `${(uptime.d > 0) ? `${uptime.d} day(s), ` : ''}` +
-                        `${(uptime.h > 0) ? `${uptime.h} hour(s), ` : ''}` +
-                        `${(uptime.min > 0) ? `${uptime.min} minute(s), ` : ''}` +
-                        `${uptime.s} second(s)\``
+                    msg(channelID,`Time since '${args[0]}': ${uptimeToString(uptime)}\``
                     );
                 } else {
-                    msg(channelID,'Missing arguments. Usage: `@GerpBot uptime [ startUp | connection | lastCommand ]`.');
+                    msg(channelID,`Missing arguments. Usage: \`@${bot.username} uptime startUp | connection | lastCommand\`.`);
                 }
+                break;
+            case 'ask':
+                if (args[0]) {
+                    msg(channelID,objectLib.answers[Math.floor(Math.random()*objectLib.answers.length)]);
+                } else msg(channelID, 'You didn\'t ask anything...');
                 break;
             case 'vote':
                 let options = [];
@@ -254,6 +346,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     options = args.splice(1);
                 } else if (args[0] == 'gold') {
                     ve.description = `**Let's vote for ${args[1]}'s next golden gun!**`;
+                    ve.thumbnail = {
+                        url: `https://cdn.discordapp.com/avatars/${snowmaker(args[1])}/${bot.users[snowmaker(args[1])].avatar}.png`
+                    }
                     options = args.splice(2);
                 } else {
                     msg(channelID,`${args[0]} not allowed. Use 'def' or 'gold'`);
@@ -263,7 +358,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 ve.description += `\n*requested by:\n<@${userID}>*`;
 
                 if (options.length < 1) {
-                    msg(channelID,'Options were not included! Example: `@GerpBot vote def :thinking:=genius`');
+                    msg(channelID,`Options were not included! Example: \`@${bot.username} vote def :thinking:=genius\``);
                     break;
                 }
                 options.forEach(v => {
@@ -282,7 +377,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             });
                         }
                     } else {
-                        msg(channelID,'Some options not defined! Example: `@GerpBot vote def :thinking:=genius`');
+                        msg(channelID,`Some options not defined! Example: \`@${bot.username} vote def :thinking:=genius\``);
                         ve.error = true;
                     }
                 });
@@ -291,15 +386,247 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID,'@everyone',ve);
                 }
                 break;
+            case 'kps':
+                let url = 'http://plssave.help/kps';
+
+                if (typeof kps[userID] == 'undefined') {
+                    kps[userID] = {};
+                    kps[userID].gameActive = false;
+                    kps[userID].mem = {player: {theme: 'defeault', selection: null, result: null}, opponent: null};
+                    kps[userID].socket = io('http://plssave.help', {path: '/socket2'});
+
+                    kps[userID].socket.on('connect', () => {
+                        kps[userID].socket.emit('setName', `${bot.users[userID].username}#${bot.users[userID].discriminator}`);
+                    });
+
+                    kps[userID].socket.on('loginSucc', player => {
+                        kps[userID].mem.player = player;
+                    });
+
+                    kps[userID].socket.on('loginFail', data => msg(userID,'',kpsEmbed(data,0)));
+
+                    kps[userID].socket.on('startGame', data => {
+                        kps[userID].gameActive = true;
+                        kps[userID].opponent = data;
+                        msg(userID,'',kpsEmbed(data,4));
+                    });
+
+                    kps[userID].socket.on('toMainMenu', data => {
+                        kps[userID].gameActive = false;
+                        msg(userID,'',kpsEmbed(data,0));
+                    });
+
+                    kps[userID].socket.on('msgFromServer', data => msg(userID,'',kpsEmbed(data,0)));
+
+                    kps[userID].socket.on('result', (player, opponent) => {
+                        kps[userID].mem.player = player;
+                        kps[userID].mem.opponent = opponent;
+
+                        msg(userID,'',kpsEmbed('Oppnent\'s choice',5));
+                    });
+                }
+
+                if (kps[userID].socket.connected) kpsEmit(args);
+                else {
+                    kps[userID].socket.on('connect', () => kpsEmit(args));
+
+                    setTimeout(() => {
+                        if (!kps[userID].socket.connected) msg(userID,'Could not connect');
+                    }, 10000);
+                }
+
+                /**
+                 * @arg {String[]} args
+                 */
+                function kpsEmit(args) {
+                    let data = args[0];
+                    switch (data) {
+                        case 'play':
+                            data = 'other';
+                        case 'ai':
+                        case 'friend':
+                            if (!kps[userID].gameActive) {
+                                kps[userID].socket.emit('setMode', data, args[1]);
+                            } else {
+                                msg(userID,'This command is not available while in a game. Use `kps quit` to quit');
+                            }
+                            break;
+                        case 'rock':
+                        case 'paper':
+                        case 'scissors':
+                            if (!kps[userID].gameActive) kps[userID].socket.emit('setMode', 'ai');
+                            kps[userID].socket.emit('choose', data);
+                            break;
+                        case 'classic':
+                            kps[userID].socket.emit('setTheme', 'defeault');
+                            kps[userID].mem.player.theme = 'defeault';
+                            msg(userID,'',kpsEmbed('Theme updated',3));
+                            break;
+                        case 'horror':
+                            kps[userID].socket.emit('setTheme', data);
+                            kps[userID].mem.player.theme = data;
+                            msg(userID,'',kpsEmbed('Theme updated',3));
+                            break;
+                        case 'space':
+                            kps[userID].socket.emit('setTheme', 'fuckrulla');
+                            kps[userID].mem.player.theme = 'fuckrulla';
+                            msg(userID,'',kpsEmbed('Theme updated',3));
+                            break;
+                        case 'hand':
+                            kps[userID].socket.emit('setTheme', data);
+                            kps[userID].mem.player.theme = data;
+                            msg(userID,'',kpsEmbed('Theme updated',3));
+                            break;
+                        case 'quit':
+                            msg(userID,'',kpsEmbed('You left',0));
+                            kps[userID].socket.disconnect();
+                            kps[userID] = undefined;
+                            break;
+                        default:
+                            msg(userID,`Starting a game: \`play | ai | friend <friendname>\`\nChoosing: \`rock | paper | scissors\`\nTheme selection: \`classic | horror | space | hand\`\nTo quit: \`quit\`\nDon't forget the @${bot.username} kps`);
+                    }
+                }
+
+                /**
+                 * @arg {String} msg
+                 * @arg {Number} type
+                 * @return {Embed}
+                 */
+                function kpsEmbed(msg, type) {
+                    let player = kps[userID].mem.player;
+                    let embed = {
+                        title: msg,
+                        author: {
+                            name: 'KPS',
+                            url: 'http://plssave.help/PlayKPS'
+                        },
+                        fields: []
+                    };
+
+                    switch (player.theme) {
+                        case 'defeault':
+                            embed.author.icon_url = `${url}/img/icon.png`;
+                            embed.color = 3569575;
+                            break;
+                        case 'horror':
+                            embed.author.icon_url = `${url}/img/icon4.png`;
+                            embed.color = 7667712;
+                            break;
+                        case 'fuckrulla':
+                            embed.author.icon_url = `${url}/img/icon3.png`;
+                            embed.color = 32768;
+                            break;
+                        case 'hand':
+                            embed.author.icon_url = `${url}/img/icon2.png`;
+                            embed.color = 13027014;
+                            break;
+                    }
+
+                    switch (type) {
+                        case 5:
+                            addThumb(kps[userID].mem.opponent);
+                            addImage(false);
+                            // addScore();
+                            addFooter();
+                            break;
+                        case 4:
+                            addThumb('vs');
+                            addImage(true);
+                            addFooter()
+                            break;
+                        case 3:
+                            addThumb('vs');
+                            addImage(true);
+                            break;
+                        case 2:
+                            addThumb('vs');
+                            addFooter()
+                            break;
+                        case 1:
+                            addFooter();
+                            break;
+                    }
+
+                    return embed;
+
+                    /**
+                     * @arg {String} img
+                     */
+                    function addThumb(img) {
+                        embed.thumbnail = {url: `${url}/img/${player.theme}/${img}.png`};
+                    }
+
+                    /**
+                     * @arg {Boolean} background
+                     */
+                    function addImage(background) {
+                        if (background) {
+                            embed.image = {url: `${url}/img/${player.theme}/background${player.theme === 'defeault' ? '' : 'new'}.${player.theme === 'horror' ? 'png' : 'jpg'}`};
+                        } else {
+                            embed.image = {url: `${url}/img/${player.theme}/${player.result}.png`};
+                        }
+                    }
+
+                    function addScore() {
+                        let emojis = ['✅','⚠️','💢']
+
+                        emojis[0] = emojis[0].repeat(Math.round(player.points.wins/player.games*15));
+                        emojis[1] = emojis[1].repeat(Math.round(player.points.draws/player.games*15));
+                        emojis[2] = emojis[2].repeat(Math.round(player.points.losses/player.games*15));
+
+                        embed.fields.push({name: 'Current score:', value: emojis.join('')});
+                    }
+
+                    function addFooter() {
+                        embed.footer = {
+                            icon_url: `https://cdn.discordapp.com/avatars/${userID}/${bot.users[userID].avatar}.png`,
+                            text: `Wins: (${player.total.wins}), Draws: (${player.total.draws}), Losses: (${player.total.losses})`
+                        };
+                    }
+                }
+                break;
+            case 'ile':
+                switch (args[0]) {
+                    case 'join':
+                        msg(channelID,ile.join(userID));
+                        break;
+                    case 'leave':
+                        msg(channelID,ile.leave(userID));
+                        break;
+                    case 'here':
+                        msg(channelID,ile.attend(userID));
+                        break;
+                    case 'time':
+                        msg(channelID,ile.getCheckpoint());
+                        break;
+                    default:
+                        msg(channelID,`${ile.getAcronym()}: command structure: \`ile join | leave | here | time\``);
+                        break;
+                }
+                break;
+            case 'autoAnswer':
+                if (server) {
+                    if (settings.servers[serverID].disableAnswers) {
+                        settings.servers[serverID].disableAnswers = false;
+                        msg(channelID,'Nothing can stop me now!');
+                    } else {
+                        settings.servers[serverID].disableAnswers = true;
+                        msg(channelID,'You weren\'t asking me? Well, ok then.');
+                    }
+                    updateSettings()
+                } else msg(channelID,'You can\'t escape me here!')
+                break;
             case 'autoCompliment':
                 if (!server) {
                     msg(channelID, '**Feature not intended to be used in DM. Sending sample:**');
                     args[0] = 'sample'
                 }
 
+                if (args[1] != undefined) args[1] = snowmaker(args[1]);
+
                 switch (args[0]) {
                     case 'sample':
-                        msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
+                        msg(channelID,`<@${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
                         break;
                     case 'on':
                         if (admin) {
@@ -314,9 +641,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         } else msg(channelID,'Request denied! Not admin');
                         break;
                     case 'list':
+                        let list = []
+                        settings.servers[serverID].autoCompliment.targets.forEach((v,i) => list[i] = `<@${v}>`)
                         msg(channelID,``,{
                             title: 'List of cool people:',
-                            description: `${settings.servers[serverID].autoCompliment.targets.join('\n')}`
+                            description: list.join('\n'),
+                            color: bot.servers[serverID].members[userID].color
                         });
                         break;
                     case 'add':
@@ -324,9 +654,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (admin) {
                                 if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) == -1) {
                                     settings.servers[serverID].autoCompliment.targets.push(args[1]);
-                                    msg(channelID,`User ${args[1]} is now cool`);
+                                    msg(channelID,`User <@${args[1]}> is now cool`);
                                 } else {
-                                    msg(channelID,`User ${args[1]} is already cool!`);
+                                    msg(channelID,`User <@${args[1]}> is already cool!`);
                                 }
                             } else {msg(channelID,'Request denied! Not admin');}
                             break;
@@ -336,15 +666,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (admin) {
                                 if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) != -1) {
                                     settings.servers[serverID].autoCompliment.targets.splice(settings.servers[serverID].autoCompliment.targets.indexOf(args[1]), 1);
-                                    msg(channelID,`User ${args[1]} ain't cool no more!`);
+                                    msg(channelID,`User <@${args[1]}> ain't cool no more!`);
                                 } else {
-                                    msg(channelID,`User ${args[1]} was never cool to begin with!`);
+                                    msg(channelID,`User <@${args[1]}> was never cool to begin with!`);
                                 }
                             } else {msg(channelID,'Request denied! Not admin');}
                             break;
                         }
                     default:
-                        msg(channelID,'Missing arguments. Usage: `@GerpBot autoCompliment < sample | on | off | add | remove | list > [ @mention ]`.');
+                        msg(channelID,`Missing arguments. Usage: \`@${bot.username} autoCompliment sample | on | off | add <@mention> | remove <@mention> | list\`.`);
                         break;
                 }
                 updateSettings();
@@ -359,8 +689,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (admin) {
                     switch (args[0]) {
                         case 'set':
-                            if (args[1] != undefined && args[1].length === 22) {
-                                args[1] = args[1].substring(3,21);
+                            if (args[1] != undefined) {
+                                args[1] = snowmaker(args[1]);
                                 settings.servers[serverID].autoShit = args[1];
                                 msg(channelID,`<@&${args[1]}> has been chosen to be shit`);
                             } else {
@@ -372,7 +702,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             msg(channelID,`Shit has been cleaned up...`);
                             break;
                         default:
-                            msg(channelID,'Missing arguments. Usage: `@GerpBot autoShit < set [ @role ] | clean >`.');
+                            msg(channelID,`Missing arguments. Usage: \`@${bot.username} shit set <@role> | clean\`.`);
                             break;
                     }
                     updateSettings();
@@ -424,37 +754,44 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (admin) {
                     if (args[0]) {
                         msg(channelID,`I will now be known as "${args[0]}"`);
-                        settings.servers[serverID].nick = args[0];
-                        editNick(serverID,args[0]);
-                    } else msg(channelID,'Argument required!');
+                    } else {
+                        args[0] = null;
+                        msg(channelID,'Nickanem reset.');
+                    }
+
+                    settings.servers[serverID].nick = args[0];
+                    updateSettings();
+                    editNick(serverID,args[0]);
                 } else msg(channelID,'Request denied! Not admin');
                 break;
             default:
-                msg(channelID,objectLib.defaultRes[Math.floor(Math.random()*objectLib.defaultRes.length)]);
+                if (message.indexOf('?') != -1 && (!server || !settings.servers[serverID].disableAnswers)) {
+                    msg(channelID,objectLib.answers[Math.floor(Math.random()*objectLib.answers.length)]);
+                } else {
+                    msg(channelID,objectLib.defaultRes[Math.floor(Math.random()*objectLib.defaultRes.length)]);
+                }
                 break;
         }
         timeOf.lastCommand = Date.now();
-    } else if (server && settings.servers[serverID].autoCompliment.targets.indexOf(`<@!${userID}>`) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
-        bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
-        msg(channelID,`<@!${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
+    } else {
+        if (server && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
+            bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
+            msg(channelID,`<@${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
+        }
     }
 
     if (server && typeof settings.servers[serverID].autoShit == 'string' && bot.servers[serverID].members[userID].roles.indexOf(settings.servers[serverID].autoShit) != -1) emojiResponse('💩');
 
-    if (userID == bot.id && typeof evt.d.embeds[0] != 'undefined') {
-        if (typeof evt.d.embeds[0].footer != 'undefined' && evt.d.embeds[0].footer.text == 'Vote generated by your\'s truly') {
-            evt.d.embeds[0].fields.forEach((v,i) => {
-                if (v.value.substring(v.value.length-1) == '>') v.value = v.value.substring(0,v.value.length-1);
-                setTimeout(() => {
-                    emojiResponse(v.value);
-                },i*500);
-            });
+    if (userID == bot.id && evt.d.embeds[0] && evt.d.embeds[0].footer && evt.d.embeds[0].footer.text == 'Vote generated by your\'s truly') {
+        evt.d.embeds[0].fields.forEach((v,i) => {
+            if (v.value.substring(v.value.length-1) == '>') v.value = v.value.substring(0,v.value.length-1);
+            setTimeout(() => emojiResponse(v.value),i*500);
+        });
 
-            bot.pinMessage({
-                channelID: channelID,
-                messageID: evt.d.id
-            }, err => {if (err) logger.error(err,'');});
-        }
+        bot.pinMessage({
+            channelID: channelID,
+            messageID: evt.d.id
+        }, err => {if (err) logger.error(err,'');});
     }
 
     /**
@@ -471,7 +808,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
 bot.on('disconnect', (err, code) => {
     online = false;
-    logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${calculateUptime(timeOf.connection)})`);
+    logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${uptimeToString(calculateUptime(timeOf.connection))})`);
     setTimeout(() => {
         bot.connect();
     },5000);
@@ -490,38 +827,9 @@ function msg(channel,msg,embed) {
     }, err => {if (err) logger.error(err,'');});
 }
 
-/**
- * @arg {Date} start
- * @arg {Date} [end]
- * @returns {Uptime}
- */
-function calculateUptime(start,end = Date.now()) {
-    let uptime = {};
-
-    uptime.ms = end - start;
-    uptime.s = Math.floor(uptime.ms / 1000);
-    uptime.ms -= uptime.s * 1000;
-    uptime.min = Math.floor(uptime.s / 60);
-    uptime.s -= uptime.min * 60;
-    uptime.h = Math.floor(uptime.min / 60);
-    uptime.min -= uptime.h * 60;
-    uptime.d = Math.floor(uptime.h / 24);
-    uptime.h -= uptime.d * 24;
-    uptime.y = Math.floor(uptime.d / 365);
-    uptime.d -= uptime.y * 365;
-
-    return uptime;
-}
-
-/**
- * @arg {Snowflake} id
- * @returns {Date}
- */
-function sfToDate(id) {
-    return new Date(id / Math.pow(2,22) + 1420070400000);
-}
-
 function afterLogin() {
+    updateHelp();
+    startIle();
     let requests = Object.keys(bot.servers).map(server => {
         if (typeof settings.servers[server] == 'undefined') {
             settings.servers[server] = {
@@ -557,6 +865,14 @@ function afterLogin() {
     });
 }
 
+function updateHelp() {
+    objectLib.help.thumbnail.url = `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`;
+    objectLib.help.fields.forEach(v => {
+        v.name = v.name.replace('GerpBot', bot.username);
+        v.value = v.value.replace('GerpBot', bot.username);
+    });
+}
+
 function startLoops() {
     setInterval(() => {
         bot.setPresence({
@@ -588,13 +904,31 @@ function startLoops() {
                             a[i] = help;
                         });
                         editNick(server,newName.join(''));
-                    } else if (typeof bot.servers[server].members[bot.id].nick != 'undefined' && bot.servers[server].members[bot.id].nick != null) editNick(server,settings.servers[server].nick);
+                    } else if (typeof bot.servers[server].members[bot.id].nick != 'undefined' && bot.servers[server].members[bot.id].nick != null && bot.servers[server].members[bot.id].nick != settings.servers[server].nick) editNick(server,settings.servers[server].nick);
                 }
             }
             i++;
         }
     },2000);
 
+}
+
+function startIle() {
+    if (!ile.started) {
+        ile.start();
+        ile.on('msg', (channel, message, embed) => {
+            if (typeof embed != 'undefined') embed.fields.forEach(v => {
+                let id = v.name.substring(v.name.indexOf('.') + 2);
+                v.name = v.name.replace(id,bot.users[id].username);
+            });
+            msg(channel, message, embed);
+        });
+        ile.on('save', data => {
+            fs.writeFile('ile.json', JSON.stringify(data, null, 4), err => {
+                if (err) logger.error(err,'');
+            });
+        });
+    }
 }
 
 /**
@@ -648,7 +982,7 @@ function getJSON(file,location = '') {
 }
 
 function updateSettings() {
-    if (JSON.stringify(settings) != '') fs.writeFile('settings.json', JSON.stringify(settings), err => {if (err) logger.error(err,'')});
+    if (JSON.stringify(settings) != '') fs.writeFile('settings.json', JSON.stringify(settings, null, 4), err => {if (err) logger.error(err,'')});
 }
 
 /**

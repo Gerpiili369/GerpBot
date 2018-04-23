@@ -8,47 +8,82 @@
     "footer": {
         "text": "<footer content here>"
     },
-    "fields": [{
-        "name": "`@GerpBot help`",
-        "value": "Displays this message."
-    },{
-        "name": "`@GerpBot server`",
-        "value": "Gives information about the server"
-    },{
-        "name": "`@GerpBot user <@mention>`",
-        "value": "Gives information about a user"
-    },{
-        "name": "`@GerpBot ping`",
-        "value": "Pong!"
-    },{
-        "name": "`@GerpBot pi`",
-        "value": "Gives you the π"
-    },{
-        "name": "`@GerpBot nerfThis`",
-        "value": "Activates D.Va's ultimate ability \"Self destruct\"."
-    },{
-        "name": "`@GerpBot echo <message> ...`",
-        "value": "GerpBot responds with argument determined message. This command may have *some* issues."
-    },{
-        "name": "`@GerpBot getGerp`",
-        "value": "@mentions Gerpiili369"
-    },{
-        "name": "`@GerpBot uptime [ startUp | connection | lastCommand ]`",
-        "value": "Get uptime since a specific event"
-    },{
-        "name": "`@GerpBot vote  <def|gold @mention> <emoji1>[=<option1>] ...`",
-        "value": "Starts a vote. A really cool one"
-    },{
-        "name": "`@GerpBot autoCompliment < sample | on | off | add | remove | list > [ @mention ]`",
-        "value": "Our little secret :3"
-    },{
-        "name": "`@GerpBot autoShit < set [ @role ] | clean >`",
-        "value": "Makes one role shit"
-    },{
-        "name": "`@GerpBot effect < rainbow | shuffle >`",
-        "value": "Toggles @GerpBot name effects"
-    },{
-        "name": "`@GerpBot handle < name >`",
-        "value": "Changes @GerpBot's nickname"
-    }]
+    "fields": [
+        {
+            "name": "`@GerpBot help`",
+            "value": "Displays this message."
+        },
+        {
+            "name": "`@GerpBot server`",
+            "value": "Gives information about the server"
+        },
+        {
+            "name": "`@GerpBot user <@mention>`",
+            "value": "Gives information about an user"
+        },
+        {
+            "name": "`@GerpBot role <@role>`",
+            "value": "Gives information about a role"
+        },
+        {
+            "name": "`@GerpBot raffle [everyone|here|<@role>] [<number of winners>]`",
+            "value": "Randomly selects users from given gategory"
+        },
+        {
+            "name": "`@GerpBot ping`",
+            "value": "Pong!"
+        },
+        {
+            "name": "`@GerpBot pi`",
+            "value": "Gives you the π"
+        },
+        {
+            "name": "`@GerpBot nerfThis`",
+            "value": "Activates D.Va's ultimate ability \"Self destruct\"."
+        },
+        {
+            "name": "`@GerpBot echo <message> ...`",
+            "value": "GerpBot responds with argument determined message. This command may have *some* issues."
+        },
+        {
+            "name": "`@GerpBot getGerp`",
+            "value": "@mentions Gerpiili369"
+        },
+        {
+            "name": "`@GerpBot uptime startUp | connection | lastCommand`",
+            "value": "Get uptime since a specific event"
+        },
+        {
+            "name": "`@GerpBot ask <question>`",
+            "value": "Ask anything! Even works without the `ask` -part, if `?` is used instead: `@GerpBot [<question>] ? [<question>]`"
+        },
+        {
+            "name": "`@GerpBot vote (def|gold <@mention>) <emoji1>[=<option1>]...`",
+            "value": "Starts a vote. A really cool one"
+        },
+        {
+            "name": "`@GerpBot kps play | ai | friend <name> | rock | paper | scissors | classic | horror | space | hand | quit`",
+            "value": "Play KPS"
+        },
+        {
+            "name": "`@GerpBot ile join | leave | here | time`",
+            "value": "For more info: `@GerpBot ile`"
+        },
+        {
+            "name": "`@GerpBot autoCompliment sample | on | off | add <@mention> | remove <@mention> | list`",
+            "value": "Our little secret :3"
+        },
+        {
+            "name": "`@GerpBot shit set <@role> | clean`",
+            "value": "Makes one role shit"
+        },
+        {
+            "name": "`@GerpBot effect rainbow | shuffle`",
+            "value": "Toggles GerpBot name effects"
+        },
+        {
+            "name": "`@GerpBot handle <name>`",
+            "value": "Changes GerpBot's nickname"
+        }
+    ]
 }
