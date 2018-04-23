@@ -27,7 +27,7 @@
         },
         {
             "name": "`@GerpBot raffle [everyone|here|<@role>] [<number of winners>]`",
-            "value": "Randomly selects users from given gategory"
+            "value": "Randomly selects users from given category"
         },
         {
             "name": "`@GerpBot ping`",
