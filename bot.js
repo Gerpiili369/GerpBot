@@ -756,7 +756,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         msg(channelID,`I will now be known as "${args[0]}"`);
                     } else {
                         args[0] = null;
-                        msg(channelID,'Nickanem reset.');
+                        msg(channelID,'Nickname reset.');
                     }
 
                     settings.servers[serverID].nick = args[0];
