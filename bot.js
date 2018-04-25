@@ -53,7 +53,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     else if (bot.directMessages[channelID]) server = false;
     else return;
 
-    if (snowmaker(message.split(' ')[0]) == bot.id && userID != bot.id) {
+    if ((!server || snowmaker(message.split(' ')[0]) == bot.id) && userID != bot.id) {
         bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
 
         let admin = false;
@@ -65,8 +65,14 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         }
 
         var args = message.split(' ');
-        var cmd = args[1];
-        args = args.splice(2);
+
+        if (snowmaker(message.split(' ')[0]) == bot.id) {
+            var cmd = args[1];
+            args = args.splice(2);
+        } else {
+            var cmd = args[0];
+            args = args.splice(1);
+        }
 
         switch (cmd) {
             case 'help':
