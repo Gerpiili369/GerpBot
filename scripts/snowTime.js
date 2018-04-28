@@ -1,5 +1,55 @@
 module.exports = {
     /**
+     * @arg {String} input
+     * @returns {Number|String}
+     */
+    anyTimeToMs(input) {
+        if (!input) return 'Invalid input!';
+
+        let
+            num = [],
+            unit = [],
+            outOfNumbers = false;
+
+        input = input.split('');
+
+        for (let i = 0; i < input.length; i++) {
+            if (!isNaN(input[i])) {
+                if (!outOfNumbers) {
+                    num.push(input[i])
+                } else return('Numbers after letters not allowed!');
+            } else {
+                outOfNumbers = true;
+                unit.push(input[i]);
+            }
+        }
+
+        if (num.length === 0) num = ['1'];
+
+        num = Number(num.join(''));
+        unit = unit.join('');
+
+        if (unit === '') return 'Unit missing!';
+
+        switch (unit) {
+            case 'y':
+                num *= 365;
+            case 'd':
+                num *= 24;
+            case 'h':
+                num *= 60;
+            case 'min':
+                num *= 60;
+            case 's':
+                num *= 1000;
+            case 'ms':
+                return num;
+            default:
+                return 'Incorrect unit!'
+        }
+    },
+
+    /**
      * @arg {Date} start
      * @arg {Date} [end]
      * @returns {Uptime}

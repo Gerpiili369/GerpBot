@@ -16,6 +16,7 @@ logger.add(logger.transports.Console, {
 logger.level = 'debug';
 
 const
+    anyTimeToMs = snowTime.anyTimeToMs,
     calculateUptime = snowTime.calculateUptime,
     uptimeToString = snowTime.uptimeToString,
     sfToDate = snowTime.sfToDate,
