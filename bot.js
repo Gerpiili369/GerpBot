@@ -993,6 +993,14 @@ function startReminding() {
     }
 }
 
+/**
+ * @arg {Object} reminder
+ * @arg {String} reminder.creator
+ * @arg {String|Number} reminder.color
+ * @arg {Number} reminder.time
+ * @arg {Snowflake} reminder.channel
+ * @arg {String} reminder.message
+ */
 function remindTimeout(reminder) {
     let re = {
         title: 'Reminder',
