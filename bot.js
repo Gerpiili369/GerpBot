@@ -612,6 +612,46 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         break;
                 }
                 break;
+            case 'remind':
+                if (args[0]) {
+                    let reminder = {
+                        creator: user,
+                        color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                        time: anyTimeToMs(args.shift()),
+                        channel: channelID
+                    };
+
+                    if (isNaN(reminder.time)) {
+                        msg(channelID,reminder.time);
+                        break;
+                    }
+
+                    for (let i = 0; i < args.length; i++) {
+                        if (!isNaN(anyTimeToMs(args[i]))) reminder.time += anyTimeToMs(args[i]);
+                        else {
+                            reminder.channel = snowmaker(args[i]);
+                            if (
+                                Object.keys(bot.users).indexOf(reminder.channel) != -1 ||
+                                Object.keys(bot.channels).indexOf(reminder.channel) != -1
+                            ) {
+                                args.shift()
+                            } else {
+                                reminder.channel = channelID;
+                            }
+                            args.splice(0,i);
+
+                            if (args.length > 0) reminder.message = args.join(' ');
+                            break;
+                        }
+                    }
+
+                    settings.reminders.push(reminder);
+                    updateSettings();
+                    remindTimeout(reminder);
+
+                    msg(channelID,'I will remind when the time comes...')
+                } else msg(channelID,'Wait when?')
+                break;
             case 'autoAnswer':
                 if (server) {
                     if (settings.servers[serverID].disableAnswers) {
@@ -838,6 +878,7 @@ function msg(channel,msg,embed) {
 function afterLogin() {
     updateHelp();
     startIle();
+    startReminding();
     let requests = Object.keys(bot.servers).map(server => {
         if (typeof settings.servers[server] == 'undefined') {
             settings.servers[server] = {
@@ -938,6 +979,36 @@ function startIle() {
             });
         });
     }
+}
+
+function startReminding() {
+    if (!startedOnce) {
+        if (settings.reminders) {
+            settings.reminders.forEach(v => {
+                remindTimeout(v);
+            });
+        } else {
+            settings.reminders = [];
+        }
+    }
+}
+
+function remindTimeout(reminder) {
+    let re = {
+        title: 'Reminder',
+        description: reminder.message,
+        color: reminder.color,
+        footer: {
+            text: `Created by ${reminder.creator}`
+        }
+    };
+
+    setTimeout(() => {
+        settings.reminders.splice(settings.reminders.indexOf(reminder),1);
+        updateSettings();
+
+        msg(reminder.channel,'', re)
+    }, reminder.time);
 }
 
 /**
