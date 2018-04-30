@@ -29,6 +29,7 @@ const
 
 var
     online = false,
+    startedOnce = false;
     settings = getJSON('settings'),
     timeOf = {
         startUp: Date.now()
@@ -868,6 +869,7 @@ function afterLogin() {
 
     Promise.all(requests).then(() => {
         online = true;
+        startedOnce = true;
         updateSettings();
     });
 }
