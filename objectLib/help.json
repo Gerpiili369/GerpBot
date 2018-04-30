@@ -70,7 +70,7 @@
             "value": "For more info: `@GerpBot ile`"
         },
         {
-            "name": "`@GerpBot remind ([<amount>]ms|[<amount>]s|[<amount>]min|[<amount>]h|[<amount>]d|[<amount>]y)... [<#channel>|<@mention>] [<message>]...`",
+            "name": "`@GerpBot remind [<#channel>|<@mention>] ([<amount>]ms|[<amount>]s|[<amount>]min|[<amount>]h|[<amount>]d|[<amount>]y)... [<message>]...`",
             "value": "Reminds after a specific amount of time. Can be sent to another channel or person (PM). A message can also be displayed."
         },
         {

@@ -616,11 +616,20 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (args[0]) {
                     let reminder = {
                         creator: user,
-                        color: server ? bot.servers[serverID].members[userID].color : 16738816,
-                        time: anyTimeToMs(args.shift()),
-                        channel: channelID
+                        color: server ? bot.servers[serverID].members[userID].color : 16738816
                     };
 
+                    reminder.channel = snowmaker(args[0]);
+                    if (
+                        Object.keys(bot.users).indexOf(reminder.channel) != -1 ||
+                        Object.keys(bot.channels).indexOf(reminder.channel) != -1
+                    ) {
+                        args.shift()
+                    } else {
+                        reminder.channel = channelID;
+                    }
+
+                    reminder.time = anyTimeToMs(args.shift());
                     if (isNaN(reminder.time)) {
                         msg(channelID,reminder.time);
                         break;
@@ -629,15 +638,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     for (let i = 0; i < args.length; i++) {
                         if (!isNaN(anyTimeToMs(args[i]))) reminder.time += anyTimeToMs(args[i]);
                         else {
-                            reminder.channel = snowmaker(args[i]);
-                            if (
-                                Object.keys(bot.users).indexOf(reminder.channel) != -1 ||
-                                Object.keys(bot.channels).indexOf(reminder.channel) != -1
-                            ) {
-                                args.shift()
-                            } else {
-                                reminder.channel = channelID;
-                            }
                             args.splice(0,i);
 
                             if (args.length > 0) reminder.message = args.join(' ');
