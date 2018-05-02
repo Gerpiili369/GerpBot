@@ -109,6 +109,25 @@ module.exports = {
     },
 
     /**
+     * @arg {String} dateString
+     * @returns {Date}
+     */
+    datemaker(dateString) {
+        let date, current = new Date().toISOString();
+        if (dateString.indexOf('T') == -1) {
+            dateString = `${current.substring(0,current.indexOf('T'))}T` + dateString;
+            date = new Date(dateString);
+            if (date < new Date()) {
+                date.setDate(date.getDate()+1);
+            }
+        } else {
+            date = new Date(dateString);
+        }
+
+        return date;
+    },
+
+    /**
      * @arg {String} tz
      * @returns {Boolean}
      */
