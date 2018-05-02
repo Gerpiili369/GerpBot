@@ -74,6 +74,10 @@
             "value": "Reminds after a specific amount of time. Can be sent to another channel or person (PM). A message can also be displayed."
         },
         {
+            "name": "`@GerpBot timezone +<HH>:<MM> | -<HH>:<MM>",
+            "value": "Set your timezone for the bot"
+        },
+        {
             "name": "`@GerpBot autoCompliment sample | on | off | add <@mention> | remove <@mention> | list`",
             "value": "Our little secret :3"
         },
