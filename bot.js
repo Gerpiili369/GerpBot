@@ -15,12 +15,10 @@ logger.add(logger.transports.Console, {
 });
 logger.level = 'debug';
 
+
+for (var func in snowTime) eval(`function ${snowTime[func]}`);
+
 const
-    anyTimeToMs = snowTime.anyTimeToMs,
-    calculateUptime = snowTime.calculateUptime,
-    uptimeToString = snowTime.uptimeToString,
-    sfToDate = snowTime.sfToDate,
-    snowmaker = snowTime.snowmaker
     objectLib = getJSON(['help','compliments','defaultRes','games','answers','ileAcronym'],'objectLib/'),
     bot = new Discord.Client({
         token: auth.token,
