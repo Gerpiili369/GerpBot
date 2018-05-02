@@ -634,8 +634,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                     reminder.time += anyTimeToMs(args[0]);
                     if (isNaN(reminder.time)) {
-                        msg(channelID,reminder.time);
-                        break;
+                        if (settings.tz[userID]) args[0] += settings.tz[userID];
+                        else {
+                            args[0] += 'Z';
+                            msg(channelID,`Using the default UTC+00:00 timezone. You can change your timezone with "\`@${bot.username} timezone\` -command"`);
+                        }
+                        reminder.time = datemaker([args[0]]);
+                        if (reminder.time == 'Invalid Date') {
+                            msg(channelID,'Time syntax: `([<amount>]ms|[<amount>]s|[<amount>]min|[<amount>]h|[<amount>]d|[<amount>]y)...` or `[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]`');
+                            break;
+                        } else reminder.time = reminder.time.getTime();
                     }
 
                     for (let i = 1; i < args.length; i++) {
