@@ -109,6 +109,14 @@ module.exports = {
     },
 
     /**
+     * @arg {String} tz
+     * @returns {Boolean}
+     */
+    isValidTimezone(tz) {
+        return new Date(`2017-12-08T12:36:24${tz}`) != 'Invalid Date' ? true : false;
+    },
+
+    /**
      * @returns {String}
      */
     info() {
