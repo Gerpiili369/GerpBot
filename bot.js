@@ -1017,7 +1017,7 @@ function remindTimeout(reminder) {
         updateSettings();
 
         msg(reminder.channel,'', re)
-    }, Date.now() - reminder.time);
+    }, reminder.time - Date.now());
 }
 
 /**
