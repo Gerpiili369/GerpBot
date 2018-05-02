@@ -615,7 +615,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'remind':
                 if (args[0]) {
                     let reminder = {
-                        creator: user,
+                        creator: {
+                            name: user,
+                            id: userID
+                        },
                         color: server ? bot.servers[serverID].members[userID].color : 16738816,
                         time: Date.now()
                     };
@@ -1008,7 +1011,7 @@ function remindTimeout(reminder) {
         description: reminder.message,
         color: reminder.color,
         footer: {
-            text: `Created by ${reminder.creator}`
+            text: `Created by ${reminder.creator.name}`
         }
     };
 
