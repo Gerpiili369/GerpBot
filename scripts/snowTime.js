@@ -106,6 +106,13 @@ module.exports = {
         input.forEach((v,i,a) => {if (!isNaN(Number(v))) sf.push(v);});
 
         return sf.join('');
+    },
+
+    /**
+     * @returns {String}
+     */
+    info() {
+        return 'Time and Snowflake function library.';
     }
 }
 
