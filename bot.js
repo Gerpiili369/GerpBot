@@ -616,7 +616,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (args[0]) {
                     let reminder = {
                         creator: user,
-                        color: server ? bot.servers[serverID].members[userID].color : 16738816
+                        color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                        time: Date.now()
                     };
 
                     reminder.channel = snowmaker(args[0]);
@@ -629,7 +630,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         reminder.channel = channelID;
                     }
 
-                    reminder.time = anyTimeToMs(args.shift());
+                    reminder.time += anyTimeToMs(args.shift());
                     if (isNaN(reminder.time)) {
                         msg(channelID,reminder.time);
                         break;
@@ -1016,7 +1017,7 @@ function remindTimeout(reminder) {
         updateSettings();
 
         msg(reminder.channel,'', re)
-    }, reminder.time);
+    }, Date.now() - reminder.time);
 }
 
 /**
