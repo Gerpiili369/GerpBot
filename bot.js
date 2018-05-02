@@ -1071,7 +1071,17 @@ function getJSON(file,location = '') {
 }
 
 function updateSettings() {
-    if (JSON.stringify(settings) != '') fs.writeFile('settings.json', JSON.stringify(settings, null, 4), err => {if (err) logger.error(err,'')});
+    if (JSON.stringify(settings) != '') {
+        fs.writeFile(`settings.json`, JSON.stringify(settings, null, 4), err => {
+            if (err) logger.error(err,'');
+            else try {
+                JSON.parse(fs.readFileSync('settings.json', 'utf-8', err => {if (err) logger.error(err,'');}));
+            }
+            catch(err) {
+                updateSettings();
+            }
+        });
+    }
 }
 
 /**
