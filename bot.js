@@ -36,6 +36,7 @@ var
     ile = new Ile(getJSON('ile'),objectLib.ileAcronym);
 
 if (settings.servers === undefined) settings.servers = {};
+if (settings.tz === undefined) settings.tz = {};
 
 startLoops();
 
@@ -653,6 +654,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                     msg(channelID,'I will remind when the time comes...')
                 } else msg(channelID,'Wait when?')
+                break;
+            case 'timezone':
+                if (isValidTimezone(args[0])) {
+                    settings.tz[userID] = args[0];
+                    updateSettings();
+                    msg(channelID,`Your timezone is set to: UTC${args[0]}`);
+                } else {
+                    msg(channelID,'NA timezoning command. Try `+HH:MM` or `-HH:MM` instead');
+                }
                 break;
             case 'autoAnswer':
                 if (server) {
