@@ -632,13 +632,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         reminder.channel = channelID;
                     }
 
-                    reminder.time += anyTimeToMs(args.shift());
+                    reminder.time += anyTimeToMs(args[0]);
                     if (isNaN(reminder.time)) {
                         msg(channelID,reminder.time);
                         break;
                     }
 
-                    for (let i = 0; i < args.length; i++) {
+                    for (let i = 1; i < args.length; i++) {
                         if (!isNaN(anyTimeToMs(args[i]))) reminder.time += anyTimeToMs(args[i]);
                         else {
                             args.splice(0,i);
