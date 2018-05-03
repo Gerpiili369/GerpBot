@@ -648,6 +648,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             break;
                         default:
                             let reminder = {
+                                mentions: '',
                                 creator: {
                                     name: user,
                                     id: userID
@@ -665,6 +666,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             } else {
                                 reminder.channel = channelID;
                             }
+
+                            evt.d.mentions.forEach(v => {
+                                if (v.id != bot.id && v.id != reminder.channel) reminder.mentions += `<@${v.id}> `;
+                            });
+
+                            if (reminder.mentions === '' && bot.channels[reminder.channel]) reminder.mentions = `<@${reminder.creator.id}>`;
 
                             reminder.time += anyTimeToMs(args[0]);
                             if (isNaN(reminder.time)) {
@@ -1090,7 +1097,7 @@ function remindTimeout(reminder, i = settings.reminders.indexOf(reminder)) {
         delete settings.reminders[i];
         updateSettings();
 
-        msg(reminder.channel,'', re)
+        msg(reminder.channel, reminder.mentions, re)
     }, reminder.time - Date.now());
 }
 
