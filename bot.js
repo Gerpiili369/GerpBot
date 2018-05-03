@@ -615,6 +615,27 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'remind':
                 if (args[0]) {
                     switch (args[0]) {
+                        case 'list':
+                            let rle = {
+                                title: 'List of your reminders',
+                                color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                                fields: []
+                            };
+
+                            settings.reminders.forEach((v,i,a) => {
+                                if (typeof v == 'object'
+                                    && v.creator.id == userID
+                                ) rle.fields.push({
+                                    name: `Reminder #${i}`,
+                                    value:
+                                        `Time: ${new Date(v.time)} \n` +
+                                        `Channel: ${v.channel} \n` +
+                                        `Message: ${v.message}`
+                                });
+                            });
+
+                            msg(channelID, '', rle);
+                            break;
                         default:
                             let reminder = {
                                 creator: {
@@ -674,6 +695,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     time: Date.now(),
                     channel: channelID,
                     message: `**How to** \n` +
+                        'Do stuff:\n' +
+                        `\`@${bot.username} remind list\`\n` +
                         'Set reminder at a specific time:\n' +
                         `\`@${bot.username} remind [<#channel>|<@mention>] [<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>] [<message>]...\`\n` +
                         'Set reminder after set amount of time:\n' +
