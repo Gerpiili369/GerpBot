@@ -29,6 +29,7 @@ var
     online = false,
     startedOnce = false;
     settings = getJSON('settings'),
+    reminderTimeouts = [],
     timeOf = {
         startUp: Date.now()
     },
@@ -1052,7 +1053,7 @@ function remindTimeout(reminder, i = settings.reminders.indexOf(reminder)) {
         }
     };
 
-    setTimeout(() => {
+    reminderTimeouts[i] = setTimeout(() => {
         delete settings.reminders[i];
         updateSettings();
 
