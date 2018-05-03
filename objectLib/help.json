@@ -78,7 +78,7 @@
             "value": "Gives you a list of your reminders or cancel one of your reminders"
         },
         {
-            "name": "`@GerpBot timezone +<HH>:<MM> | -<HH>:<MM>",
+            "name": "`@GerpBot timezone +<HH>:<MM> | -<HH>:<MM>`",
             "value": "Set your timezone for the bot"
         },
         {
