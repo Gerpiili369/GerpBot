@@ -146,6 +146,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     ]
                 };
 
+                if (settings.tz[serverID]) ie.description += `\n**Server time:** \`${timeAt(settings.tz[serverID])}\``
+
                 msg(channelID,'Here you go:',ie);
                 break;
             case 'user':
@@ -174,6 +176,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     ue.thumbnail = {
                         url: `https://cdn.discordapp.com/avatars/${ui.id}/${bot.users[ui.id].avatar}.png`
                     }
+
+                    if (settings.tz[ui.id]) ue.description += `\n**Local time:** \`${timeAt(settings.tz[ui.id])}\``
 
                     let cleanRoll = [], status = '';
                     if (server) {
