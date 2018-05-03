@@ -150,6 +150,18 @@ module.exports = {
     },
     
     /**
+     * @arg {Object} tz
+     * @arg {Array} keys
+     * @returns {String}
+     */
+    findTimeZone(tz, keys) {
+        for (let i = 0; i < keys.length; i++) {
+            if (tz[keys[i]] && isValidTimezone(tz[keys[i]])) return tz[keys[i]];
+        }
+        return '+00:00';
+    },
+
+    /**
      * @returns {String}
      */
     info() {
