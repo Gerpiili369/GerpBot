@@ -141,7 +141,7 @@ module.exports = {
      * @arg {Date} d
      * @returns {String}
      */
-     timeAt(timezone, d = new Date()) {
+    timeAt(timezone, d = new Date()) {
         const tz = timezone.split(':');
 
         d.setHours(d.getHours() + Number(tz[0]) + Number(tz[1]/60));
