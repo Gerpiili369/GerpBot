@@ -1020,9 +1020,11 @@ function startIle() {
 function startReminding() {
     if (!startedOnce) {
         if (settings.reminders) {
-            settings.reminders.forEach(v => {
-                remindTimeout(v);
+            settings.reminders.forEach((v,i) => {
+                if (v == null) settings.reminders.splice(i,1);
+                else remindTimeout(v);
             });
+            updateSettings();
         } else {
             settings.reminders = [];
         }
@@ -1050,7 +1052,7 @@ function remindTimeout(reminder) {
     };
 
     setTimeout(() => {
-        settings.reminders.splice(settings.reminders.indexOf(reminder),1);
+        delete settings.reminders[settings.reminders.indexOf(reminder)];
         updateSettings();
 
         msg(reminder.channel,'', re)
