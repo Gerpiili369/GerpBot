@@ -1031,7 +1031,9 @@ function startReminding() {
 
 /**
  * @arg {Object} reminder
- * @arg {String} reminder.creator
+ * @arg {Object} reminder.creator
+ * @arg {Object} reminder.creator.name
+ * @arg {Object} reminder.creator.id
  * @arg {String|Number} reminder.color
  * @arg {Number} reminder.time
  * @arg {Snowflake} reminder.channel
