@@ -1023,7 +1023,7 @@ function startReminding() {
             for (let v, i = settings.reminders.length-1; i >= 0; i--) {
                 v = settings.reminders[i];
                 if (v == null) settings.reminders.splice(i,1);
-                else remindTimeout(v);
+                else remindTimeout(v,i);
             }
             updateSettings();
         } else {
@@ -1042,7 +1042,7 @@ function startReminding() {
  * @arg {Snowflake} reminder.channel
  * @arg {String} reminder.message
  */
-function remindTimeout(reminder) {
+function remindTimeout(reminder, i = settings.reminders.indexOf(reminder)) {
     let re = {
         title: 'Reminder',
         description: reminder.message,
@@ -1053,7 +1053,7 @@ function remindTimeout(reminder) {
     };
 
     setTimeout(() => {
-        delete settings.reminders[settings.reminders.indexOf(reminder)];
+        delete settings.reminders[i];
         updateSettings();
 
         msg(reminder.channel,'', re)
