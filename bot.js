@@ -119,7 +119,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 let ie = {
                     title: `Information about "${bot.servers[serverID].name}"`,
                     description: `**Created by:** <@${bot.servers[serverID].owner_id}>\n` +
-                        `**Creation date:** \`${sfToDate(serverID)}\`\n` +
+                        `**Creation date:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(serverID))}\`\n` +
                         `**Age:** \`${uptimeToString(si.age)}\``,
                     color: bot.servers[serverID].members[userID].color,
                     timestamp: bot.servers[serverID].joined_at,
@@ -168,7 +168,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     let ue = {
                         title: `Information about "${bot.users[ui.id].username}#${bot.users[ui.id].discriminator}"`,
                         description: `**Also known as:** "<@${ui.id}>"\n` +
-                            `**User created:** \`${sfToDate(ui.id)}\`\n` +
+                            `**User created:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ui.id))}\`\n` +
                             `**Age:** \`${uptimeToString(ui.age)}\``,
                         color: server ? bot.servers[serverID].members[ui.id].color : 16738816
                     };
@@ -236,7 +236,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     let re = {
                         title: `Information about "${role.name}"`,
                         description: `<@&${role.id}>\n` +
-                            `**Role created:** \`${sfToDate(role.id)}\`\n` +
+                            `**Role created:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(role.id))}\`\n` +
                             `**Age:** ${uptimeToString(calculateUptime(sfToDate(role.id)))}\``,
                         color: role.color
                     };
@@ -632,7 +632,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 ) rle.fields.push({
                                     name: `Reminder #${i}`,
                                     value:
-                                        `Time: ${new Date(v.time)} \n` +
+                                        `Time: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(v.time))} \n` +
                                         `Channel: ${v.channel} \n` +
                                         `Message: ${v.message}`
                                 });
