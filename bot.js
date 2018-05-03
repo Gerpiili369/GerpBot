@@ -120,7 +120,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     title: `Information about "${bot.servers[serverID].name}"`,
                     description: `**Created by:** <@${bot.servers[serverID].owner_id}>\n` +
                         `**Creation date:** \`${sfToDate(serverID)}\`\n` +
-                        `**Age:** ${uptimeToString(si.age)}\``,
+                        `**Age:** \`${uptimeToString(si.age)}\``,
                     color: bot.servers[serverID].members[userID].color,
                     timestamp: bot.servers[serverID].joined_at,
                     footer: {
@@ -169,7 +169,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         title: `Information about "${bot.users[ui.id].username}#${bot.users[ui.id].discriminator}"`,
                         description: `**Also known as:** "<@${ui.id}>"\n` +
                             `**User created:** \`${sfToDate(ui.id)}\`\n` +
-                            `**Age:** ${uptimeToString(ui.age)}\``,
+                            `**Age:** \`${uptimeToString(ui.age)}\``,
                         color: server ? bot.servers[serverID].members[ui.id].color : 16738816
                     };
 
