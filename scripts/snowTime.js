@@ -132,6 +132,7 @@ module.exports = {
      * @returns {Boolean}
      */
     isValidTimezone(tz) {
+        if (tz === 'Z' || tz === 'z') return false;
         return new Date(`2017-12-08T12:36:24${tz}`) != 'Invalid Date' ? true : false;
     },
 
