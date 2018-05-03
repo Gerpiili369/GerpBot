@@ -613,55 +613,71 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'remind':
                 if (args[0]) {
-                    let reminder = {
-                        creator: {
-                            name: user,
-                            id: userID
-                        },
-                        color: server ? bot.servers[serverID].members[userID].color : 16738816,
-                        time: Date.now()
-                    };
+                    switch (args[0]) {
+                        default:
+                            let reminder = {
+                                creator: {
+                                    name: user,
+                                    id: userID
+                                },
+                                color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                                time: Date.now()
+                            };
 
-                    reminder.channel = snowmaker(args[0]);
-                    if (
-                        Object.keys(bot.users).indexOf(reminder.channel) != -1 ||
-                        Object.keys(bot.channels).indexOf(reminder.channel) != -1
-                    ) {
-                        args.shift()
-                    } else {
-                        reminder.channel = channelID;
+                            reminder.channel = snowmaker(args[0]);
+                            if (
+                                Object.keys(bot.users).indexOf(reminder.channel) != -1 ||
+                                Object.keys(bot.channels).indexOf(reminder.channel) != -1
+                            ) {
+                                args.shift()
+                            } else {
+                                reminder.channel = channelID;
+                            }
+
+                            reminder.time += anyTimeToMs(args[0]);
+                            if (isNaN(reminder.time)) {
+                                if (settings.tz[userID]) args[0] += settings.tz[userID];
+                                else {
+                                    args[0] += 'Z';
+                                    msg(channelID,`Using the default UTC+00:00 timezone. You can change your timezone with "\`@${bot.username} timezone\` -command"`);
+                                }
+                                reminder.time = datemaker([args[0]]);
+                                if (reminder.time == 'Invalid Date') {
+                                    msg(channelID,'Time syntax: `([<amount>]ms|[<amount>]s|[<amount>]min|[<amount>]h|[<amount>]d|[<amount>]y)...` or `[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]`');
+                                    break;
+                                } else reminder.time = reminder.time.getTime();
+                            }
+
+                            for (let i = 1; i < args.length; i++) {
+                                if (!isNaN(anyTimeToMs(args[i]))) reminder.time += anyTimeToMs(args[i]);
+                                else {
+                                    args.splice(0,i);
+
+                                    if (args.length > 0) reminder.message = args.join(' ');
+                                    break;
+                                }
+                            }
+
+                            settings.reminders.push(reminder);
+                            updateSettings();
+                            remindTimeout(reminder);
+
+                            msg(channelID,'I will remind when the time comes...')
                     }
-
-                    reminder.time += anyTimeToMs(args[0]);
-                    if (isNaN(reminder.time)) {
-                        if (settings.tz[userID]) args[0] += settings.tz[userID];
-                        else {
-                            args[0] += 'Z';
-                            msg(channelID,`Using the default UTC+00:00 timezone. You can change your timezone with "\`@${bot.username} timezone\` -command"`);
-                        }
-                        reminder.time = datemaker([args[0]]);
-                        if (reminder.time == 'Invalid Date') {
-                            msg(channelID,'Time syntax: `([<amount>]ms|[<amount>]s|[<amount>]min|[<amount>]h|[<amount>]d|[<amount>]y)...` or `[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]`');
-                            break;
-                        } else reminder.time = reminder.time.getTime();
-                    }
-
-                    for (let i = 1; i < args.length; i++) {
-                        if (!isNaN(anyTimeToMs(args[i]))) reminder.time += anyTimeToMs(args[i]);
-                        else {
-                            args.splice(0,i);
-
-                            if (args.length > 0) reminder.message = args.join(' ');
-                            break;
-                        }
-                    }
-
-                    settings.reminders.push(reminder);
-                    updateSettings();
-                    remindTimeout(reminder);
-
-                    msg(channelID,'I will remind when the time comes...')
-                } else msg(channelID,'Wait when?')
+                } else remindTimeout({
+                    creator: {
+                        name: bot.username,
+                        id: bot.id
+                    },
+                    color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                    time: Date.now(),
+                    channel: channelID,
+                    message: `**How to** \n` +
+                        'Set reminder at a specific time:\n' +
+                        `\`@${bot.username} remind [<#channel>|<@mention>] [<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>] [<message>]...\`\n` +
+                        'Set reminder after set amount of time:\n' +
+                        `\`@${bot.username} remind [<#channel>|<@mention>] ([<amount>]ms|[<amount>]s|[<amount>]min|[<amount>]h|[<amount>]d|[<amount>]y)... [<message>]...\``
+                });
                 break;
             case 'timezone':
                 if (isValidTimezone(args[0])) {
