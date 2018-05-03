@@ -137,6 +137,19 @@ module.exports = {
     },
 
     /**
+     * @arg {String} timezone
+     * @arg {Date} d
+     * @returns {String}
+     */
+     timeAt(timezone, d = new Date()) {
+        const tz = timezone.split(':');
+
+        d.setHours(d.getHours() + Number(tz[0]) + Number(tz[1]/60));
+
+        return d.toUTCString().replace('GMT', 'UTC') + `${timezone}`;
+    },
+    
+    /**
      * @returns {String}
      */
     info() {
