@@ -636,6 +636,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                             msg(channelID, '', rle);
                             break;
+                        case 'cancel':
+                            if (typeof settings.reminders[args[1]] == 'object') {
+                                if (settings.reminders[args[1]].creator.id == userID) {
+                                    delete settings.reminders[args[1]];
+                                    clearTimeout(reminderTimeouts[args[1]]);
+                                    updateSettings();
+                                    msg(channelID,'Cancel succesful!')
+                                } else msg(channelID,'That\'s not yours!')
+                            } else msg(channelID,'Reminder doesn\'t exist!');
+                            break;
                         default:
                             let reminder = {
                                 creator: {
@@ -696,7 +706,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     channel: channelID,
                     message: `**How to** \n` +
                         'Do stuff:\n' +
-                        `\`@${bot.username} remind list\`\n` +
+                        `\`@${bot.username} remind list | (cancel <number>)\`\n` +
                         'Set reminder at a specific time:\n' +
                         `\`@${bot.username} remind [<#channel>|<@mention>] [<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>] [<message>]...\`\n` +
                         'Set reminder after set amount of time:\n' +

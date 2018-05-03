@@ -74,8 +74,8 @@
             "value": "Reminds after a specific amount of time or at a specific time. Can be sent to another channel or person (PM). A message can also be displayed."
         },
         {
-            "name": "`@GerpBot remind list`",
-            "value": "Gives you a list of your reminders"
+            "name": "`@GerpBot remind list | (cancel <number>)`",
+            "value": "Gives you a list of your reminders or cancel one of your reminders"
         },
         {
             "name": "`@GerpBot timezone +<HH>:<MM> | -<HH>:<MM>",
