@@ -677,8 +677,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (isNaN(reminder.time)) {
                                 if (settings.tz[userID]) args[0] += settings.tz[userID];
                                 else {
-                                    args[0] += 'Z';
-                                    msg(channelID,`Using the default UTC+00:00 timezone. You can change your timezone with "\`@${bot.username} timezone\` -command"`);
+                                    if (server && settings.tz[serverID]) {
+                                        args[0] += settings.tz[serverID];
+                                        msg(channelID,`Using the server default UTC${settings.tz[serverID]} timezone. You can change your timezone with "\`@${bot.username} timezone\` -command"`);
+                                    } else {
+                                        args[0] += 'Z';
+                                        msg(channelID,`Using the default UTC+00:00 timezone. You can change your timezone with "\`@${bot.username} timezone\` -command"`);
+                                    }
                                 }
                                 reminder.time = datemaker([args[0]]);
                                 if (reminder.time == 'Invalid Date') {
@@ -722,9 +727,21 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'timezone':
                 if (isValidTimezone(args[0])) {
-                    settings.tz[userID] = args[0];
-                    updateSettings();
-                    msg(channelID,`Your timezone is set to: UTC${args[0]}`);
+                    switch (args[1]) {
+                        case 'server':
+                            if (server && admin) {
+                                settings.tz[serverID] = args[0];
+                                updateSettings();
+                                msg(channelID,`Server timezone is set to: UTC${args[0]}`);
+                            } else {
+                                msg(channelID,'Unauthorized timezoning command. Try to git gud instead');
+                            }
+                            break;
+                        default:
+                            settings.tz[userID] = args[0];
+                            updateSettings();
+                            msg(channelID,`Your timezone is set to: UTC${args[0]}`);
+                    }
                 } else {
                     msg(channelID,'NA timezoning command. Try `+HH:MM` or `-HH:MM` instead');
                 }
