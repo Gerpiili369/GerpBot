@@ -1020,10 +1020,11 @@ function startIle() {
 function startReminding() {
     if (!startedOnce) {
         if (settings.reminders) {
-            settings.reminders.forEach((v,i) => {
+            for (let v, i = settings.reminders.length-1; i >= 0; i--) {
+                v = settings.reminders[i];
                 if (v == null) settings.reminders.splice(i,1);
                 else remindTimeout(v);
-            });
+            }
             updateSettings();
         } else {
             settings.reminders = [];
