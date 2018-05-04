@@ -1108,6 +1108,7 @@ function startReminding() {
 
 /**
  * @arg {Object} reminder
+ * @arg {String} reminder.mentions
  * @arg {Object} reminder.creator
  * @arg {Object} reminder.creator.name
  * @arg {Object} reminder.creator.id
