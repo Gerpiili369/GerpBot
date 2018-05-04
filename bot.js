@@ -663,8 +663,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                             reminder.channel = snowmaker(args[0]);
                             if (
-                                Object.keys(bot.users).indexOf(reminder.channel) != -1 ||
-                                Object.keys(bot.channels).indexOf(reminder.channel) != -1
+                                bot.users[reminder.channel] ||
+                                bot.channels[reminder.channel]
                             ) {
                                 args.shift()
                             } else {
