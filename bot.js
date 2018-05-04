@@ -671,12 +671,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 reminder.channel = channelID;
                             }
 
-                            evt.d.mentions.forEach(v => {
-                                if (v.id != bot.id && v.id != reminder.channel) reminder.mentions += `<@${v.id}> `;
-                            });
-
-                            if (reminder.mentions === '' && bot.channels[reminder.channel]) reminder.mentions = `<@${reminder.creator.id}>`;
-
                             reminder.time += anyTimeToMs(args[0]);
                             if (isNaN(reminder.time)) {
                                 if (settings.tz[userID]) args[0] += settings.tz[userID];
@@ -705,6 +699,24 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                     break;
                                 }
                             }
+
+                            args.forEach(v => {
+                                if (v === '@everyone' || v === '@here') reminder.mentions += v;
+                                else {
+                                    let role = snowmaker(v);
+                                    if (bot.channels[reminder.channel] && bot.servers[bot.channels[reminder.channel].guild_id].roles[role]) {
+                                        reminder.mentions += `<@&${role}>`;
+                                    } else if (server && bot.servers[serverID].roles[role]) {
+                                        reminder.message = reminder.message.replace(v, `@${bot.servers[serverID].roles[role].name}`);
+                                    }
+                                }
+                            });
+
+                            if (bot.channels[reminder.channel]) {
+                                evt.d.mentions.forEach(v => {
+                                    if (v.id != bot.id) reminder.mentions += `<@${v.id}> `;
+                                });
+                            } else reminder.mentions = '';
 
                             settings.reminders.push(reminder);
                             updateSettings();
