@@ -646,8 +646,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                     delete settings.reminders[args[1]];
                                     clearTimeout(reminderTimeouts[args[1]]);
                                     updateSettings();
-                                    msg(channelID,'Cancel succesful!')
-                                } else msg(channelID,'That\'s not yours!')
+                                    msg(channelID,'Cancel succesful!');
+                                } else msg(channelID,'That\'s not yours!');
                             } else msg(channelID,'Reminder doesn\'t exist!');
                             break;
                         default:
@@ -666,7 +666,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 bot.users[reminder.channel] ||
                                 bot.channels[reminder.channel]
                             ) {
-                                args.shift()
+                                args.shift();
                             } else {
                                 reminder.channel = channelID;
                             }
@@ -722,7 +722,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             updateSettings();
                             remindTimeout(reminder);
 
-                            msg(channelID,'I will remind when the time comes...')
+                            msg(channelID,'I will remind when the time comes...');
                     }
                 } else remindTimeout({
                     creator: {
@@ -1130,7 +1130,7 @@ function remindTimeout(reminder, i = settings.reminders.indexOf(reminder)) {
         delete settings.reminders[i];
         updateSettings();
 
-        msg(reminder.channel, reminder.mentions, re)
+        msg(reminder.channel, reminder.mentions, re);
     }, reminder.time - Date.now());
 }
 
