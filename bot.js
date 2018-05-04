@@ -725,6 +725,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             msg(channelID,'I will remind when the time comes...');
                     }
                 } else remindTimeout({
+                    mentions: `<@${userID}>`,
                     creator: {
                         name: bot.username,
                         id: bot.id
