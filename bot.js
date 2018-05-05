@@ -627,15 +627,26 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             };
 
                             settings.reminders.forEach((v,i,a) => {
-                                if (typeof v == 'object'
-                                    && v.creator.id == userID
-                                ) rle.fields.push({
-                                    name: `Reminder #${i}`,
-                                    value:
-                                        `Time: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(v.time))} \n` +
-                                        `Channel: ${v.channel} \n` +
-                                        `Message: ${v.message}`
-                                });
+                                if (typeof v == 'object' && v.creator.id == userID) {
+                                    let target;
+                                    if (bot.channels[v.channel]) {
+                                        target = `<#${v.channel}> (${bot.servers[bot.channels[v.channel].guild_id].name})`;
+                                    } else if (bot.directMessages[v.channel]) {
+                                        target = `<@${bot.directMessages[v.channel].recipient.id}> (DM)`;
+                                    } else if (bot.users[v.channel]) {
+                                        target = `<@${v.channel}> (DM)`;
+                                    } else {
+                                        target = v.channel;
+                                    }
+
+                                    rle.fields.push({
+                                        name: `Reminder #${i}`,
+                                        value:
+                                            `Time: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(v.time))} \n` +
+                                            `Channel: ${target} \n` +
+                                            `${v.message ? `Message: ${v.message}` : ''}`
+                                    });
+                                }
                             });
 
                             msg(channelID, '', rle);
