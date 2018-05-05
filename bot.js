@@ -609,7 +609,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         msg(channelID,ile.attend(userID));
                         break;
                     case 'time':
-                        msg(channelID,ile.getCheckpoint());
+                        let tzConv = ile.getCheckpoint().split(': ');
+                        tzConv[1] = timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(tzConv[1]));
+                        msg(channelID,tzConv.join(': '));
                         break;
                     default:
                         msg(channelID,`${ile.getAcronym()}: command structure: \`ile join | leave | here | time\``);
@@ -1093,6 +1095,11 @@ function startIle() {
                 let id = v.name.substring(v.name.indexOf('.') + 2);
                 v.name = v.name.replace(id,bot.users[id].username);
             });
+            let tzConv = message.split(': ');
+            if (tzConv[0] === 'Next checkpoint') {
+                tzConv[1] = timeAt(findTimeZone(settings.tz, [channel]), new Date(tzConv[1]));
+                message = tzConv.join(': ');
+            }
             msg(channel, message, embed);
         });
         ile.on('save', data => {
