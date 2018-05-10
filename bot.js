@@ -15,11 +15,10 @@ logger.add(logger.transports.Console, {
 });
 logger.level = 'debug';
 
+
+for (var func in snowTime) eval(`function ${snowTime[func]}`);
+
 const
-    calculateUptime = snowTime.calculateUptime,
-    uptimeToString = snowTime.uptimeToString,
-    sfToDate = snowTime.sfToDate,
-    snowmaker = snowTime.snowmaker
     objectLib = getJSON(['help','compliments','defaultRes','games','answers','ileAcronym'],'objectLib/'),
     bot = new Discord.Client({
         token: auth.token,
@@ -28,7 +27,9 @@ const
 
 var
     online = false,
+    startedOnce = false;
     settings = getJSON('settings'),
+    reminderTimeouts = [],
     timeOf = {
         startUp: Date.now()
     },
@@ -36,6 +37,7 @@ var
     ile = new Ile(getJSON('ile'),objectLib.ileAcronym);
 
 if (settings.servers === undefined) settings.servers = {};
+if (settings.tz === undefined) settings.tz = {};
 
 startLoops();
 
@@ -53,7 +55,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     else if (bot.directMessages[channelID]) server = false;
     else return;
 
-    if (snowmaker(message.split(' ')[0]) == bot.id && userID != bot.id) {
+    if ((!server || snowmaker(message.split(' ')[0]) == bot.id) && userID != bot.id) {
         bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
 
         let admin = false;
@@ -65,8 +67,14 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         }
 
         var args = message.split(' ');
-        var cmd = args[1];
-        args = args.splice(2);
+
+        if (snowmaker(message.split(' ')[0]) == bot.id) {
+            var cmd = args[1];
+            args = args.splice(2);
+        } else {
+            var cmd = args[0];
+            args = args.splice(1);
+        }
 
         switch (cmd) {
             case 'help':
@@ -111,8 +119,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 let ie = {
                     title: `Information about "${bot.servers[serverID].name}"`,
                     description: `**Created by:** <@${bot.servers[serverID].owner_id}>\n` +
-                        `**Creation date:** \`${sfToDate(serverID)}\`\n` +
-                        `**Age:** ${uptimeToString(si.age)}\``,
+                        `**Creation date:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(serverID))}\`\n` +
+                        `**Age:** \`${uptimeToString(si.age)}\``,
                     color: bot.servers[serverID].members[userID].color,
                     timestamp: bot.servers[serverID].joined_at,
                     footer: {
@@ -138,6 +146,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     ]
                 };
 
+                if (settings.tz[serverID]) ie.description += `\n**Server time:** \`${timeAt(settings.tz[serverID])}\``
+
                 msg(channelID,'Here you go:',ie);
                 break;
             case 'user':
@@ -158,14 +168,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     let ue = {
                         title: `Information about "${bot.users[ui.id].username}#${bot.users[ui.id].discriminator}"`,
                         description: `**Also known as:** "<@${ui.id}>"\n` +
-                            `**User created:** \`${sfToDate(ui.id)}\`\n` +
-                            `**Age:** ${uptimeToString(ui.age)}\``,
+                            `**User created:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ui.id))}\`\n` +
+                            `**Age:** \`${uptimeToString(ui.age)}\``,
                         color: server ? bot.servers[serverID].members[ui.id].color : 16738816
                     };
 
                     ue.thumbnail = {
                         url: `https://cdn.discordapp.com/avatars/${ui.id}/${bot.users[ui.id].avatar}.png`
                     }
+
+                    if (settings.tz[ui.id]) ue.description += `\n**Local time:** \`${timeAt(settings.tz[ui.id])}\``
 
                     let cleanRoll = [], status = '';
                     if (server) {
@@ -224,7 +236,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     let re = {
                         title: `Information about "${role.name}"`,
                         description: `<@&${role.id}>\n` +
-                            `**Role created:** \`${sfToDate(role.id)}\`\n` +
+                            `**Role created:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(role.id))}\`\n` +
                             `**Age:** ${uptimeToString(calculateUptime(sfToDate(role.id)))}\``,
                         color: role.color
                     };
@@ -597,11 +609,171 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         msg(channelID,ile.attend(userID));
                         break;
                     case 'time':
-                        msg(channelID,ile.getCheckpoint());
+                        let tzConv = ile.getCheckpoint().split(': ');
+                        tzConv[1] = timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(tzConv[1]));
+                        msg(channelID,tzConv.join(': '));
                         break;
                     default:
                         msg(channelID,`${ile.getAcronym()}: command structure: \`ile join | leave | here | time\``);
                         break;
+                }
+                break;
+            case 'remind':
+                if (args[0]) {
+                    switch (args[0]) {
+                        case 'list':
+                            let rle = {
+                                title: 'List of your reminders',
+                                color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                                fields: []
+                            };
+
+                            settings.reminders.forEach((v,i,a) => {
+                                if (typeof v == 'object' && v.creator.id == userID) {
+                                    let target;
+                                    if (bot.channels[v.channel]) {
+                                        target = `<#${v.channel}> (${bot.servers[bot.channels[v.channel].guild_id].name})`;
+                                    } else if (bot.directMessages[v.channel]) {
+                                        target = `<@${bot.directMessages[v.channel].recipient.id}> (DM)`;
+                                    } else if (bot.users[v.channel]) {
+                                        target = `<@${v.channel}> (DM)`;
+                                    } else {
+                                        target = v.channel;
+                                    }
+
+                                    rle.fields.push({
+                                        name: `Reminder #${i}`,
+                                        value:
+                                            `Time: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(v.time))} \n` +
+                                            `Channel: ${target} \n` +
+                                            `${v.message ? `Message: ${v.message}` : ''}`
+                                    });
+                                }
+                            });
+
+                            msg(channelID, '', rle);
+                            break;
+                        case 'cancel':
+                            if (typeof settings.reminders[args[1]] == 'object') {
+                                if (settings.reminders[args[1]].creator.id == userID) {
+                                    delete settings.reminders[args[1]];
+                                    clearTimeout(reminderTimeouts[args[1]]);
+                                    updateSettings();
+                                    msg(channelID,'Cancel succesful!');
+                                } else msg(channelID,'That\'s not yours!');
+                            } else msg(channelID,'Reminder doesn\'t exist!');
+                            break;
+                        default:
+                            let reminder = {
+                                mentions: '',
+                                creator: {
+                                    name: user,
+                                    id: userID
+                                },
+                                color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                                time: Date.now()
+                            };
+
+                            reminder.channel = snowmaker(args[0]);
+                            if (
+                                bot.users[reminder.channel] ||
+                                bot.channels[reminder.channel]
+                            ) {
+                                args.shift();
+                            } else {
+                                reminder.channel = channelID;
+                            }
+
+                            reminder.time += anyTimeToMs(args[0]);
+                            if (isNaN(reminder.time)) {
+                                if (settings.tz[userID]) args[0] += settings.tz[userID];
+                                else {
+                                    if (server && settings.tz[serverID]) {
+                                        args[0] += settings.tz[serverID];
+                                        msg(channelID,`Using the server default UTC${settings.tz[serverID]} timezone. You can change your timezone with "\`@${bot.username} timezone\` -command"`);
+                                    } else {
+                                        args[0] += 'Z';
+                                        msg(channelID,`Using the default UTC+00:00 timezone. You can change your timezone with "\`@${bot.username} timezone\` -command"`);
+                                    }
+                                }
+                                reminder.time = datemaker([args[0]]);
+                                if (reminder.time == 'Invalid Date') {
+                                    msg(channelID,'Time syntax: `([<amount>]ms|[<amount>]s|[<amount>]min|[<amount>]h|[<amount>]d|[<amount>]y)...` or `[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]`');
+                                    break;
+                                } else reminder.time = reminder.time.getTime();
+                            }
+
+                            for (let i = 1; i < args.length; i++) {
+                                if (!isNaN(anyTimeToMs(args[i]))) reminder.time += anyTimeToMs(args[i]);
+                                else {
+                                    args.splice(0,i);
+
+                                    if (args.length > 0) reminder.message = args.join(' ');
+                                    break;
+                                }
+                            }
+
+                            args.forEach(v => {
+                                if (v === '@everyone' || v === '@here') reminder.mentions += v;
+                                else {
+                                    let role = snowmaker(v);
+                                    if (bot.channels[reminder.channel] && bot.servers[bot.channels[reminder.channel].guild_id].roles[role]) {
+                                        reminder.mentions += `<@&${role}>`;
+                                    } else if (server && bot.servers[serverID].roles[role]) {
+                                        reminder.message = reminder.message.replace(v, `@${bot.servers[serverID].roles[role].name}`);
+                                    }
+                                }
+                            });
+
+                            if (bot.channels[reminder.channel]) {
+                                evt.d.mentions.forEach(v => {
+                                    if (v.id != bot.id) reminder.mentions += `<@${v.id}> `;
+                                });
+                            } else reminder.mentions = '';
+
+                            settings.reminders.push(reminder);
+                            updateSettings();
+                            remindTimeout(reminder);
+
+                            msg(channelID,'I will remind when the time comes...');
+                    }
+                } else remindTimeout({
+                    mentions: `<@${userID}>`,
+                    creator: {
+                        name: bot.username,
+                        id: bot.id
+                    },
+                    color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                    time: Date.now(),
+                    channel: channelID,
+                    message: `**How to** \n` +
+                        'Do stuff:\n' +
+                        `\`@${bot.username} remind list | (cancel <number>)\`\n` +
+                        'Set reminder at a specific time:\n' +
+                        `\`@${bot.username} remind [<#channel>|<@mention>] [<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>] [<message>]...\`\n` +
+                        'Set reminder after set amount of time:\n' +
+                        `\`@${bot.username} remind [<#channel>|<@mention>] ([<amount>]ms|[<amount>]s|[<amount>]min|[<amount>]h|[<amount>]d|[<amount>]y)... [<message>]...\``
+                });
+                break;
+            case 'timezone':
+                if (isValidTimezone(args[0])) {
+                    switch (args[1]) {
+                        case 'server':
+                            if (server && admin) {
+                                settings.tz[serverID] = args[0];
+                                updateSettings();
+                                msg(channelID,`Server timezone is set to: UTC${args[0]}`);
+                            } else {
+                                msg(channelID,'Unauthorized timezoning command. Try to git gud instead');
+                            }
+                            break;
+                        default:
+                            settings.tz[userID] = args[0];
+                            updateSettings();
+                            msg(channelID,`Your timezone is set to: UTC${args[0]}`);
+                    }
+                } else {
+                    msg(channelID,'NA timezoning command. Try `+HH:MM` or `-HH:MM` instead');
                 }
                 break;
             case 'autoAnswer':
@@ -830,6 +1002,7 @@ function msg(channel,msg,embed) {
 function afterLogin() {
     updateHelp();
     startIle();
+    startReminding();
     let requests = Object.keys(bot.servers).map(server => {
         if (typeof settings.servers[server] == 'undefined') {
             settings.servers[server] = {
@@ -861,6 +1034,7 @@ function afterLogin() {
 
     Promise.all(requests).then(() => {
         online = true;
+        startedOnce = true;
         updateSettings();
     });
 }
@@ -921,6 +1095,11 @@ function startIle() {
                 let id = v.name.substring(v.name.indexOf('.') + 2);
                 v.name = v.name.replace(id,bot.users[id].username);
             });
+            let tzConv = message.split(': ');
+            if (tzConv[0] === 'Next checkpoint') {
+                tzConv[1] = timeAt(findTimeZone(settings.tz, [channel]), new Date(tzConv[1]));
+                message = tzConv.join(': ');
+            }
             msg(channel, message, embed);
         });
         ile.on('save', data => {
@@ -929,6 +1108,50 @@ function startIle() {
             });
         });
     }
+}
+
+function startReminding() {
+    if (!startedOnce) {
+        if (settings.reminders) {
+            for (let v, i = settings.reminders.length-1; i >= 0; i--) {
+                v = settings.reminders[i];
+                if (v == null) settings.reminders.splice(i,1);
+                else remindTimeout(v,i);
+            }
+            updateSettings();
+        } else {
+            settings.reminders = [];
+        }
+    }
+}
+
+/**
+ * @arg {Object} reminder
+ * @arg {String} reminder.mentions
+ * @arg {Object} reminder.creator
+ * @arg {Object} reminder.creator.name
+ * @arg {Object} reminder.creator.id
+ * @arg {String|Number} reminder.color
+ * @arg {Number} reminder.time
+ * @arg {Snowflake} reminder.channel
+ * @arg {String} reminder.message
+ */
+function remindTimeout(reminder, i = settings.reminders.indexOf(reminder)) {
+    let re = {
+        title: 'Reminder',
+        description: reminder.message,
+        color: reminder.color,
+        footer: {
+            text: `Created by ${reminder.creator.name}`
+        }
+    };
+
+    reminderTimeouts[i] = setTimeout(() => {
+        delete settings.reminders[i];
+        updateSettings();
+
+        msg(reminder.channel, reminder.mentions, re);
+    }, reminder.time - Date.now());
 }
 
 /**
@@ -982,7 +1205,17 @@ function getJSON(file,location = '') {
 }
 
 function updateSettings() {
-    if (JSON.stringify(settings) != '') fs.writeFile('settings.json', JSON.stringify(settings, null, 4), err => {if (err) logger.error(err,'')});
+    if (JSON.stringify(settings) != '') {
+        fs.writeFile(`settings.json`, JSON.stringify(settings, null, 4), err => {
+            if (err) logger.error(err,'');
+            else try {
+                JSON.parse(fs.readFileSync('settings.json', 'utf-8', err => {if (err) logger.error(err,'');}));
+            }
+            catch(err) {
+                updateSettings();
+            }
+        });
+    }
 }
 
 /**

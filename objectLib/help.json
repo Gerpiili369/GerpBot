@@ -70,6 +70,18 @@
             "value": "For more info: `@GerpBot ile`"
         },
         {
+            "name": "`@GerpBot remind [<#channel>|<@mention>] (([<amount>]ms|[<amount>]s|[<amount>]min|[<amount>]h|[<amount>]d|[<amount>]y)...|[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]) [<message>]...`",
+            "value": "Reminds after a specific amount of time or at a specific time. Can be sent to another channel or person (PM). A message can also be displayed."
+        },
+        {
+            "name": "`@GerpBot remind list | (cancel <number>)`",
+            "value": "Gives you a list of your reminders or cancel one of your reminders"
+        },
+        {
+            "name": "`@GerpBot timezone +<HH>:<MM> | -<HH>:<MM>`",
+            "value": "Set your timezone for the bot"
+        },
+        {
             "name": "`@GerpBot autoCompliment sample | on | off | add <@mention> | remove <@mention> | list`",
             "value": "Our little secret :3"
         },
