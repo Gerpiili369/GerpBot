@@ -4,8 +4,8 @@ const
     auth = require('./auth.json'),
     fs = require('fs'),
     io = require('socket.io-client'),
+    snowTime = require('snowtime'),
 
-    snowTime = require('./scripts/snowTime.js'),
     Ile = require('./scripts/ile.js');
 
 logger.remove(logger.transports.Console);

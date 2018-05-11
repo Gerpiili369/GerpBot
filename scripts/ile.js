@@ -1,6 +1,6 @@
 const
     Emitter = require('events'),
-    snowTime = require('./snowTime'),
+    snowTime = require('snowtime'),
     calculateUptime = snowTime.calculateUptime,
     uptimeToString = snowTime.uptimeToString;
 
