@@ -15,8 +15,7 @@ logger.add(logger.transports.Console, {
 });
 logger.level = 'debug';
 
-
-for (var func in snowTime) eval(`function ${snowTime[func]}`);
+for (var func in snowTime) eval(`${func} = snowTime.${func}`);
 
 const
     objectLib = getJSON(['help','compliments','defaultRes','games','answers','ileAcronym'],'objectLib/'),
