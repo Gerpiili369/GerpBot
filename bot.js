@@ -355,7 +355,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 switch (args[0]) {
                     case 'gold':
                         ve.description = `**Let's vote for ${args[1]}'s next golden gun!**`;
-                        ve.thumbnail = {
+                        if (bot.users[snowmaker(args[1])]) ve.thumbnail = {
                             url: `https://cdn.discordapp.com/avatars/${snowmaker(args[1])}/${bot.users[snowmaker(args[1])].avatar}.png`
                         }
                         options = args.splice(2);
