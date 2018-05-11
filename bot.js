@@ -369,7 +369,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 ve.description += `\n*requested by:\n<@${userID}>*`;
 
                 if (options.length < 1) {
-                    msg(channelID,`Options were not included! Example: \`@${bot.username} vote def :thinking:=genius\``);
+                    msg(channelID,`Options were not included! Example: \`@${bot.username} vote :thinking:=genius\`.`);
                     break;
                 }
                 options.forEach(v => {
@@ -388,7 +388,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             });
                         }
                     } else {
-                        msg(channelID,`Some options not defined! Example: \`@${bot.username} vote def :thinking:=genius\``);
+                        msg(channelID,`Some options not defined! Example: \`@${bot.username} vote :thinking:=genius\`.`);
                         ve.error = true;
                     }
                 });
@@ -442,7 +442,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     kps[userID].socket.on('connect', () => kpsEmit(args));
 
                     setTimeout(() => {
-                        if (!kps[userID].socket.connected) msg(userID,'Could not connect');
+                        if (!kps[userID].socket.connected) msg(userID,'Could not connect!');
                     }, 10000);
                 }
 
@@ -459,7 +459,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (!kps[userID].gameActive) {
                                 kps[userID].socket.emit('setMode', data, args[1]);
                             } else {
-                                msg(userID,'This command is not available while in a game. Use `kps quit` to quit');
+                                msg(userID,'This command is not available while in a game. Use `kps quit` to quit.');
                             }
                             break;
                         case 'rock':
@@ -471,30 +471,30 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         case 'classic':
                             kps[userID].socket.emit('setTheme', 'defeault');
                             kps[userID].mem.player.theme = 'defeault';
-                            msg(userID,'',kpsEmbed('Theme updated',3));
+                            msg(userID,'',kpsEmbed('Theme updated!',3));
                             break;
                         case 'horror':
                             kps[userID].socket.emit('setTheme', data);
                             kps[userID].mem.player.theme = data;
-                            msg(userID,'',kpsEmbed('Theme updated',3));
+                            msg(userID,'',kpsEmbed('Theme updated!',3));
                             break;
                         case 'space':
                             kps[userID].socket.emit('setTheme', 'fuckrulla');
                             kps[userID].mem.player.theme = 'fuckrulla';
-                            msg(userID,'',kpsEmbed('Theme updated',3));
+                            msg(userID,'',kpsEmbed('Theme updated!',3));
                             break;
                         case 'hand':
                             kps[userID].socket.emit('setTheme', data);
                             kps[userID].mem.player.theme = data;
-                            msg(userID,'',kpsEmbed('Theme updated',3));
+                            msg(userID,'',kpsEmbed('Theme updated!',3));
                             break;
                         case 'quit':
-                            msg(userID,'',kpsEmbed('You left',0));
+                            msg(userID,'',kpsEmbed('You left.',0));
                             kps[userID].socket.disconnect();
                             kps[userID] = undefined;
                             break;
                         default:
-                            msg(userID,`Starting a game: \`play | ai | friend <friendname>\`\nChoosing: \`rock | paper | scissors\`\nTheme selection: \`classic | horror | space | hand\`\nTo quit: \`quit\`\nDon't forget the @${bot.username} kps`);
+                            msg(userID,`Starting a game: \`play | ai | friend <friendname>\`\nChoosing: \`rock | paper | scissors\`\nTheme selection: \`classic | horror | space | hand\`\nTo quit: \`quit\`\nDon't forget the @${bot.username} kps!`);
                     }
                 }
 
@@ -613,7 +613,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         msg(channelID,tzConv.join(': '));
                         break;
                     default:
-                        msg(channelID,`${ile.getAcronym()}: command structure: \`ile join | leave | here | time\``);
+                        msg(channelID,`${ile.getAcronym()}: command structure: \`ile join | leave | here | time\`.`);
                         break;
                 }
                 break;
@@ -689,15 +689,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 else {
                                     if (server && settings.tz[serverID]) {
                                         args[0] += settings.tz[serverID];
-                                        msg(channelID,`Using the server default UTC${settings.tz[serverID]} timezone. You can change your timezone with "\`@${bot.username} timezone\` -command"`);
+                                        msg(channelID,`Using the server default UTC${settings.tz[serverID]} timezone. You can change your timezone with "\`@${bot.username} timezone\` -command".`);
                                     } else {
                                         args[0] += 'Z';
-                                        msg(channelID,`Using the default UTC+00:00 timezone. You can change your timezone with "\`@${bot.username} timezone\` -command"`);
+                                        msg(channelID,`Using the default UTC+00:00 timezone. You can change your timezone with "\`@${bot.username} timezone\` -command".`);
                                     }
                                 }
                                 reminder.time = datemaker([args[0]]);
                                 if (reminder.time == 'Invalid Date') {
-                                    msg(channelID,'Time syntax: `([<amount>]ms|[<amount>]s|[<amount>]min|[<amount>]h|[<amount>]d|[<amount>]y)...` or `[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]`');
+                                    msg(channelID,'Time syntax: `([<amount>](ms|s|min|h|d|y))...` or `[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]`.');
                                     break;
                                 } else reminder.time = reminder.time.getTime();
                             }
@@ -761,18 +761,18 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (server && admin) {
                                 settings.tz[serverID] = args[0];
                                 updateSettings();
-                                msg(channelID,`Server timezone is set to: UTC${args[0]}`);
+                                msg(channelID,`Server timezone is set to: UTC${args[0]}.`);
                             } else {
-                                msg(channelID,'Unauthorized timezoning command. Try to git gud instead');
+                                msg(channelID,'Unauthorized timezoning command. Try to git gud instead.');
                             }
                             break;
                         default:
                             settings.tz[userID] = args[0];
                             updateSettings();
-                            msg(channelID,`Your timezone is set to: UTC${args[0]}`);
+                            msg(channelID,`Your timezone is set to: UTC${args[0]}.`);
                     }
                 } else {
-                    msg(channelID,'NA timezoning command. Try `+HH:MM` or `-HH:MM` instead');
+                    msg(channelID,'NA timezoning command. Try `+HH:MM` or `-HH:MM` instead.');
                 }
                 break;
             case 'autoAnswer':
@@ -803,13 +803,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (admin) {
                             settings.servers[serverID].autoCompliment.enabled = true;
                             msg(channelID,'Automatic complimenting turned ON.');
-                        } else msg(channelID,'Request denied! Not admin');
+                        } else msg(channelID,'Request denied, not admin!');
                         break;
                     case 'off':
                         if (admin) {
                             settings.servers[serverID].autoCompliment.enabled = false;
                             msg(channelID,'Automatic complimenting turned OFF.');
-                        } else msg(channelID,'Request denied! Not admin');
+                        } else msg(channelID,'Request denied, not admin!');
                         break;
                     case 'list':
                         let list = []
@@ -825,11 +825,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (admin) {
                                 if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) == -1) {
                                     settings.servers[serverID].autoCompliment.targets.push(args[1]);
-                                    msg(channelID,`User <@${args[1]}> is now cool`);
+                                    msg(channelID,`User <@${args[1]}> is now cool.`);
                                 } else {
                                     msg(channelID,`User <@${args[1]}> is already cool!`);
                                 }
-                            } else {msg(channelID,'Request denied! Not admin');}
+                            } else {msg(channelID,'Request denied, not admin!');}
                             break;
                         }
                     case 'remove':
@@ -841,7 +841,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 } else {
                                     msg(channelID,`User <@${args[1]}> was never cool to begin with!`);
                                 }
-                            } else {msg(channelID,'Request denied! Not admin');}
+                            } else {msg(channelID,'Request denied, not admin!');}
                             break;
                         }
                     default:
@@ -863,9 +863,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (args[1] != undefined) {
                                 args[1] = snowmaker(args[1]);
                                 settings.servers[serverID].autoShit = args[1];
-                                msg(channelID,`<@&${args[1]}> has been chosen to be shit`);
+                                msg(channelID,`<@&${args[1]}> has been chosen to be shit.`);
                             } else {
-                                msg(channelID,`*Set hit the fan*`);
+                                msg(channelID,`*Set hit the fan.*`);
                             }
                             break;
                         case 'clean':
@@ -877,7 +877,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             break;
                     }
                     updateSettings();
-                } else msg(channelID,'Request denied! Not admin');
+                } else msg(channelID,'Request denied, not admin.');
                 break;
             case 'effect':
                 if (!server) {
@@ -912,9 +912,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         }
                         updateSettings();
                     } else {
-                        msg(channelID,'Please create me my own role (with some permissions pls)');
+                        msg(channelID,'Please create me my own role (with some permissions pls).');
                     }
-                } else msg(channelID,'Request denied! Not admin');
+                } else msg(channelID,'Request denied, not admin!');
                 break;
             case 'handle':
                 if (!server) {
@@ -924,7 +924,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 if (admin) {
                     if (args[0]) {
-                        msg(channelID,`I will now be known as "${args[0]}"`);
+                        msg(channelID,`I will now be known as "${args[0]}"!`);
                     } else {
                         args[0] = null;
                         msg(channelID,'Nickname reset.');
@@ -933,7 +933,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     settings.servers[serverID].nick = args[0];
                     updateSettings();
                     editNick(serverID,args[0]);
-                } else msg(channelID,'Request denied! Not admin');
+                } else msg(channelID,'Request denied, not admin!');
                 break;
             default:
                 if (message.indexOf('?') != -1 && (!server || !settings.servers[serverID].disableAnswers)) {
@@ -953,7 +953,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
     if (server && typeof settings.servers[serverID].autoShit == 'string' && bot.servers[serverID].members[userID].roles.indexOf(settings.servers[serverID].autoShit) != -1) emojiResponse('💩');
 
-    if (userID == bot.id && evt.d.embeds[0] && evt.d.embeds[0].footer && evt.d.embeds[0].footer.text == 'Vote generated by your\'s truly') {
+    if (userID == bot.id && evt.d.embeds[0] && evt.d.embeds[0].footer && evt.d.embeds[0].footer.text == 'Vote generated by your\'s truly.') {
         evt.d.embeds[0].fields.forEach((v,i) => {
             if (v.value.substring(v.value.length-1) == '>') v.value = v.value.substring(0,v.value.length-1);
             setTimeout(() => emojiResponse(v.value),i*500);
@@ -979,7 +979,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
 bot.on('disconnect', (err, code) => {
     online = false;
-    logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${uptimeToString(calculateUptime(timeOf.connection))})`);
+    logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${uptimeToString(calculateUptime(timeOf.connection))}).`);
     setTimeout(() => {
         bot.connect();
     },5000);
