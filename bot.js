@@ -273,15 +273,14 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         break;
                     default:
                         args[0] = snowmaker(args[0]);
-                        let role = bot.servers[serverID].roles[args[0]];
 
-                        if (!role) {
+                        if (bot.servers[serverID].roles[args[0]]) {
+                            for (var member in bot.servers[serverID].members) {
+                                if (bot.servers[serverID].members[member].roles.indexOf(bot.servers[serverID].roles[args[0]].id) != -1) raffleList.push(member);
+                            }
+                        } else {
                             msg(channelID, 'Role not found!');
                             return;
-                        }
-
-                        for (var member in bot.servers[serverID].members) {
-                            if (bot.servers[serverID].members[member].roles.indexOf(role.id) != -1) raffleList.push(member);
                         }
                 }
 
