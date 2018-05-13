@@ -263,7 +263,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 switch (args[0]) {
                     case 'everyone':
-                        for (var member in bot.servers[serverID].members) raffleList.push(member);
+                        raffleList = Object.keys(bot.servers[serverID].members)
                         break;
                     case 'here':
                         for (var member in bot.servers[serverID].members) {
