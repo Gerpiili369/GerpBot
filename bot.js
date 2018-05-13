@@ -1155,51 +1155,59 @@ function remindTimeout(reminder, i = settings.reminders.indexOf(reminder)) {
 
 /**
  * @arg {Snowflake} channel
- * @return {Snowflake[]}
+ * @return {Snowflake[] | String}
  */
-function membersInChannel(channel, pruned = false) {
+function membersInChannel(channel) {
     channel = snowmaker(channel);
+
     if (!bot.channels[channel]) return 'Channel not found!';
-    let server = bot.channels[channel].guild_id;
-    let members = {};
+
+    let members = {}, server = bot.channels[channel].guild_id;
+
     if (bot.channels[channel].permissions.role[server] && bot.channels[channel].permissions.role[server].deny.toString(2).split('').reverse()[10] == 1) {
         for (var member in bot.servers[server].members) members[member] = false;
     } else {
         for (var member in bot.servers[server].members) members[member] = true;
     }
 
-    for (var role in bot.channels[channel].permissions.role) {
-        if (bot.channels[channel].permissions.role[role].allow.toString(2).split('').reverse()[10] == 1) {
-            for (var member in bot.servers[server].members) {
-                if (bot.servers[server].members[member].roles.indexOf(role) != -1) members[member] = true;
-            }
-        } else if (bot.channels[channel].permissions.role[role].deny.toString(2).split('').reverse()[10] == 1) {
-            for (var member in bot.servers[server].members) {
-                if (bot.servers[server].members[member].roles.indexOf(role) != -1) members[member] = false;
-            }
-        }
-    }
-
-    for (var user in bot.channels[channel].permissions.user) {
-        if (bot.channels[channel].permissions.role[role].allow.toString(2).split('').reverse()[10] == 1 || user == bot.servers[server].owner_id) {
+    for (user in members) {
+        if (user == bot.servers[server].owner_id) {
             members[user] = true;
-        } else if (bot.channels[channel].permissions.role[role].deny.toString(2).split('').reverse()[10] == 1) {
-            members[user] = false;
+        } else {
+            let admin = false;
+            bot.servers[server].members[user].roles.forEach(v => {
+                if (bot.servers[server].roles[v]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
+            });
+
+            if (admin) {
+                members[user] = true;
+            } else if (
+                bot.channels[channel].permissions.user[user] &&
+                bot.channels[channel].permissions.user[user].allow.toString(2).split('').reverse()[10] == 1
+            ) {
+                members[user] = true;
+            } else if (
+                bot.channels[channel].permissions.user[user] &&
+                bot.channels[channel].permissions.user[user].deny.toString(2).split('').reverse()[10] == 1
+            ) {
+                members[user] = false;
+            } else for (var role in bot.channels[channel].permissions.role) {
+                if (bot.servers[server].members[user].roles.indexOf(role) != -1) {
+                    if (bot.channels[channel].permissions.role[role].allow.toString(2).split('').reverse()[10] == 1) {
+                        members[user] = true;
+                        break;
+                    }
+                    if (bot.channels[channel].permissions.role[role].deny.toString(2).split('').reverse()[10] == 1)  {
+                        members[user] = false;
+                    }
+                }
+            }
         }
     }
-    for (var user in bot.servers[server].members) bot.servers[server].members[user].roles.forEach(v => {
-        if (bot.servers[server].roles[v]._permissions.toString(2).split('').reverse()[3] == 1) members[user] = true;
-    });
 
-    if (pruned) for (var member in members) {
-        if (members[member] === false) delete members[member];
-    }
-    let dummy = {};
-    for (var member in members) {
-        if (members[member] === true) dummy[`<@${member}>`] = 'ass';
-    }
-    member = dummy;
-    return `\`\`\`json\n${JSON.stringify(member, null, 4)}\n\`\`\``
+    for (var member in members) if (members[member] === false) delete members[member];
+
+    return Object.keys(members);
 }
 
 /**
