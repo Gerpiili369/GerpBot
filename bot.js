@@ -253,7 +253,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID,'What is that supposed to be? It is called "role" not "roll"!');
                 break;
             case 'raffle':
-                if (!server) {
+                if (!server && !bot.channels[snowmaker(args[0])]) {
                     msg(channelID, 'When you really think about it, how would that even work?');
                     break;
                 }
@@ -276,7 +276,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     default:
                         args[0] = snowmaker(args[0]);
 
-                        if (bot.servers[serverID].roles[args[0]]) {
+                        if (server && bot.servers[serverID].roles[args[0]]) {
                             for (var member in bot.servers[serverID].members) {
                                 if (bot.servers[serverID].members[member].roles.indexOf(bot.servers[serverID].roles[args[0]].id) != -1) raffleList.push(member);
                             }
@@ -302,14 +302,19 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     color: server ? bot.servers[serverID].members[userID].color : 16738816,
                 }
 
-                winners.forEach(v => {
-                    re.description += `\n<@${v}>`
-                });
+                if (bot.channels[args[0]] && (!server || bot.channels[args[0]].guild_id != serverID)) {
+                    winners.forEach(v => re.description += `\n${bot.users[v].username}`);
+                } else {
+                    winners.forEach(v => re.description += `\n<@${v}>`);
+                }
 
                 if (winners.length === 1) {
                     re.title = 'Winner';
-                    re.description = bot.users[winners[0]].username + re.description;
-                    re.color = bot.servers[serverID].members[winners[0]].color;
+                    if (bot.channels[args[0]]) {
+                        re.color = bot.servers[bot.channels[args[0]].guild_id].members[winners[0]].color;
+                    } else {
+                        re.color = bot.servers[serverID].members[winners[0]].color;
+                    }
                     re.thumbnail = {
                         url: `https://cdn.discordapp.com/avatars/${winners[0]}/${bot.users[winners[0]].avatar}.png`
                     }
