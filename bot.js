@@ -278,8 +278,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             for (var member in bot.servers[serverID].members) {
                                 if (bot.servers[serverID].members[member].roles.indexOf(bot.servers[serverID].roles[args[0]].id) != -1) raffleList.push(member);
                             }
+                        } else if (bot.channels[args[0]]) {
+                            raffleList = membersInChannel(args[0]);
                         } else {
-                            msg(channelID, 'Role not found!');
+                            msg(channelID, 'Role or channel not found!');
                             return;
                         }
                 }
