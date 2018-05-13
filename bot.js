@@ -263,9 +263,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 switch (args[0]) {
                     case 'everyone':
+                    case '@everyone':
                         raffleList = Object.keys(bot.servers[serverID].members)
                         break;
                     case 'here':
+                    case '@here':
                         for (var member in bot.servers[serverID].members) {
                             let status = bot.servers[serverID].members[member].status;
                             if (status && status != 'offline') raffleList.push(member);
