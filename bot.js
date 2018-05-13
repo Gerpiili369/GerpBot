@@ -328,6 +328,44 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'pi':
                 msg(channelID, `Here it is: \`${Math.PI}...\``);
                 break;
+            case 'rng':
+                if (args[0]) {
+                    let
+                        max = Number(args[0].split('..')[1]),
+                        min = Number(args[0].split('..')[0]),
+                        result = [],
+                        amount = 1;
+
+                    if (args[0].indexOf('..') != -1) {
+                        if (isNaN(max) || isNaN(min)) {
+                            msg(channelID, 'Not a number!');
+                            break;
+                        }
+                    } else {
+                        max = Number(args[0]);
+                        min = 0;
+                        if (isNaN(max)) {
+                            msg(channelID, 'Not a number!');
+                            break;
+                        }
+                    }
+
+                    if (max < min) {
+                        let mem = min;
+                        min = max;
+                        max = mem;
+                    }
+                    max ++
+
+                    if (!isNaN(Number(args[1]))) amount = args[1];
+
+                    for (var i = 0; i < amount; i++) {
+                        result.push(Math.floor(Math.random() * (max - min)) + min)
+                    }
+
+                    msg(channelID, result.join(', '));
+                } else msg(channelID, 'Syntax: `rng <number>[..<number>] [<amount>]`')
+                break;
             case 'nerfThis':
                 msg(channelID,'<@305716128615759873> was the sole victim');
                 break;

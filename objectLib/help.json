@@ -38,6 +38,10 @@
             "value": "Gives you the π."
         },
         {
+            "name": "`@GerpBot rng <number>[..<number>] [<amount>]`",
+            "value": "Get a random number (or numbers). Smallest and biggest number as imputs. If only one number is given the other will be 0."
+        },
+        {
             "name": "`@GerpBot nerfThis`",
             "value": "Activates D.Va's ultimate ability \"Self destruct\"."
         },
