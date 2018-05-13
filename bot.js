@@ -1171,39 +1171,37 @@ function membersInChannel(channel) {
     }
 
     for (user in members) {
-        if (user == bot.servers[server].owner_id) {
-            members[user] = true;
-        } else {
-            let admin = false;
-            bot.servers[server].members[user].roles.forEach(v => {
-                if (bot.servers[server].roles[v]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
-            });
+        let admin = false;
+        bot.servers[server].members[user].roles.forEach(v => {
+            if (bot.servers[server].roles[v]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
+        });
 
-            if (admin) {
-                members[user] = true;
-            } else if (
-                bot.channels[channel].permissions.user[user] &&
-                bot.channels[channel].permissions.user[user].allow.toString(2).split('').reverse()[10] == 1
-            ) {
-                members[user] = true;
-            } else if (
-                bot.channels[channel].permissions.user[user] &&
-                bot.channels[channel].permissions.user[user].deny.toString(2).split('').reverse()[10] == 1
-            ) {
-                members[user] = false;
-            } else for (var role in bot.channels[channel].permissions.role) {
-                if (bot.servers[server].members[user].roles.indexOf(role) != -1) {
-                    if (bot.channels[channel].permissions.role[role].allow.toString(2).split('').reverse()[10] == 1) {
-                        members[user] = true;
-                        break;
-                    }
-                    if (bot.channels[channel].permissions.role[role].deny.toString(2).split('').reverse()[10] == 1)  {
-                        members[user] = false;
-                    }
+        if (admin) {
+            members[user] = true;
+        } else if (
+            bot.channels[channel].permissions.user[user] &&
+            bot.channels[channel].permissions.user[user].allow.toString(2).split('').reverse()[10] == 1
+        ) {
+            members[user] = true;
+        } else if (
+            bot.channels[channel].permissions.user[user] &&
+            bot.channels[channel].permissions.user[user].deny.toString(2).split('').reverse()[10] == 1
+        ) {
+            members[user] = false;
+        } else for (var role in bot.channels[channel].permissions.role) {
+            if (bot.servers[server].members[user].roles.indexOf(role) != -1) {
+                if (bot.channels[channel].permissions.role[role].allow.toString(2).split('').reverse()[10] == 1) {
+                    members[user] = true;
+                    break;
+                }
+                if (bot.channels[channel].permissions.role[role].deny.toString(2).split('').reverse()[10] == 1)  {
+                    members[user] = false;
                 }
             }
         }
     }
+
+    members[bot.servers[server].owner_id] = true;
 
     for (var member in members) if (members[member] === false) delete members[member];
 
