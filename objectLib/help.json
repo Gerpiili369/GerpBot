@@ -100,6 +100,10 @@
         {
             "name": "`@GerpBot handle <name>`",
             "value": "Changes GerpBot's nickname."
+        },
+        {
+            "name": "Shorter versions of commands are also available:",
+            "value": "`nt` - `nerfThis`\n`ut` - `uptime`\n`tz` - `timezone`\n`aa` - `autoAnswer`\n`ac` - `autoCompliment`"
         }
     ]
 }

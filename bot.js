@@ -367,6 +367,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID, 'Syntax: `rng <number>[..<number>] [<amount>]`')
                 break;
             case 'nerfThis':
+            case 'nt':
                 msg(channelID,'<@305716128615759873> was the sole victim');
                 break;
             case 'echo':
@@ -376,6 +377,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 msg(channelID,'<@217953472715292672>');
                 break;
             case 'uptime':
+            case 'ut':
                 if (typeof timeOf[args[0]] != 'undefined') {
                     let uptime = calculateUptime(timeOf[args[0]]);
                     msg(channelID,`Time since '${args[0]}': ${uptimeToString(uptime)}\``
@@ -801,6 +803,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 });
                 break;
             case 'timezone':
+            case 'tz':
                 if (isValidTimezone(args[0])) {
                     switch (args[1]) {
                         case 'server':
@@ -822,6 +825,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 }
                 break;
             case 'autoAnswer':
+            case 'aa':
                 if (server) {
                     if (settings.servers[serverID].disableAnswers) {
                         settings.servers[serverID].disableAnswers = false;
@@ -834,6 +838,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID,'You can\'t escape me here!')
                 break;
             case 'autoCompliment':
+            case 'ac':
                 if (!server) {
                     msg(channelID, '**Feature not intended to be used in DM. Sending sample:**');
                     args[0] = 'sample'
