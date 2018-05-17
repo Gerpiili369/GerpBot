@@ -29,7 +29,7 @@ module.exports = class Ile extends Emitter {
                 }
             }
             this.players = {};
-        } else for (var variable in saveData) {
+        } else for (const variable in saveData) {
             this[variable] = saveData[variable];
         }
         this.started = false;
@@ -44,21 +44,21 @@ module.exports = class Ile extends Emitter {
     activateRound() {
         setTimeout(() => {
             this.end = Date.now();
-            for (var player in this.players) {
+            for (const player in this.players) {
                 if (this.players[player].joined === true && !this.players[player].checkIn) {
                     this.players[player].status = 'on time';
                     this.emit('msg',player,'It is time');
                 }
             }
             setTimeout(() => {
-                for (var player in this.players) {
+                for (const player in this.players) {
                     if (this.players[player].joined === true && !this.players[player].checkIn) {
                         this.players[player].status = 'late';
                         this.emit('msg',player,'You are late');
                     }
                 }
                 setTimeout(() => {
-                    for (var player in this.players) {
+                    for (const player in this.players) {
                         if (this.players[player].joined === true && !this.players[player].checkIn) {
                             this.players[player].status = 'missed';
                             this.emit('msg',player,'You have missed the thing');
@@ -67,7 +67,7 @@ module.exports = class Ile extends Emitter {
                     setTimeout(() => {
                         this.save();
 
-                        for (var player in this.players) {
+                        for (const player in this.players) {
                             if (this.players[player].checkIn) {
                                 this.emit('msg',player,'',this.scoreboardToEmbed(this.getScoreboard()));
                             }
@@ -82,7 +82,7 @@ module.exports = class Ile extends Emitter {
 
     newRound() {
         this.active = true;
-        for (var player in this.players) {
+        for (const player in this.players) {
             this.players[player].checkIn = false;
         }
         this.end = Date.now() + Math.floor(Math.random() * (this.time.between.max - this.time.between.min)) + this.time.between.min;
@@ -92,7 +92,7 @@ module.exports = class Ile extends Emitter {
     }
 
     sendEndtime() {
-        for (var player in this.players) {
+        for (const player in this.players) {
             if (this.players[player].joined) this.emit('msg',player,this.getCheckpoint(player));
         }
     }
@@ -108,7 +108,7 @@ module.exports = class Ile extends Emitter {
      * @returns {Boolean}
      */
     activePlayers() {
-        for (var player in this.players) {
+        for (const player in this.players) {
             if (this.players[player].joined) return true;
         }
     }
@@ -183,7 +183,7 @@ module.exports = class Ile extends Emitter {
      */
     getScoreboard() {
         let scoreboard = [];
-        for (var player in this.players) {
+        for (const player in this.players) {
             if (this.players[player].checkIn) {
                 scoreboard.push({
                     id: player,

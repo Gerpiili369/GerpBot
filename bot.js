@@ -15,7 +15,7 @@ logger.add(logger.transports.Console, {
 });
 logger.level = 'debug';
 
-for (var func in snowTime) eval(`${func} = snowTime.${func}`);
+for (const func in snowTime) eval(`${func} = snowTime.${func}`);
 
 const
     objectLib = getJSON(['help','compliments','defaultRes','games','answers','ileAcronym'],'objectLib/'),
@@ -102,7 +102,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     age: calculateUptime(sfToDate(serverID))
                 };
 
-                for (member in bot.servers[serverID].members) {
+                for (const member in bot.servers[serverID].members) {
                     if (!bot.users[member].bot) {
                         let status = bot.servers[serverID].members[member].status;
                         if (!status) status = 'offline'
@@ -110,7 +110,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     } else si.members.bots++;
                 }
 
-                for (channel in bot.servers[serverID].channels) {
+                for (const channel in bot.servers[serverID].channels) {
                     let type = bot.servers[serverID].channels[channel].type;
                     if (type == 0 || type == 2 || type == 4) si.channels[type]++;
                 }
@@ -241,7 +241,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     };
 
                     let rollMembers = [];
-                    for (var member in bot.servers[serverID].members) {
+                    for (const member in bot.servers[serverID].members) {
                         if (bot.servers[serverID].members[member].roles.indexOf(role.id) != -1) rollMembers.push(member);
                     }
 
@@ -268,7 +268,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         break;
                     case 'here':
                     case '@here':
-                        for (var member in bot.servers[serverID].members) {
+                        for (const member in bot.servers[serverID].members) {
                             let status = bot.servers[serverID].members[member].status;
                             if (status && status != 'offline') raffleList.push(member);
                         }
@@ -277,7 +277,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         args[0] = snowmaker(args[0]);
 
                         if (server && bot.servers[serverID].roles[args[0]]) {
-                            for (var member in bot.servers[serverID].members) {
+                            for (const member in bot.servers[serverID].members) {
                                 if (bot.servers[serverID].members[member].roles.indexOf(bot.servers[serverID].roles[args[0]].id) != -1) raffleList.push(member);
                             }
                         } else if (bot.channels[args[0]]) {
@@ -292,7 +292,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 else args[1] = 1;
 
                 let winners = [];
-                for (var i = 0; i < args[1]; i++) {
+                for (let i = 0; i < args[1]; i++) {
                     winners = winners.concat(raffleList.splice(Math.floor(Math.random()*raffleList.length),1));
                 }
 
@@ -359,7 +359,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                     if (!isNaN(Number(args[1]))) amount = args[1];
 
-                    for (var i = 0; i < amount; i++) {
+                    for (let i = 0; i < amount; i++) {
                         result.push(Math.floor(Math.random() * (max - min)) + min)
                     }
 
@@ -1113,7 +1113,7 @@ function startLoops() {
         if (online) {
             if (i >= colors.length) i = 0;
 
-            for (server in settings.servers) {
+            for (const server in settings.servers) {
                 if (typeof bot.servers[server] != 'undefined') {
                     if (settings.servers[server].effects.rainbow) {
                         editColor(server,colors[i]);
@@ -1216,12 +1216,12 @@ function membersInChannel(channel) {
     let members = {}, server = bot.channels[channel].guild_id;
 
     if (bot.channels[channel].permissions.role[server] && bot.channels[channel].permissions.role[server].deny.toString(2).split('').reverse()[10] == 1) {
-        for (var member in bot.servers[server].members) members[member] = false;
+        for (const member in bot.servers[server].members) members[member] = false;
     } else {
-        for (var member in bot.servers[server].members) members[member] = true;
+        for (const member in bot.servers[server].members) members[member] = true;
     }
 
-    for (user in members) {
+    for (const user in members) {
         let admin = false;
         bot.servers[server].members[user].roles.forEach(v => {
             if (bot.servers[server].roles[v]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
@@ -1239,7 +1239,7 @@ function membersInChannel(channel) {
             bot.channels[channel].permissions.user[user].deny.toString(2).split('').reverse()[10] == 1
         ) {
             members[user] = false;
-        } else for (var role in bot.channels[channel].permissions.role) {
+        } else for (const role in bot.channels[channel].permissions.role) {
             if (bot.servers[server].members[user].roles.indexOf(role) != -1) {
                 if (bot.channels[channel].permissions.role[role].allow.toString(2).split('').reverse()[10] == 1) {
                     members[user] = true;
@@ -1254,7 +1254,7 @@ function membersInChannel(channel) {
 
     members[bot.servers[server].owner_id] = true;
 
-    for (var member in members) if (members[member] === false) delete members[member];
+    for (const member in members) if (members[member] === false) delete members[member];
 
     return Object.keys(members);
 }
