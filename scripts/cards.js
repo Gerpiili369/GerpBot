@@ -81,11 +81,7 @@ module.exports = class Cards {
                 }
 
                 numberList.sort((a, b) => a.value - b.value);
-                stringList.sort((a, b) => {
-                    if (a.value < b.value) return -1;
-                    if (a.value > b.value) return 1;
-                    return 0;
-                });
+                stringList.sort((a, b) => a.value < b.value ? -1 : a.value > b.value ? 1 : 0);
 
                 sortedList = sortedList.concat(numberList, stringList);
             }
