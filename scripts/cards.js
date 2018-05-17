@@ -17,7 +17,7 @@ module.exports = class Cards {
         /** @type {{name: Card[]}} */
         this.hands = {};
 
-        for (let suit in suits) for (let i = 0; i < amount; i++) {
+        for (const suit in suits) for (let i = 0; i < amount; i++) {
             values.forEach(v => this.deck.push({
                 suit: suit,
                 value: v,
@@ -72,7 +72,7 @@ module.exports = class Cards {
             let suits = {}, sortedList = [];
 
             for (let i = 0; i < list.length; i++) suits[list[i].suit] = list[i].color;
-            for (let suit in suits) {
+            for (const suit in suits) {
                 let numberList = [], stringList = []
 
                 for (let i = 0; i < list.length; i++) if (list[i].suit == suit) {
