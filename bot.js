@@ -1141,15 +1141,25 @@ function startIle() {
     if (!ile.started) {
         ile.start();
         ile.on('msg', (channel, message, embed) => {
-            if (typeof embed != 'undefined') embed.fields.forEach(v => {
-                let id = v.name.substring(v.name.indexOf('.') + 2);
-                v.name = v.name.replace(id,bot.users[id].username);
-            });
             let tzConv = message.split(': ');
             if (tzConv[0] === 'Next checkpoint') {
                 tzConv[1] = timeAt(findTimeZone(settings.tz, [channel]), new Date(tzConv[1]));
                 message = tzConv.join(': ');
             }
+
+            if (typeof embed != 'undefined') embed.fields.forEach(v => {
+                let id = v.name.substring(v.name.indexOf('.') + 2);
+                v.name = v.name.replace(id,bot.users[id].username);
+            });
+            else {
+                embed = {
+                    title: ile.getAcronym(),
+                    description: message
+                };
+                message = '';
+            }
+            embed.color = 16738816;
+
             msg(channel, message, embed);
         });
         ile.on('save', data => {
