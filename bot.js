@@ -445,6 +445,28 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID,'@everyone',ve);
                 }
                 break;
+            case 'audio': // FIXME: WIP pls fix
+                if (bot.servers[serverID].members[userID].voice_channel_id == null) {
+                    msg(channelID,`<@!${userID}> You are not in a voice channel!`);
+                    break;
+                }
+                let voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id;
+
+                bot.joinVoiceChannel(voiceChannelID, (err, events) => {
+                    if (err) return logger.error(err);
+                    else logger.info('joined')
+                    bot.getAudioContext(voiceChannelID, (err, stream) => {
+                        if (err) return logger.error(err);
+                        logger.info('got context')
+
+                        fs.createReadStream('./audio.mp3').pipe(stream, {end: false});
+
+                        stream.on('done', () => {
+                            logger.info('done')
+                        });
+                    });
+                });
+                break;
             case 'kps':
                 let url = 'http://plssave.help/kps';
 
