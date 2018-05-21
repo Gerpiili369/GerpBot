@@ -479,6 +479,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 channel: {
                                     id: v.snippet.channelID,
                                     Title: v.snippet.channelTitle
+                                },
+                                request: {
+                                    id: userID,
+                                    time: Date.now()
                                 }
                             }
 
