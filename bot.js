@@ -456,12 +456,17 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (typeof settings.servers[serverID].audio == 'undefined') settings.servers[serverID].audio = {
                     que: []
                 }
-                if (bot.servers[serverID].members[userID].voice_channel_id == null) {
-                    msg(channelID,`<@!${userID}> You are not in a voice channel!`);
-                    break;
-                }
                 let voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id;
-                fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${args.join('+')}&key=${auth.tubeKey}`)
+                if (cmd == 'audio') switch (args[0]) {
+                    default:
+
+                } else {
+                    if (bot.servers[serverID].members[userID].voice_channel_id == null) {
+                        msg(channelID,`<@${userID}> You are not in a voice channel!`);
+                        break;
+                    }
+
+                    fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${args.join('+')}&key=${auth.tubeKey}`)
                     .then(result => result.json()).then(data => {
                         if (data.error) console.log(data.error.errors);
                         for (v of data.items) {
@@ -497,31 +502,32 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         logger.warn(err,'');
                     });
 
-                bot.joinVoiceChannel(voiceChannelID, (err, events) => {
-                    if (err) return err.toString().indexOf('Voice channel already active') == -1 ? logger.error(err,'') : '';
-                    else console.log('joined');
-                    bot.getAudioContext(bot.servers[serverID].members[bot.id].voice_channel_id, (err, stream) => {
-                        if (err) return console.log(err);
-                        console.log('got context')
-                        console.log(stream);
+                    bot.joinVoiceChannel(voiceChannelID, (err, events) => {
+                        if (err) return err.toString().indexOf('Voice channel already active') == -1 ? logger.error(err,'') : '';
+                        else console.log('joined');
+                        bot.getAudioContext(bot.servers[serverID].members[bot.id].voice_channel_id, (err, stream) => {
+                            if (err) return console.log(err);
+                            console.log('got context')
+                            //console.log(stream);
 
-                        playOrLeave();
-
-                        stream.on('done', () => {
-                            console.log('done');
                             playOrLeave();
-                        });
 
-                        function playOrLeave() {
-                            if (settings.servers[serverID].audio.que.length > 0) {
-                                console.log('but wait, there is more');
-                                console.log(settings.servers[serverID].audio.que);
-                                ytdl(`http://www.youtube.com/watch?v=${settings.servers[serverID].audio.que.shift().id}`).pipe(stream, {end: false});
-                                updateSettings();
-                            } else bot.leaveVoiceChannel(voiceChannelID);
-                        }
+                            stream.on('done', () => {
+                                console.log('done');
+                                playOrLeave();
+                            });
+
+                            function playOrLeave() {
+                                if (settings.servers[serverID].audio.que.length > 0) {
+                                    console.log('but wait, there is more');
+                                    console.log(settings.servers[serverID].audio.que);
+                                    ytdl(`http://www.youtube.com/watch?v=${settings.servers[serverID].audio.que.shift().id}`).pipe(stream, {end: false});
+                                    updateSettings();
+                                } else bot.leaveVoiceChannel(voiceChannelID);
+                            }
+                        });
                     });
-                });
+                }
                 break;
             case 'kps':
                 let url = 'http://plssave.help/kps';
