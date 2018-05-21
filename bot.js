@@ -492,44 +492,44 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     }
 
                     fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${args.join('+')}&key=${auth.tubeKey}`)
-                    .then(result => result.json()).then(data => {
-                        if (data.error) console.log(data.error.errors);
-                        for (v of data.items) {
-                            let song = {
-                                id: v.id.videoId,
-                                title: v.snippet.title,
-                                description: v.snippet.description,
-                                thumbnail: v.snippet.thumbnails.high.url,
-                                published: v.snippet.publishedAt,
-                                channel: {
-                                    id: v.snippet.channelID,
-                                    Title: v.snippet.channelTitle
-                                },
-                                request: {
-                                    id: userID,
-                                    time: Date.now()
+                        .then(result => result.json()).then(data => {
+                            if (data.error) console.log(data.error.errors);
+                            for (v of data.items) {
+                                let song = {
+                                    id: v.id.videoId,
+                                    title: v.snippet.title,
+                                    description: v.snippet.description,
+                                    thumbnail: v.snippet.thumbnails.high.url,
+                                    published: v.snippet.publishedAt,
+                                    channel: {
+                                        id: v.snippet.channelID,
+                                        Title: v.snippet.channelTitle
+                                    },
+                                    request: {
+                                        id: userID,
+                                        time: Date.now()
+                                    }
                                 }
-                            }
 
-                            if (v.id.kind == 'youtube#video') {
-                                settings.servers[serverID].audio.que.push(song);
-                                updateSettings();
-                                msg(channelID,'Added to queue:', {
-                                    title: song.title,
-                                    description: song.description + '\n' +
-                                    `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
-                                    image: {url: song.thumbnail},
-                                    color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                                if (v.id.kind == 'youtube#video') {
+                                    settings.servers[serverID].audio.que.push(song);
+                                    updateSettings();
+                                    msg(channelID,'Added to queue:', {
+                                        title: song.title,
+                                        description: song.description + '\n' +
+                                        `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
+                                        image: {url: song.thumbnail},
+                                        color: server ? bot.servers[serverID].members[userID].color : 16738816,
 
-                                });
-                                return;
-                            }
-                        };
-                        throw 404;
-                    }).catch(err => {
-                        msg(channelID,'Search failed!');
-                        logger.warn(err,'');
-                    });
+                                    });
+                                    return;
+                                }
+                            };
+                            throw 404;
+                        }).catch(err => {
+                            msg(channelID,'Search failed!');
+                            logger.warn(err,'');
+                        });
 
                     bot.joinVoiceChannel(voiceChannelID, (err, events) => {
                         if (err) return err.toString().indexOf('Voice channel already active') == -1 ? logger.error(err,'') : '';
