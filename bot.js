@@ -471,20 +471,28 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         break;
                     case 'list':
                         let ale = {
-                            title: 'Upcoming songs',
+                            title: 'No songs queued right now.',
                             fields: [],
                             color: server ? bot.servers[serverID].members[userID].color : 16738816,
                         }
 
-                        for (song of settings.servers[serverID].audio.que)ale.fields.push({
+                        for (song of settings.servers[serverID].audio.que) ale.fields.push({
                             name: ale.fields.length + ': ' + song.title,
-                            value: `Requested by: <@${song.request.id}> at ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.request.time))}.`
+                            value: `Requested by: <@${song.request.id}>\n${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.request.time))}.`
                         });
 
+                        if (ale.fields.length > 0) {
+                            let current = ale.fields.shift();
+                            ale.title = current.name.replace('0', 'Current song');
+                            ale.description = current.value;
+                            ale.thumbnail = {url: settings.servers[serverID].audio.que[0].thumbnail};
+
+                            if (ale.fields.length > 0) ale.description += '\n\n**Queued songs:**'
+                        }
                         msg(channelID, '', ale);
                         break;
                     default:
-
+                    
                 } else {
                     if (bot.servers[serverID].members[userID].voice_channel_id == null) {
                         msg(channelID,`<@${userID}> You are not in a voice channel!`);
