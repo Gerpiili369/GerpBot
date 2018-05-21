@@ -458,6 +458,20 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 }
                 let voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id;
                 if (cmd == 'audio') switch (args[0]) {
+                    case 'list':
+                        let ale = {
+                            title: 'Upcoming songs',
+                            fields: [],
+                            color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                        }
+
+                        for (song of settings.servers[serverID].audio.que)ale.fields.push({
+                            name: ale.fields.length + ': ' + song.title,
+                            value: `Requested by: <@${song.request.id}> at ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.request.time))}.`
+                        });
+
+                        msg(channelID, '', ale);
+                        break;
                     default:
 
                 } else {
