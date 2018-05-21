@@ -458,6 +458,17 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 }
                 let voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id;
                 if (cmd == 'audio') switch (args[0]) {
+                    case 'cancel':
+                        if (args[1]) {
+                            if (typeof settings.servers[serverID].audio.que[args[1]] == 'object') {
+                                if (settings.servers[serverID].audio.que[args[1]].request.id == userID) {
+                                    settings.servers[serverID].audio.que.splice(args[1], 1);
+                                    updateSettings();
+                                    msg(channelID,'Cancel succesful!');
+                                } else msg(channelID,'That\'s not yours!');
+                            } else msg(channelID,'Song doesn\'t exist!');
+                        } else msg(channelID,'Nothing could be cancelled!');
+                        break;
                     case 'list':
                         let ale = {
                             title: 'Upcoming songs',
