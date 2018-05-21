@@ -449,6 +449,67 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'music': // FIXME: WIP pls fix
             case 'play':
+                const
+                    playNext = stream => {
+                        if (settings.servers[serverID].audio.que.length > 0) {
+                            bot.servers[serverID].currentAudio = ytdl(`http://www.youtube.com/watch?v=${settings.servers[serverID].audio.que[0].id}`);
+                            bot.servers[serverID].currentAudio.pipe(stream, {end: false});
+                        } else {
+                            bot.servers[serverID].audioStream = null;
+                            bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
+                        }
+                    },
+                    searchAndQue = keywords => new Promise((resolve, reject) => {
+                        fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keywords.join('+')}&key=${auth.tubeKey}`)
+                            .then(result => result.json()).then(data => {
+                                if (data.error) console.log(data.error.errors);
+                                for (v of data.items) {
+                                    let song = {
+                                        id: v.id.videoId,
+                                        title: v.snippet.title,
+                                        description: v.snippet.description,
+                                        thumbnail: v.snippet.thumbnails.high.url,
+                                        published: v.snippet.publishedAt,
+                                        channel: {
+                                            id: v.snippet.channelID,
+                                            Title: v.snippet.channelTitle
+                                        },
+                                        request: {
+                                            id: userID,
+                                            time: Date.now()
+                                        }
+                                    }
+
+                                    if (v.id.kind == 'youtube#video') {
+                                        settings.servers[serverID].audio.que.push(song);
+                                        updateSettings();
+                                        msg(channelID,'Added to queue:', {
+                                            title: song.title,
+                                            description: song.description + '\n' +
+                                            `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
+                                            image: {url: song.thumbnail},
+                                            color: server ? bot.servers[serverID].members[userID].color : 16738816
+                                        });
+                                        resolve();
+                                        return;
+                                    }
+                                }
+                                throw 404;
+                            }).catch(err => {
+                                msg(channelID,'Search failed!');
+                                logger.warn(err,'');
+                                reject();
+                            });
+                    }),
+                    joinVoice = () => new Promise((resolve, reject) => {
+                        if (bot.servers[serverID].members[userID].voice_channel_id == null) {
+                            msg(channelID,`<@${userID}> You are not in a voice channel!`);
+                            reject();
+                        }
+                        bot.joinVoiceChannel(bot.servers[serverID].members[userID].voice_channel_id, err => err && err.toString().indexOf('Voice channel already active') == -1 ? reject() : resolve());
+                    }),
+                    getStream = () => new Promise((resolve, reject) => bot.getAudioContext(bot.servers[serverID].members[bot.id].voice_channel_id, (err, stream) => err ? reject(err) : resolve(stream)));
+
                 if (!server) {
                     msg(channelID,'`<sassy message about this command being server only>`');
                     break;
@@ -499,71 +560,21 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         break;
                     }
 
-                    fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${args.join('+')}&key=${auth.tubeKey}`)
-                        .then(result => result.json()).then(data => {
-                            if (data.error) console.log(data.error.errors);
-                            for (v of data.items) {
-                                let song = {
-                                    id: v.id.videoId,
-                                    title: v.snippet.title,
-                                    description: v.snippet.description,
-                                    thumbnail: v.snippet.thumbnails.high.url,
-                                    published: v.snippet.publishedAt,
-                                    channel: {
-                                        id: v.snippet.channelID,
-                                        Title: v.snippet.channelTitle
-                                    },
-                                    request: {
-                                        id: userID,
-                                        time: Date.now()
-                                    }
-                                }
+                    joinVoice().then(() => {
+                        getStream().then(stream => {
+                            bot.servers[serverID].audioStream = stream;
 
-                                if (v.id.kind == 'youtube#video') {
-                                    settings.servers[serverID].audio.que.push(song);
-                                    updateSettings();
-                                    msg(channelID,'Added to queue:', {
-                                        title: song.title,
-                                        description: song.description + '\n' +
-                                        `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
-                                        image: {url: song.thumbnail},
-                                        color: server ? bot.servers[serverID].members[userID].color : 16738816,
-
-                                    });
-                                    return;
-                                }
-                            };
-                            throw 404;
-                        }).catch(err => {
-                            msg(channelID,'Search failed!');
-                            logger.warn(err,'');
-                        });
-
-                    bot.joinVoiceChannel(voiceChannelID, (err, events) => {
-                        if (err) return err.toString().indexOf('Voice channel already active') == -1 ? logger.error(err,'') : '';
-                        else console.log('joined');
-                        bot.getAudioContext(bot.servers[serverID].members[bot.id].voice_channel_id, (err, stream) => {
-                            if (err) return console.log(err);
-                            console.log('got context')
-                            //console.log(stream);
-
-                            playOrLeave();
+                            if (args[0]) searchAndQue(args).then(() => playNext(stream));
+                            else playNext(stream);
 
                             stream.on('done', () => {
                                 console.log('done');
-                                playOrLeave();
+                                settings.servers[serverID].audio.que.shift();
+                                updateSettings();
+                                playNext(stream);
                             });
-
-                            function playOrLeave() {
-                                if (settings.servers[serverID].audio.que.length > 0) {
-                                    console.log('but wait, there is more');
-                                    console.log(settings.servers[serverID].audio.que);
-                                    ytdl(`http://www.youtube.com/watch?v=${settings.servers[serverID].audio.que.shift().id}`).pipe(stream, {end: false});
-                                    updateSettings();
-                                } else bot.leaveVoiceChannel(voiceChannelID);
-                            }
                         });
-                    });
+                    }).catch(err => logger.error(err,''));
                 }
                 break;
             case 'kps':
