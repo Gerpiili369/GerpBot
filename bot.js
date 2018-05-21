@@ -447,7 +447,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID,'@everyone',ve);
                 }
                 break;
-            case 'audio': // FIXME: WIP pls fix
+            case 'music': // FIXME: WIP pls fix
             case 'play':
                 if (!server) {
                     msg(channelID,'`<sassy message about this command being server only>`');
@@ -457,7 +457,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     que: []
                 }
                 let voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id;
-                if (cmd == 'audio') switch (args[0]) {
+                if (cmd == 'music') switch (args[0]) {
                     case 'cancel':
                         if (args[1]) {
                             if (typeof settings.servers[serverID].audio.que[args[1]] == 'object') {
