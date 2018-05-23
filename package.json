@@ -5,6 +5,7 @@
   "main": "bot.js",
   "author": "Gerpiili369",
   "dependencies": {
+    "snowtime": "Gerpiili369/snowTime.js",
     "discord.io": "github:woor/discord.io#gateway_v6",
     "socket.io-client": "^2.1.0",
     "winston": "^2.4.0"
