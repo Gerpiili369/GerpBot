@@ -373,9 +373,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'echo':
                 msg(channelID,args.join(' '));
                 break;
-            case 'getGerp':
-                msg(channelID,'<@217953472715292672>');
-                break;
             case 'uptime':
             case 'ut':
                 if (typeof timeOf[args[0]] != 'undefined') {

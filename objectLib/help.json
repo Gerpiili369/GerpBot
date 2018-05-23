@@ -53,10 +53,6 @@
             "value": "GerpBot responds with argument determined message. This command will have **no** issues."
         },
         {
-            "name": "`@GerpBot getGerp`",
-            "value": "@mentions Gerpiili369."
-        },
-        {
             "name": "`@GerpBot uptime startUp | connection | lastCommand`",
             "value": "Get uptime since a specific event."
         },
