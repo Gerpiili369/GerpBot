@@ -368,7 +368,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'nerfThis':
             case 'nt':
-                msg(channelID,'<@305716128615759873> was the sole victim');
+                msg(channelID,'Leenakop was the only one who died...');
                 break;
             case 'echo':
                 msg(channelID,args.join(' '));
