@@ -6,6 +6,7 @@ const
     io = require('socket.io-client'),
     fetch = require('node-fetch');
     ytdl = require('ytdl-core'),
+    cp = require('child_process'),
     snowTime = require('snowtime'),
 
     Ile = require('./scripts/ile.js');
@@ -452,8 +453,22 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 const
                     playNext = stream => {
                         if (settings.servers[serverID].audio.que.length > 0) {
-                            bot.servers[serverID].currentAudio = ytdl(`http://www.youtube.com/watch?v=${settings.servers[serverID].audio.que[0].id}`);
-                            bot.servers[serverID].currentAudio.pipe(stream, {end: false});
+                            bot.servers[serverID].ccp = cp.spawn('ffmpeg', [
+                                '-loglevel', '0',
+                                '-i', settings.servers[serverID].audio.que[0].url,
+                                '-f', 's16le',
+                                '-ar', '48000',
+                                '-ac', '2',
+                                'pipe:1'
+                            ], {stdio: ['pipe', 'pipe', 'ignore']});
+                            bot.servers[serverID].ccp.stdout.once('readable', () => stream.send(bot.servers[serverID].ccp.stdout));
+                            bot.servers[serverID].ccp.stdout.once('end', () => {
+                                console.log('end'); // remove once finished
+                                bot.servers[serverID].playing = false;
+                                playNext(stream);
+                    		});
+                            bot.servers[serverID].playing = settings.servers[serverID].audio.que.shift();
+                            updateSettings();
                         } else {
                             bot.servers[serverID].audioStream = null;
                             bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
@@ -573,15 +588,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         getStream().then(stream => {
                             bot.servers[serverID].audioStream = stream;
 
-                            if (args[0]) searchAndQue(args).then(() => playNext(stream));
-                            else playNext(stream);
-
-                            stream.on('done', () => {
-                                console.log('done');
-                                settings.servers[serverID].audio.que.shift();
-                                updateSettings();
-                                playNext(stream);
+                            new Promise(resolve => args[0] ? searchAndQue(args).then(() => resolve('requested')) : resolve('next in queue')).then(action => {
+                                bot.servers[serverID].playing ? action = 'current' : playNext(stream);
+                                msg(channelID, `Playing ${action}`);
                             });
+                            stream.on('done', () => console.log('done')); // remove once finished
                         });
                     }).catch(err => logger.error(err,''));
                 }
