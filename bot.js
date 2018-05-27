@@ -545,6 +545,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (cmd == 'music') switch (args[0]) {
                     case 'cancel':
                         if (args[1]) {
+                            args[1] = Number(args[1]) - 1;
                             if (typeof settings.servers[serverID].audio.que[args[1]] == 'object') {
                                 if (settings.servers[serverID].audio.que[args[1]].request.id == userID) {
                                     settings.servers[serverID].audio.que.splice(args[1], 1);
@@ -571,15 +572,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         }
 
                         for (song of settings.servers[serverID].audio.que) ale.fields.push({
-                            name: ale.fields.length + ': ' + song.title,
+                            name: ale.fields.length + 1 + ': ' + song.title,
                             value: `Requested by: <@${song.request.id}>\n${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.request.time))}.`
                         });
 
-                        if (ale.fields.length > 0) {
-                            let current = ale.fields.shift();
-                            ale.title = current.name.replace('0', 'Current song');
-                            ale.description = current.value;
-                            ale.thumbnail = {url: settings.servers[serverID].audio.que[0].thumbnail};
+                        if (ale.fields.length > 0) ale.title = 'Queued songs:';
+                        if (bot.servers[serverID].playing) {
+                            ale.title = 'Current song: ' + bot.servers[serverID].playing.title;
+                            ale.description = `Requested by: <@${bot.servers[serverID].playing.request.id}>\n${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(bot.servers[serverID].playing.request.time))}.`;
+                            ale.thumbnail = {url: bot.servers[serverID].playing.thumbnail};
 
                             if (ale.fields.length > 0) ale.description += '\n\n**Queued songs:**'
                         }
