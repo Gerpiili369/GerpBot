@@ -506,7 +506,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             msg(channelID,`<@${userID}> You are not in a voice channel!`);
                             reject();
                         }
-                        bot.joinVoiceChannel(bot.servers[serverID].members[userID].voice_channel_id, err => err && err.toString().indexOf('Voice channel already active') == -1 ? reject() : resolve());
+                        bot.joinVoiceChannel(bot.servers[serverID].members[userID].voice_channel_id, err => err && err.toString().indexOf('Voice channel already active') == -1 ? reject(err) : resolve());
                     }),
                     getStream = () => new Promise((resolve, reject) => bot.getAudioContext(bot.servers[serverID].members[bot.id].voice_channel_id, (err, stream) => err ? reject(err) : resolve(stream)));
 
