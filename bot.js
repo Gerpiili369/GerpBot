@@ -4,7 +4,7 @@ const
     auth = require('./auth.json'),
     fs = require('fs'),
     io = require('socket.io-client'),
-    fetch = require('node-fetch');
+    fetch = require('node-fetch'),
     ytdl = require('ytdl-core'),
     cp = require('child_process'),
     snowTime = require('snowtime'),
@@ -448,9 +448,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID,'@everyone',ve);
                 }
                 break;
-            case 'music': // FIXME: WIP pls fix
+            case 'music': // FIXME: WIP pls fix // remove (comment) once finished
             case 'play':
-                const
+                const // these should be elsewhere
                     playNext = stream => {
                         if (settings.servers[serverID].audio.que.length > 0) {
                             bot.servers[serverID].ccp = cp.spawn('ffmpeg', [
@@ -477,7 +477,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     searchAndQue = keywords => new Promise((resolve, reject) => {
                         fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keywords.join('+')}&key=${auth.tubeKey}`)
                             .then(result => result.json()).then(data => {
-                                if (data.error) console.log(data.error.errors);
+                                if (data.error) throw data.error.errors;
                                 for (v of data.items) {
                                     let song = {
                                         id: v.id.videoId,
@@ -537,11 +537,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (!server) {
                     msg(channelID,'`<sassy message about this command being server only>`');
                     break;
-                }
-                if (typeof settings.servers[serverID].audio == 'undefined') settings.servers[serverID].audio = {
-                    que: []
-                }
+                } else if (typeof settings.servers[serverID].audio == 'undefined') settings.servers[serverID].audio = {que: []};
+
                 let voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id;
+                
                 if (cmd == 'music') switch (args[0]) {
                     case 'cancel':
                         if (args[1]) {
@@ -582,19 +581,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             ale.description = `Requested by: <@${bot.servers[serverID].playing.request.id}>\n${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(bot.servers[serverID].playing.request.time))}.`;
                             ale.thumbnail = {url: bot.servers[serverID].playing.thumbnail};
 
-                            if (ale.fields.length > 0) ale.description += '\n\n**Queued songs:**'
+                            if (ale.fields.length > 0) ale.description += '\n\n**Queued songs:**';
                         }
+
                         msg(channelID, '', ale);
                         break;
                     default:
-                    
-                } else {
-                    if (bot.servers[serverID].members[userID].voice_channel_id == null) {
-                        msg(channelID,`<@${userID}> You are not in a voice channel!`);
-                        break;
-                    }
 
-                    joinVoice().then(() => {
+                } else if (bot.servers[serverID].members[userID].voice_channel_id == null) msg(channelID,`<@${userID}> You are not in a voice channel!`);
+                    else joinVoice().then(() => {
                         getStream().then(stream => {
                             bot.servers[serverID].audioStream = stream;
 
@@ -605,7 +600,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             stream.on('done', () => console.log('done')); // remove once finished
                         });
                     }).catch(err => logger.error(err,''));
-                }
                 break;
             case 'kps':
                 let url = 'http://plssave.help/kps';
