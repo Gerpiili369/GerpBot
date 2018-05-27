@@ -554,6 +554,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             } else msg(channelID,'Song doesn\'t exist!');
                         } else msg(channelID,'Nothing could be cancelled!');
                         break;
+                    case 'skip':
+                        if (bot.servers[serverID].ccp) {
+                            bot.servers[serverID].ccp.kill();
+                            bot.servers[serverID].playing = false;
+                            msg(channelID, 'Skipped!');
+                        } else {
+                            msg(channelID, 'Failed to skip.');
+                        }
+                        break;
                     case 'list':
                         let ale = {
                             title: 'No songs queued right now.',
