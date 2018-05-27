@@ -481,16 +481,25 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                     }
 
                                     if (v.id.kind == 'youtube#video') {
-                                        settings.servers[serverID].audio.que.push(song);
-                                        updateSettings();
-                                        msg(channelID,'Added to queue:', {
-                                            title: song.title,
-                                            description: song.description + '\n' +
-                                            `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
-                                            image: {url: song.thumbnail},
-                                            color: server ? bot.servers[serverID].members[userID].color : 16738816
-                                        });
-                                        resolve();
+                                        ytdl.getInfo(`http://www.youtube.com/watch?v=${song.id}`, (err, info) => {
+                                            if (err) {
+                                                throw 404;
+                                                return;
+                                            }
+
+                                            song.url = info.formats[info.formats.length - 1].url;
+
+                                            settings.servers[serverID].audio.que.push(song);
+                                            updateSettings();
+                                            msg(channelID,'Added to queue:', {
+                                                title: song.title,
+                                                description: song.description + '\n' +
+                                                `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
+                                                thumbnail: {url: song.thumbnail},
+                                                color: server ? bot.servers[serverID].members[userID].color : 16738816
+                                            });
+                                            resolve();
+                                        })
                                         return;
                                     }
                                 }
