@@ -4,6 +4,7 @@ const
     auth = require('./auth.json'),
     fs = require('fs'),
     io = require('socket.io-client'),
+    psnTrophy = require('PSNTrophyAPI'),
     snowTime = require('snowtime'),
 
     Ile = require('./scripts/ile.js');
@@ -251,6 +252,134 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                     msg(channelID,'Here is the gang:',re);
                 } else msg(channelID,'What is that supposed to be? It is called "role" not "roll"!');
+                break;
+            case 'trophy':
+                const trapem = (title, msg = '', url = '', fields = [], clean = [false, true]) => ({
+                    title: title,
+                    description: msg,
+                    url: url,
+                    author: {
+                        name: clean[0]  ? '' : 'PSN Trophy API',
+                        url: 'https://github.com/Gerpiili369/PSNTrophyAPI'
+                    },
+                    color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                    fields: fields,
+                    footer: {text: clean[1] ? '' : 'Trophy data from: psntrophyleaders.com'}
+                });
+
+                if (args[0]) {
+                    switch (args[1]) {
+                        case 'update':
+                            msg(channelID, '', trapem('Status', 'Updating...'));
+                            psnTrophy.update(args[0])
+                                .then(data => msg(channelID, '', trapem('Success!', data.message, '', [])))
+                                .catch(err => msg(channelID, '', trapem(err.name, err.message)));
+                            break;
+                        case 'summary':
+                            msg(channelID, '', trapem('Status', 'Fetching summary, hold up!'));
+                            psnTrophy.getSummary(args[0])
+                                .then(data => {
+                                    let types = '', platforms = '';
+                                    for (const type in data.count.byType) types += (
+                                        server && settings.servers[serverID].trophyTypes ?
+                                        settings.servers[serverID].trophyTypes[type] :
+                                        `${type.charAt(0).toUpperCase() + type.substr(1)}: `
+                                    ) + data.count.byType[type] + '\n';
+
+                                    for (const platform in data.count.byPlatform)
+                                        platforms += platform.toUpperCase() + ': '
+                                        + data.count.byPlatform[platform] + '\n';
+
+                                    msg(channelID, '', trapem(
+                                        `${data.username}'s trophy summary`,
+                                        `Trophies: ${data.count.total}`,
+                                        `http://psntrophyleaders.com/${args[0]}`, [
+                                            {
+                                                name: 'Trophies by type',
+                                                value: types
+                                            },
+                                            {
+                                                name: 'Trophies by platform',
+                                                value: platforms
+                                            }
+                                        ], [false, false]
+                                    ));
+
+                                })
+                                .catch(err => msg(channelID, '', trapem(err.name, err.message)));
+                            break;
+                        default:
+                            if (!isNaN(args[1])) {
+                                msg(channelID, '', trapem('Status', 'Fetching data, hold up!'));
+                                psnTrophy.getPage(args[0], args[1])
+                                    .then(data => psnTrophy.groupByGame(data.list))
+                                    .then(list => {
+                                        let fields = [], value, addition, continued;
+                                        //list.splice(0,2);
+                                        for (group of list) {
+                                            value = '', continued = false;
+                                            for (item of group.list) {
+                                                addition = (
+                                                    server && settings.servers[serverID].trophyTypes ?
+                                                    settings.servers[serverID].trophyTypes[item.trophy.type] : ''
+                                                ) + `\`${item.trophy.title}:\` *${item.trophy.description}*\n`;
+
+                                                if ((value + addition).length > 1024) {
+                                                    fields.push({
+                                                        name: continued ? '—//—' : group.title,
+                                                        value: value
+                                                    });
+                                                    value = '';
+                                                    continued = true;
+                                                }
+                                                value += addition;
+                                            }
+                                            fields.push({
+                                                name: continued ? '—//—' : group.title,
+                                                value: value
+                                            });
+                                        }
+
+                                        bot.sendMessage({
+                                            to: channelID,
+                                            message: '',
+                                            embed: trapem(
+                                                `${args[0]}'s trophies`, `Page ${args[1]}`,
+                                                `http://psntrophyleaders.com/${args[0]}#trophies`,
+                                                fields, [false, false]
+                                            )
+                                        }, err => {
+                                            if (err) {
+                                                if (err.response && err.response.embed) {
+                                                    const fields2 = fields.splice(fields.length / 2, Infinity)
+                                                    msg(channelID, '', trapem(
+                                                        `${args[0]}'s trophies`, `Page ${args[1]}`,
+                                                        `http://psntrophyleaders.com/${args[0]}#trophies`,
+                                                        fields
+                                                    ));
+                                                    setTimeout(() => msg(channelID, '', trapem(
+                                                        '', '', '', fields2, [true, false]
+                                                    )), 100);
+                                                } else logger.error(err, '');
+                                            }
+                                        });
+                                    })
+                                    .catch(err => msg(channelID, '', trapem(err.name, err.message)));
+                            } else msg(channelID, '', trapem('Notice', 'Page required!'));
+                    }
+                } else msg(channelID, '', trapem('Notice', 'Username required!'));
+                break;
+            case 'trophyEmoji':
+                if (server && admin && args.length === 4) {
+                    settings.servers[serverID].trophyTypes = {
+                        bronze: args[0],
+                        silver: args[1],
+                        gold: args[2],
+                        platinum: args[3]
+                    };
+                    updateSettings();
+                    msg(channelID, 'Trophy icons changed!');
+                } else msg(channelID, '_**TRIGGERED**_');
                 break;
             case 'raffle':
                 if (!server && !bot.channels[snowmaker(args[0])]) {
