@@ -321,8 +321,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                             for (item of group.list) {
                                                 addition = (
                                                     server && settings.servers[serverID].trophyTypes ?
-                                                    settings.servers[serverID].trophyTypes[item.trophy.type] : ''
-                                                ) + `\`${item.trophy.title}:\` *${item.trophy.description}*\n`;
+                                                    settings.servers[serverID].trophyTypes[item.trophy.type] : ` ${item.trophy.type} `
+                                                ) + `**${item.trophy.title}:** *${item.trophy.description}*\n`;
 
                                                 if ((value + addition).length > 1024) {
                                                     fields.push({
