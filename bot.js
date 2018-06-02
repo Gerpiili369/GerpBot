@@ -319,7 +319,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                         for (group of list) {
                                             value = '', continued = false;
                                             for (item of group.list) {
-                                                addition = (
+                                                addition = `\`#${item.index}\`` +(
                                                     server && settings.servers[serverID].trophyTypes ?
                                                     settings.servers[serverID].trophyTypes[item.trophy.type] : ` ${item.trophy.type} `
                                                 ) + `**${item.trophy.title}:** *${item.trophy.description}*\n`;
