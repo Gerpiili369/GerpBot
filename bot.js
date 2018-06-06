@@ -33,6 +33,7 @@ var
     timeOf = {
         startUp: Date.now()
     },
+    trophyPlayers = {};
     kps = {};
     ile = new Ile(getJSON('ile'),objectLib.ileAcronym);
 
@@ -312,6 +313,45 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                         ], [false, false]
                                     ));
 
+                                })
+                                .catch(err => msg(channelID, '', trapem(err.name, err.message)));
+                            break;
+                        case 'games':
+                            new Promise((resolve, reject) => {
+                                if (!trophyPlayers[args[0]]) {
+                                    msg(channelID, '', trapem('Notice', 'Local data not found, fetching...'))
+                                    psnTrophy.getAll(args[0])
+                                        .then(data => {
+                                            trophyPlayers[args[0]] = data;
+                                            resolve(trophyPlayers[args[0]]);
+                                        })
+                                        .catch(err => reject(err));
+                                } else resolve(trophyPlayers[args[0]]);
+                            })
+                                .then(data => {
+                                    let gameList = [], embedFriendly = [], fields = [];
+                                    for (trophyData of data.trophyList) {
+                                        if (gameList.indexOf(trophyData.game.title) == -1) gameList.push(trophyData.game.title);
+                                    }
+
+                                    for (i = 0, max = 25; i < gameList.length; i += max) {
+                                        embedFriendly.push(gameList.slice(i, i + max));
+                                    }
+
+                                    for (i = 0; i < embedFriendly.length; i++) {
+                                        for (game of embedFriendly[i]) fields.push({
+                                            name: game, value: '`content`'
+                                        });
+
+                                        setTimeout(embed => msg(channelID, i === 0 ? `<@${userID}>` : '', embed), i * 1000, trapem(
+                                            `${data.username}'s games'`,
+                                            `Page ${i + 1}/${embedFriendly.length}`,
+                                            `http://psntrophyleaders.com/user/view/${data.username}#games`,
+                                            fields
+                                        ));
+
+                                        fields = [];
+                                    }
                                 })
                                 .catch(err => msg(channelID, '', trapem(err.name, err.message)));
                             break;
