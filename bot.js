@@ -254,6 +254,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID,'What is that supposed to be? It is called "role" not "roll"!');
                 break;
             case 'trophy':
+                /**
+                 * @arg {String} title
+                 * @arg {String} [msg]
+                 * @arg {String} [url]
+                 * @arg {[{name: String, value: String}..]} [fields]
+                 * @arg {[Boolean, Boolean]} [clean]
+                 */
                 const trapem = (title, msg = '', url = '', fields = [], clean = [false, true]) => ({
                     title: title,
                     description: msg,
