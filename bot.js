@@ -367,7 +367,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (!isNaN(args[1])) {
                                 msg(channelID, '', trapem('Status', 'Fetching data, hold up!'));
                                 psnTrophy.getPage(args[0], args[1])
-                                    .then(data => psnTrophy.groupByGame(data.list))
+                                    .then(list => psnTrophy.groupByGame(list))
                                     .then(list => {
                                         let fields = [], value, addition, continued;
                                         //list.splice(0,2);
