@@ -554,7 +554,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     case 'skip':
                         if (bot.servers[serverID].ccp) {
                             bot.servers[serverID].ccp.kill();
-                            bot.servers[serverID].playing = false;
                             msg(channelID, 'Skipped!');
                         } else {
                             msg(channelID, 'Failed to skip.');
