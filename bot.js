@@ -452,7 +452,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'play':
                 const // these should be elsewhere
                     playNext = stream => {
-                        if (settings.servers[serverID].audio.que.length > 0) {
+                        if (settings.servers[serverID].audio.que.length > 0 && !bot.servers[serverID].stopped) {
                             const song = settings.servers[serverID].audio.que.shift();
 
                             bot.servers[serverID].ccp = cp.spawn('ffmpeg', [
@@ -468,6 +468,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 console.log('end'); // remove once finished
                                 bot.servers[serverID].playing = false;
                                 playNext(stream);
+                                bot.servers[serverID].stopped = false;
                     		});
                             bot.servers[serverID].playing = song;
                             updateSettings();
@@ -553,12 +554,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             } else msg(channelID,'Song doesn\'t exist!');
                         } else msg(channelID,'Nothing could be cancelled!');
                         break;
-                    case 'skip':
+                    case 'skip': case 'stop':
                         if (bot.servers[serverID].ccp) {
+                            if (args[0] === 'stop') bot.servers[serverID].stopped = true;
                             bot.servers[serverID].ccp.kill();
-                            msg(channelID, 'Skipped!');
+                            msg(channelID, args[0] === 'skip' ? 'Skipped!' : 'Stopped');
                         } else {
-                            msg(channelID, 'Failed to skip.');
+                            msg(channelID, `Failed to ${args[1]}.`);
                         }
                         break;
                     case 'list':
