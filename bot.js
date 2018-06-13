@@ -470,7 +470,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             bot.servers[serverID].playing = settings.servers[serverID].audio.que.shift();
                             updateSettings();
                         } else {
-                            bot.servers[serverID].audioStream = null;
                             bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
                         }
                     },
@@ -591,7 +590,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else if (bot.servers[serverID].members[userID].voice_channel_id == null) msg(channelID,`<@${userID}> You are not in a voice channel!`);
                     else joinVoice().then(() => {
                         getStream().then(stream => {
-                            bot.servers[serverID].audioStream = stream;
 
                             new Promise(resolve => args[0] ? searchAndQue(args).then(() => resolve('requested')) : resolve('next in queue')).then(action => {
                                 bot.servers[serverID].playing ? action = 'current' : playNext(stream);
