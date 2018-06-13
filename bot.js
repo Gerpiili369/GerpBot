@@ -455,6 +455,14 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (settings.servers[serverID].audio.que.length > 0 && !bot.servers[serverID].stopped) {
                             const song = settings.servers[serverID].audio.que.shift();
 
+                            settings.servers[serverID].audio.channel ? msg(settings.servers[serverID].audio.channel, 'Now playing:', {
+                                title: song.title,
+                                description: song.description + '\n' +
+                                    `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
+                                thumbnail: {url: song.thumbnail},
+                                color: server ? bot.servers[serverID].members[userID].color : 16738816
+                            }) : '';
+
                             bot.servers[serverID].ccp = cp.spawn('ffmpeg', [
                                 '-loglevel', '0',
                                 '-i', song.url,
@@ -558,9 +566,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (bot.servers[serverID].ccp) {
                             if (args[0] === 'stop') bot.servers[serverID].stopped = true;
                             bot.servers[serverID].ccp.kill();
-                            msg(channelID, args[0] === 'skip' ? 'Skipped!' : 'Stopped');
+                            msg(settings.servers[serverID].audio.channel || channelID, args[0] === 'skip' ? 'Skipped!' : 'Stopped');
                         } else {
-                            msg(channelID, `Failed to ${args[1]}.`);
+                            msg(settings.servers[serverID].audio.channel || channelID, `Failed to ${args[1]}.`);
                         }
                         break;
                     case 'list':
@@ -585,6 +593,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         }
 
                         msg(channelID, '', ale);
+                        break;
+                    case 'channel':
+                        if (admin) {
+                            args[1] = snowmaker(args[1]);
+                            if (bot.channels[args[1]] && bot.channels[args[1]].type == 0 && bot.channels[args[1]].guild_id == serverID) {
+                                settings.servers[serverID].audio.channel = args[1];
+                                updateSettings();
+                                msg(channelID, 'Channel set!');
+                            } else msg(channelID, 'Invalid channel!');
+                        } else msg(channelID, 'Admin only command!');
                         break;
                     default:
 }else{if(bot.servers[serverID].members[userID].voice_channel_id!=null){joinVoice().then(()=>getStream().then(stream=>new Promise(resolve=>args[0]?searchAndQue(args).then(()=>resolve('requested')):resolve('next in queue')).then(action=>{bot.servers[serverID].playing?action='current':playNext(stream);msg(channelID,`Playing ${action}`)}))).catch(err=>logger.error(err,''))}else{msg(channelID,`<@${userID}>You are not in a voice channel!`)}}
