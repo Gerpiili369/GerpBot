@@ -469,9 +469,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     		});
                             bot.servers[serverID].playing = settings.servers[serverID].audio.que.shift();
                             updateSettings();
-                        } else {
-                            bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
-                        }
+                        } else bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
                     },
                     searchAndQue = keywords => new Promise((resolve, reject) => {
                         fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keywords.join('+')}&key=${auth.tubeKey}`)
@@ -586,18 +584,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         msg(channelID, '', ale);
                         break;
                     default:
-
-                } else if (bot.servers[serverID].members[userID].voice_channel_id == null) msg(channelID,`<@${userID}> You are not in a voice channel!`);
-                    else joinVoice().then(() => {
-                        getStream().then(stream => {
-
-                            new Promise(resolve => args[0] ? searchAndQue(args).then(() => resolve('requested')) : resolve('next in queue')).then(action => {
-                                bot.servers[serverID].playing ? action = 'current' : playNext(stream);
-                                msg(channelID, `Playing ${action}`);
-                            });
-                            stream.on('done', () => console.log('done')); // remove once finished
-                        });
-                    }).catch(err => logger.error(err,''));
+}else{if(bot.servers[serverID].members[userID].voice_channel_id!=null){joinVoice().then(()=>getStream().then(stream=>new Promise(resolve=>args[0]?searchAndQue(args).then(()=>resolve('requested')):resolve('next in queue')).then(action=>{bot.servers[serverID].playing?action='current':playNext(stream);msg(channelID,`Playing ${action}`)}))).catch(err=>logger.error(err,''))}else{msg(channelID,`<@${userID}>You are not in a voice channel!`)}}
+                //stream.on('done', () => console.log('done')); // remove once finished
                 break;
             case 'kps':
                 let url = 'http://plssave.help/kps';
