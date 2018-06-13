@@ -453,9 +453,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 const // these should be elsewhere
                     playNext = stream => {
                         if (settings.servers[serverID].audio.que.length > 0) {
+                            const song = settings.servers[serverID].audio.que.shift();
+
                             bot.servers[serverID].ccp = cp.spawn('ffmpeg', [
                                 '-loglevel', '0',
-                                '-i', settings.servers[serverID].audio.que[0].url,
+                                '-i', song.url,
                                 '-f', 's16le',
                                 '-ar', '48000',
                                 '-ac', '2',
@@ -467,7 +469,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 bot.servers[serverID].playing = false;
                                 playNext(stream);
                     		});
-                            bot.servers[serverID].playing = settings.servers[serverID].audio.que.shift();
+                            bot.servers[serverID].playing = song;
                             updateSettings();
                         } else bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
                     },
