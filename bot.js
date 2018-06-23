@@ -482,7 +482,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             updateSettings();
                         } else bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
                     },
-                    searchAndQue = keywords => new Promise((resolve, reject) => {
+                    searchAndQue = keywords => new Promise((resolve, reject) =>
                         fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keywords.join('+')}&key=${auth.tubeKey}`)
                             .then(result => result.json()).then(data => {
                                 if (data.error) throw data.error.errors;
@@ -531,15 +531,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 msg(channelID,'Search failed!');
                                 logger.warn(err,'');
                                 reject();
-                            });
-                    }),
-                    joinVoice = () => new Promise((resolve, reject) => {
-                        if (bot.servers[serverID].members[userID].voice_channel_id == null) {
-                            msg(channelID,`<@${userID}> You are not in a voice channel!`);
-                            reject();
-                        }
-                        bot.joinVoiceChannel(bot.servers[serverID].members[userID].voice_channel_id, err => err && err.toString().indexOf('Voice channel already active') == -1 ? reject(err) : resolve());
-                    }),
+                            })
+                    ),
+                    joinVoice = () => new Promise((resolve, reject) =>
+                        bot.servers[serverID].members[userID].voice_channel_id == null ?
+                            reject({type: 'msg', data: `<@${userID}> You are not in a voice channel!`}) :
+                            bot.joinVoiceChannel(bot.servers[serverID].members[userID].voice_channel_id, err => err && err.toString().indexOf('Voice channel already active') == -1 ? reject(err) : resolve())
+                    ),
                     getStream = () => new Promise((resolve, reject) => bot.getAudioContext(bot.servers[serverID].members[bot.id].voice_channel_id, (err, stream) => err ? reject(err) : resolve(stream)));
 
                 if (!server) {
@@ -605,7 +603,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         } else msg(channelID, 'Admin only command!');
                         break;
                     default:
-}else{if(bot.servers[serverID].members[userID].voice_channel_id!=null){joinVoice().then(()=>getStream().then(stream=>new Promise(resolve=>args[0]?searchAndQue(args).then(()=>resolve('requested')):resolve('next in queue')).then(action=>{bot.servers[serverID].playing?action='current':playNext(stream);msg(channelID,`Playing ${action}`)}))).catch(err=>logger.error(err,''))}else{msg(channelID,`<@${userID}>You are not in a voice channel!`)}}
+}else{if(bot.servers[serverID].members[userID].voice_channel_id!=null){joinVoice().then(()=>getStream().then(stream=>new Promise(resolve=>args[0]?searchAndQue(args).then(()=>resolve('requested')):resolve('next in queue')).then(action=>{bot.servers[serverID].playing?action='current':playNext(stream);msg(channelID,`Playing ${action}`)}))).catch(err=>err.type==='msg'?msg(channelID,err.data):logger.error(err,''))}else{msg(channelID,`<@${userID}>You are not in a voice channel!`)}}
                 //stream.on('done', () => console.log('done')); // remove once finished
                 break;
             case 'kps':
