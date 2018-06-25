@@ -531,7 +531,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (!server) {
                     msg(channelID,'`<sassy message about this command being server only>`');
                     break;
-                } else if (typeof settings.servers[serverID].audio == 'undefined') settings.servers[serverID].audio = {que: []};
+                } else if (!settings.servers[serverID].audio) settings.servers[serverID].audio = {que: []};
 
                 let voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id;
                 
