@@ -483,7 +483,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         } else bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
                     },
                     addUrl2song = song => new Promise((resolve, reject) => ytdl.getInfo(`http://www.youtube.com/watch?v=${song.id}`, (err, info) => {
-                        if (true) reject('URL machine broke.');
+                        if (err) reject('URL machine broke.');
                         song.url = info.formats[info.formats.length - 1].url;
                         return resolve(song);
                     })),
