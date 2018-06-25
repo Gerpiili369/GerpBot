@@ -482,63 +482,51 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             updateSettings();
                         } else bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
                     },
-                    searchAndQue = keywords => new Promise((resolve, reject) =>
-                        fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keywords.join('+')}&key=${auth.tubeKey}`)
-                            .then(result => result.json()).then(data => {
-                                if (data.error) throw data.error.errors;
-                                for (v of data.items) {
-                                    let song = {
-                                        id: v.id.videoId,
-                                        title: v.snippet.title,
-                                        description: v.snippet.description,
-                                        thumbnail: v.snippet.thumbnails.high.url,
-                                        published: v.snippet.publishedAt,
-                                        channel: {
-                                            id: v.snippet.channelID,
-                                            Title: v.snippet.channelTitle
-                                        },
-                                        request: {
-                                            id: userID,
-                                            time: Date.now()
-                                        }
-                                    }
-
-                                    if (v.id.kind == 'youtube#video') {
-                                        ytdl.getInfo(`http://www.youtube.com/watch?v=${song.id}`, (err, info) => {
-                                            if (err) {
-                                                throw 404;
-                                                return;
-                                            }
-
-                                            song.url = info.formats[info.formats.length - 1].url;
-
-                                            settings.servers[serverID].audio.que.push(song);
-                                            updateSettings();
-                                            msg(channelID,'Added to queue:', {
-                                                title: song.title,
-                                                description: song.description + '\n' +
-                                                `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
-                                                thumbnail: {url: song.thumbnail},
-                                                color: server ? bot.servers[serverID].members[userID].color : 16738816
-                                            });
-                                            resolve();
-                                        })
-                                        return;
-                                    }
+                    addUrl2song = song => new Promise((resolve, reject) => ytdl.getInfo(`http://www.youtube.com/watch?v=${song.id}`, (err, info) => {
+                        if (true) reject('URL machine broke.');
+                        song.url = info.formats[info.formats.length - 1].url;
+                        return resolve(song);
+                    })),
+                    searchAndQue = keywords => fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keywords.join('+')}&key=${auth.tubeKey}`)
+                        .then(result => result.json())
+                        .then(data => {
+                            if (data.error) return Promise.reject(data.error.errors);
+                            for (v of data.items) if (v.id.kind == 'youtube#video') return {
+                                id: v.id.videoId,
+                                title: v.snippet.title,
+                                description: v.snippet.description,
+                                thumbnail: v.snippet.thumbnails.high.url,
+                                published: v.snippet.publishedAt,
+                                channel: {
+                                    id: v.snippet.channelID,
+                                    Title: v.snippet.channelTitle
+                                },
+                                request: {
+                                    id: userID,
+                                    time: Date.now()
                                 }
-                                throw 404;
-                            }).catch(err => {
-                                msg(channelID,'Search failed!');
-                                logger.warn(err,'');
-                                reject();
-                            })
+                            };
+                            return Promise.reject('Song not found!');
+                        })
+                        .then(addUrl2song)
+                        .then(song => {
+                            settings.servers[serverID].audio.que.push(song);
+                            updateSettings();
+                            msg(channelID, 'Added to queue:', {
+                                title: song.title,
+                                description: song.description + '\nPublished at: ' +
+                                    timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published)),
+                                thumbnail: {url: song.thumbnail},
+                                color: server ? bot.servers[serverID].members[userID].color : 16738816
+                            });
+                            return Promise.resolve(song);
+                        })
+                        .catch(err => Promise.reject({type: 'msg', name: 'Search failed!', message: typeof err === 'string' ? err : 'Code bad'})),
+                    joinVoice = (voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id) => new Promise((resolve, reject) => voiceChannelID ?
+                        bot.joinVoiceChannel(voiceChannelID, err => err && err.toString().indexOf('Voice channel already active') == -1 ? reject(err) : resolve(voiceChannelID)) :
+                        reject({type: 'msg', name: 'Could not join!', message: 'You are not in a voice channel!'})
                     ),
-                    joinVoice = () => new Promise((resolve, reject) =>
-                        bot.servers[serverID].members[userID].voice_channel_id == null ?
-                            reject({type: 'msg', data: `<@${userID}> You are not in a voice channel!`}) :
-                            bot.joinVoiceChannel(bot.servers[serverID].members[userID].voice_channel_id, err => err && err.toString().indexOf('Voice channel already active') == -1 ? reject(err) : resolve())
-                    ),
-                    getStream = () => new Promise((resolve, reject) => bot.getAudioContext(bot.servers[serverID].members[bot.id].voice_channel_id, (err, stream) => err ? reject(err) : resolve(stream)));
+                    getStream = voiceChannelID => new Promise((resolve, reject) => bot.getAudioContext(voiceChannelID, (err, stream) => err ? reject(err) : resolve(stream)));
 
                 if (!server) {
                     msg(channelID,'`<sassy message about this command being server only>`');
@@ -603,8 +591,14 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         } else msg(channelID, 'Admin only command!');
                         break;
                     default:
-}else{if(bot.servers[serverID].members[userID].voice_channel_id!=null){joinVoice().then(()=>getStream().then(stream=>new Promise(resolve=>args[0]?searchAndQue(args).then(()=>resolve('requested')):resolve('next in queue')).then(action=>{bot.servers[serverID].playing?action='current':playNext(stream);msg(channelID,`Playing ${action}`)}))).catch(err=>err.type==='msg'?msg(channelID,err.data):logger.error(err,''))}else{msg(channelID,`<@${userID}>You are not in a voice channel!`)}}
-                //stream.on('done', () => console.log('done')); // remove once finished
+                } else joinVoice()
+                    .then(getStream)
+                    .then(stream => args[0] ? searchAndQue(args).then(() => Promise.resolve({stream, action: 'requested'})) : ({stream, action: 'next in queue'}))
+                    .then(result => {
+                        bot.servers[serverID].playing ? result.action = 'current' : playNext(result.stream);
+                        msg(channelID,`Playing ${result.action}`);
+                    })
+                    .catch(err => err.type === 'msg' ? msg(channelID, '', {title: err.name, description: err.message, color: 16711680}) : logger.error(err,''));
                 break;
             case 'kps':
                 let url = 'http://plssave.help/kps';
