@@ -533,8 +533,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     break;
                 } else if (!settings.servers[serverID].audio) settings.servers[serverID].audio = {que: []};
 
-                let voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id;
-                
                 if (cmd == 'music') switch (args[0]) {
                     case 'cancel':
                         if (args[1]) {
