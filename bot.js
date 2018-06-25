@@ -455,13 +455,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (settings.servers[serverID].audio.que.length > 0 && !bot.servers[serverID].stopped) {
                             const song = settings.servers[serverID].audio.que.shift();
 
-                            settings.servers[serverID].audio.channel ? msg(settings.servers[serverID].audio.channel, 'Now playing:', {
+                            settings.servers[serverID].audio.channel && msg(settings.servers[serverID].audio.channel, 'Now playing:', {
                                 title: song.title,
                                 description: song.description + '\n' +
                                     `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
                                 thumbnail: {url: song.thumbnail},
                                 color: server ? bot.servers[serverID].members[userID].color : 16738816
-                            }) : '';
+                            });
 
                             bot.servers[serverID].ccp = cp.spawn('ffmpeg', [
                                 '-loglevel', '0',
@@ -485,13 +485,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     addUrl2song = song => new Promise((resolve, reject) => ytdl.getInfo(`http://www.youtube.com/watch?v=${song.id}`, (err, info) => {
                         if (err) reject('URL machine broke.');
                         song.url = info.formats[info.formats.length - 1].url;
-                        return resolve(song);
+                        resolve(song);
                     })),
                     searchAndQue = keywords => fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keywords.join('+')}&key=${auth.tubeKey}`)
                         .then(result => result.json())
                         .then(data => {
                             if (data.error) return Promise.reject(data.error.errors);
-                            for (v of data.items) if (v.id.kind == 'youtube#video') return {
+                            for (v of data.items) if (v.id.kind === 'youtube#video') return {
                                 id: v.id.videoId,
                                 title: v.snippet.title,
                                 description: v.snippet.description,
@@ -533,11 +533,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     break;
                 } else if (!settings.servers[serverID].audio) settings.servers[serverID].audio = {que: []};
 
-                if (cmd == 'music') switch (args[0]) {
+                if (cmd === 'music') switch (args[0]) {
                     case 'cancel':
                         if (args[1]) {
                             args[1] = Number(args[1]) - 1;
-                            if (typeof settings.servers[serverID].audio.que[args[1]] == 'object') {
+                            if (typeof settings.servers[serverID].audio.que[args[1]] === 'object') {
                                 if (settings.servers[serverID].audio.que[args[1]].request.id == userID) {
                                     settings.servers[serverID].audio.que.splice(args[1], 1);
                                     updateSettings();
@@ -552,7 +552,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             bot.servers[serverID].ccp.kill();
                             msg(settings.servers[serverID].audio.channel || channelID, args[0] === 'skip' ? 'Skipped!' : 'Stopped');
                         } else {
-                            msg(settings.servers[serverID].audio.channel || channelID, `Failed to ${args[1]}.`);
+                            msg(settings.servers[serverID].audio.channel || channelID, `Failed to ${args[0]}.`);
                         }
                         break;
                     case 'list':
