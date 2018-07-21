@@ -591,7 +591,32 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     default:
                 } else joinVoice()
                     .then(getStream)
-                    .then(stream => args[0] ? searchSong(args).then(queueSong).then(() => Promise.resolve({stream, action: 'requested'})) : ({stream, action: 'next in queue'}))
+                    .then(stream => new Promise((resolve, reject) => {
+                        new Promise(resolveWithSong => {
+                            if (evt.d.attachments.length === 1) resolveWithSong({
+                                id: evt.d.attachments[0].id,
+                                title: evt.d.attachments[0].filename,
+                                description: 'File uploaded by ' + user,
+                                thumbnail: `https://cdn.discordapp.com/avatars/${userID}/${bot.users[userID].avatar}.png`,
+                                published: sfToDate(evt.d.attachments[0].id),
+                                channel: {
+                                    id: channelID,
+                                    Title: bot.channels[channelID].name
+                                },
+                                request: {
+                                    id: userID,
+                                    time: Date.now()
+                                },
+                                url: evt.d.attachments[0].url
+                            })
+                            else if (args[0]) resolveWithSong(searchSong(args));
+                            else resolve({stream, action: 'next in queue'})
+
+                        })
+                            .then(queueSong)
+                            .then(() => resolve({stream, action: 'requested'}))
+                            .catch(reject);
+                    }))
                     .then(result => {
                         bot.servers[serverID].playing ? result.action = 'current' : playNext(result.stream);
                         msg(channelID,`Playing ${result.action}`);
