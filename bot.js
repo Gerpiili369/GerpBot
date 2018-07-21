@@ -482,12 +482,24 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             updateSettings();
                         } else bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
                     },
+                    queueSong = song => new Promise((resolve, reject) => {
+                        settings.servers[serverID].audio.que.push(song);
+                        updateSettings();
+                        msg(channelID, 'Added to queue:', {
+                            title: song.title,
+                            description: song.description + '\nPublished at: ' +
+                                timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published)),
+                            thumbnail: {url: song.thumbnail},
+                            color: server ? bot.servers[serverID].members[userID].color : 16738816
+                        });
+                        resolve(song);
+                    }),
                     addUrl2song = song => new Promise((resolve, reject) => ytdl.getInfo(`http://www.youtube.com/watch?v=${song.id}`, (err, info) => {
                         if (err) reject('URL machine broke.');
                         song.url = info.formats[info.formats.length - 1].url;
                         resolve(song);
                     })),
-                    searchAndQue = keywords => fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keywords.join('+')}&key=${auth.tubeKey}`)
+                    searchSong = keywords => fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keywords.join('+')}&key=${auth.tubeKey}`)
                         .then(result => result.json())
                         .then(data => {
                             if (data.error) return Promise.reject(data.error.errors);
@@ -509,18 +521,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             return Promise.reject('Song not found!');
                         })
                         .then(addUrl2song)
-                        .then(song => {
-                            settings.servers[serverID].audio.que.push(song);
-                            updateSettings();
-                            msg(channelID, 'Added to queue:', {
-                                title: song.title,
-                                description: song.description + '\nPublished at: ' +
-                                    timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published)),
-                                thumbnail: {url: song.thumbnail},
-                                color: server ? bot.servers[serverID].members[userID].color : 16738816
-                            });
-                            return Promise.resolve(song);
-                        })
                         .catch(err => Promise.reject({type: 'msg', name: 'Search failed!', message: typeof err === 'string' ? err : 'Code bad'})),
                     joinVoice = (voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id) => new Promise((resolve, reject) => voiceChannelID ?
                         bot.joinVoiceChannel(voiceChannelID, err => err && err.toString().indexOf('Voice channel already active') == -1 ? reject(err) : resolve(voiceChannelID)) :
@@ -591,7 +591,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     default:
                 } else joinVoice()
                     .then(getStream)
-                    .then(stream => args[0] ? searchAndQue(args).then(() => Promise.resolve({stream, action: 'requested'})) : ({stream, action: 'next in queue'}))
+                    .then(stream => args[0] ? searchSong(args).then(queueSong).then(() => Promise.resolve({stream, action: 'requested'})) : ({stream, action: 'next in queue'}))
                     .then(result => {
                         bot.servers[serverID].playing ? result.action = 'current' : playNext(result.stream);
                         msg(channelID,`Playing ${result.action}`);
