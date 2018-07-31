@@ -4,6 +4,9 @@ const
     auth = require('./auth.json'),
     fs = require('fs'),
     io = require('socket.io-client'),
+    fetch = require('node-fetch'),
+    ytdl = require('ytdl-core'),
+    cp = require('child_process'),
     snowTime = require('snowtime'),
 
     Ile = require('./scripts/ile.js');
@@ -441,6 +444,181 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (!ve.error) {
                     msg(channelID,'@everyone',ve);
                 }
+                break;
+            case 'music':
+            case 'play':
+                const
+                    playNext = stream => {
+                        if (settings.servers[serverID].audio.que.length > 0 && !bot.servers[serverID].stopped) {
+                            const song = settings.servers[serverID].audio.que.shift();
+
+                            settings.servers[serverID].audio.channel && msg(settings.servers[serverID].audio.channel, 'Now playing:', {
+                                title: song.title,
+                                description: song.description + '\n' +
+                                    `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
+                                thumbnail: {url: song.thumbnail},
+                                color: server ? bot.servers[serverID].members[userID].color : 16738816
+                            });
+
+                            bot.servers[serverID].ccp = cp.spawn('ffmpeg', [
+                                '-loglevel', '0',
+                                '-i', song.url,
+                                '-f', 's16le',
+                                '-ar', '48000',
+                                '-ac', '2',
+                                'pipe:1'
+                            ], {stdio: ['pipe', 'pipe', 'ignore']});
+                            bot.servers[serverID].ccp.stdout.once('readable', () => stream.send(bot.servers[serverID].ccp.stdout));
+                            bot.servers[serverID].ccp.stdout.once('end', () => {
+                                bot.servers[serverID].playing = false;
+                                playNext(stream);
+                                bot.servers[serverID].stopped = false;
+                    		});
+                            bot.servers[serverID].playing = song;
+                            updateSettings();
+                        } else bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
+                    },
+                    queueSong = song => new Promise((resolve, reject) => {
+                        settings.servers[serverID].audio.que.push(song);
+                        updateSettings();
+                        msg(channelID, 'Added to queue:', {
+                            title: song.title,
+                            description: song.description + '\nPublished at: ' +
+                                timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published)),
+                            thumbnail: {url: song.thumbnail},
+                            color: server ? bot.servers[serverID].members[userID].color : 16738816
+                        });
+                        resolve(song);
+                    }),
+                    addUrl2song = song => new Promise((resolve, reject) => ytdl.getInfo(`http://www.youtube.com/watch?v=${song.id}`, (err, info) => {
+                        if (err) reject('URL machine broke.');
+                        song.url = info.formats[info.formats.length - 1].url;
+                        resolve(song);
+                    })),
+                    searchSong = keywords => fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keywords.join('+')}&key=${auth.tubeKey}`)
+                        .then(result => result.json())
+                        .then(data => {
+                            if (data.error) return Promise.reject(data.error.errors);
+                            for (v of data.items) if (v.id.kind === 'youtube#video') return {
+                                id: v.id.videoId,
+                                title: v.snippet.title,
+                                description: v.snippet.description,
+                                thumbnail: v.snippet.thumbnails.high.url,
+                                published: v.snippet.publishedAt,
+                                channel: {
+                                    id: v.snippet.channelID,
+                                    Title: v.snippet.channelTitle
+                                },
+                                request: {
+                                    id: userID,
+                                    time: Date.now()
+                                }
+                            };
+                            return Promise.reject('Song not found!');
+                        })
+                        .then(addUrl2song)
+                        .catch(err => Promise.reject({type: 'msg', name: 'Search failed!', message: typeof err === 'string' ? err : 'Code bad'})),
+                    joinVoice = (voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id) => new Promise((resolve, reject) => voiceChannelID ?
+                        bot.joinVoiceChannel(voiceChannelID, err => err && err.toString().indexOf('Voice channel already active') == -1 ? reject(err) : resolve(voiceChannelID)) :
+                        reject({type: 'msg', name: 'Could not join!', message: 'You are not in a voice channel!'})
+                    ),
+                    getStream = voiceChannelID => new Promise((resolve, reject) => bot.getAudioContext(voiceChannelID, (err, stream) => err ? reject(err) : resolve(stream)));
+
+                if (!server) {
+                    msg(channelID,'`<sassy message about this command being server only>`');
+                    break;
+                } else if (!settings.servers[serverID].audio) settings.servers[serverID].audio = {que: []};
+
+                if (cmd === 'music') switch (args[0]) {
+                    case 'cancel':
+                        if (args[1]) {
+                            args[1] = Number(args[1]) - 1;
+                            if (typeof settings.servers[serverID].audio.que[args[1]] === 'object') {
+                                if (settings.servers[serverID].audio.que[args[1]].request.id == userID) {
+                                    settings.servers[serverID].audio.que.splice(args[1], 1);
+                                    updateSettings();
+                                    msg(channelID,'Cancel succesful!');
+                                } else msg(channelID,'That\'s not yours!');
+                            } else msg(channelID,'Song doesn\'t exist!');
+                        } else msg(channelID,'Nothing could be cancelled!');
+                        break;
+                    case 'skip': case 'stop':
+                        if (bot.servers[serverID].ccp) {
+                            if (args[0] === 'stop') bot.servers[serverID].stopped = true;
+                            bot.servers[serverID].ccp.kill();
+                            msg(settings.servers[serverID].audio.channel || channelID, args[0] === 'skip' ? 'Skipped!' : 'Stopped!');
+                        } else {
+                            msg(settings.servers[serverID].audio.channel || channelID, `Failed to ${args[0]}.`);
+                        }
+                        break;
+                    case 'list':
+                        let ale = {
+                            title: 'No songs queued right now.',
+                            fields: [],
+                            color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                        }
+
+                        for (song of settings.servers[serverID].audio.que) ale.fields.push({
+                            name: ale.fields.length + 1 + ': ' + song.title,
+                            value: `Requested by: <@${song.request.id}>\n${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.request.time))}.`
+                        });
+
+                        if (ale.fields.length > 0) ale.title = 'Queued songs:';
+                        if (bot.servers[serverID].playing) {
+                            ale.title = 'Current song: ' + bot.servers[serverID].playing.title;
+                            ale.description = `Requested by: <@${bot.servers[serverID].playing.request.id}>\n${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(bot.servers[serverID].playing.request.time))}.`;
+                            ale.thumbnail = {url: bot.servers[serverID].playing.thumbnail};
+
+                            if (ale.fields.length > 0) ale.description += '\n\n**Queued songs:**';
+                        }
+
+                        msg(channelID, '', ale);
+                        break;
+                    case 'channel':
+                        if (admin) {
+                            args[1] = snowmaker(args[1]);
+                            if (bot.channels[args[1]] && bot.channels[args[1]].type == 0 && bot.channels[args[1]].guild_id == serverID) {
+                                settings.servers[serverID].audio.channel = args[1];
+                                updateSettings();
+                                msg(channelID, 'Channel set!');
+                            } else msg(channelID, 'Invalid channel!');
+                        } else msg(channelID, 'Admin only command!');
+                        break;
+                    default:
+                } else joinVoice()
+                    .then(getStream)
+                    .then(stream => new Promise((resolve, reject) => {
+                        new Promise(resolveWithSong => {
+                            if (evt.d.attachments.length === 1) resolveWithSong({
+                                id: evt.d.attachments[0].id,
+                                title: evt.d.attachments[0].filename,
+                                description: 'File uploaded by ' + user,
+                                thumbnail: `https://cdn.discordapp.com/avatars/${userID}/${bot.users[userID].avatar}.png`,
+                                published: sfToDate(evt.d.attachments[0].id),
+                                channel: {
+                                    id: channelID,
+                                    Title: bot.channels[channelID].name
+                                },
+                                request: {
+                                    id: userID,
+                                    time: Date.now()
+                                },
+                                url: evt.d.attachments[0].url
+                            })
+                            else if (args[0]) resolveWithSong(searchSong(args));
+                            else resolve({stream, action: 'next in queue'})
+
+                        })
+                            .then(queueSong)
+                            .then(() => resolve({stream, action: 'requested'}))
+                            .catch(reject);
+                    }))
+                    .then(result => {
+                        bot.servers[serverID].playing ? result.action = 'current' : playNext(result.stream);
+                        if (settings.servers[serverID].audio.que.length > 0) msg(channelID, `Playing ${result.action}`);
+                        else msg(channelID, 'No songs queued right now.');
+                    })
+                    .catch(err => err.type === 'msg' ? msg(channelID, '', {title: err.name, description: err.message, color: 16711680}) : logger.error(err,''));
                 break;
             case 'kps':
                 let url = 'http://plssave.help/kps';
