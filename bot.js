@@ -448,9 +448,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID,'@everyone',ve);
                 }
                 break;
-            case 'music': // FIXME: WIP pls fix // remove (comment) once finished
+            case 'music':
             case 'play':
-                const // these should be elsewhere
+                const
                     playNext = stream => {
                         if (settings.servers[serverID].audio.que.length > 0 && !bot.servers[serverID].stopped) {
                             const song = settings.servers[serverID].audio.que.shift();
@@ -473,7 +473,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             ], {stdio: ['pipe', 'pipe', 'ignore']});
                             bot.servers[serverID].ccp.stdout.once('readable', () => stream.send(bot.servers[serverID].ccp.stdout));
                             bot.servers[serverID].ccp.stdout.once('end', () => {
-                                console.log('end'); // remove once finished
                                 bot.servers[serverID].playing = false;
                                 playNext(stream);
                                 bot.servers[serverID].stopped = false;
