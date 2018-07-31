@@ -619,7 +619,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     }))
                     .then(result => {
                         bot.servers[serverID].playing ? result.action = 'current' : playNext(result.stream);
-                        msg(channelID,`Playing ${result.action}`);
+                        if (settings.servers[serverID].audio.que.length > 0) msg(channelID, `Playing ${result.action}`);
+                        else msg(channelID, 'No songs queued right now.');
                     })
                     .catch(err => err.type === 'msg' ? msg(channelID, '', {title: err.name, description: err.message, color: 16711680}) : logger.error(err,''));
                 break;
