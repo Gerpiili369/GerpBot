@@ -65,6 +65,14 @@
             "value": "Starts a vote. A really cool one."
         },
         {
+            "name": "`@GerpBot play [<keywords>...]`",
+            "value": "Adds songs to queue and starts playing. Attachments also supported and must be part of the same message as the command."
+        },
+        {
+            "name": "`@GerpBot music (cancel <number>) | skip | stop | list | channel`",
+            "value": "Music commands and control. Use `@GerpBot play` to start playing."
+        },
+        {
             "name": "`@GerpBot kps play | ai | friend <name> | rock | paper | scissors | classic | horror | space | hand | quit`",
             "value": "Play KPS."
         },
