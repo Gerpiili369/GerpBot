@@ -550,7 +550,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (bot.servers[serverID].ccp) {
                             if (args[0] === 'stop') bot.servers[serverID].stopped = true;
                             bot.servers[serverID].ccp.kill();
-                            msg(settings.servers[serverID].audio.channel || channelID, args[0] === 'skip' ? 'Skipped!' : 'Stopped');
+                            msg(settings.servers[serverID].audio.channel || channelID, args[0] === 'skip' ? 'Skipped!' : 'Stopped!');
                         } else {
                             msg(settings.servers[serverID].audio.channel || channelID, `Failed to ${args[0]}.`);
                         }
