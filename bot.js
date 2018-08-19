@@ -278,20 +278,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 if (args[0]) {
                     switch (args[1]) {
-                        case 'update':
-                            msg(channelID, '', trapem('Status', 'Updating...'));
-                            psnTrophy.update(args[0])
-                                .then(data => msg(channelID, '', trapem('Success!', data.message, '', [])))
-                                .then(() => {
-                                    if (trophyPlayers[args[0]]) {
-                                        msg(channelID, '', trapem('Notice', 'Updating local data...'));
-                                        psnTrophy.getAll(args[0])
-                                            then(data => trophyPlayers[args[0]] = data)
-                                            .catch(err => reject(err));
-                                    }
-                                })
-                                .catch(err => msg(channelID, '', trapem(err.name, err.message)));
-                            break;
                         case 'summary':
                             msg(channelID, '', trapem('Status', 'Fetching summary, hold up!'));
                             psnTrophy.getSummary(args[0])
