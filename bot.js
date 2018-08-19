@@ -4,7 +4,7 @@ const
     auth = require('./auth.json'),
     fs = require('fs'),
     io = require('socket.io-client'),
-    psnTrophy = require('PSNTrophyAPI'),
+    Trophy = require('PSNTrophyAPI'),
     snowTime = require('snowtime'),
 
     Ile = require('./scripts/ile.js');
@@ -20,6 +20,7 @@ for (const func in snowTime) eval(`${func} = snowTime.${func}`);
 
 const
     objectLib = getJSON(['help','compliments','defaultRes','games','answers','ileAcronym'],'objectLib/'),
+    psnTrophy = new Trophy(auth.psn, true),
     bot = new Discord.Client({
         token: auth.token,
         autorun: true
