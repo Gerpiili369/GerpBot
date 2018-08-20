@@ -276,9 +276,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     footer: {text: clean[1] ? '' : 'Trophy data from: psntrophyleaders.com'}
                 });
 
-                if (args[0]) {
-                    switch (args[1]) {
-                        case 'summary':
+                switch (args[0]) {
+                    case 'summary':
+                        if (args[1]) {
                             msg(channelID, '', trapem('Status', 'Fetching summary, hold up!'));
                             psnTrophy.getSummary(args[0])
                                 .then(data => {
@@ -310,7 +310,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                                 })
                                 .catch(err => msg(channelID, '', trapem(err.name, err.message)));
-                            break;
+                        } else msg(channelID, '', trapem('Notice', 'Username required!'));
+                        break;
                         case 'games':
                             new Promise((resolve, reject) => {
                                 if (!trophyPlayers[args[0]]) {
@@ -350,10 +351,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 })
                                 .catch(err => msg(channelID, '', trapem(err.name, err.message)));
                             break;
-                        default:
-                            if (!isNaN(args[1])) {
+                    case 'list':
+                        if (args[1]) {
+                            if (!isNaN(args[2])) {
                                 msg(channelID, '', trapem('Status', 'Fetching data, hold up!'));
-                                psnTrophy.getPage(args[0], args[1])
+                                psnTrophy.getPage(args[1], args[2])
                                     .then(list => psnTrophy.groupByGame(list))
                                     .then(list => {
                                         let fields = [], value, addition, continued;
@@ -386,18 +388,18 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                             to: channelID,
                                             message: '',
                                             embed: trapem(
-                                                `${args[0]}'s trophies`, `Page ${args[1]}`,
                                                 `http://psntrophyleaders.com/${args[0]}#trophies`,
                                                 fields, [false, false]
+                                                `${args[1]}'s trophies`, `Page ${args[2]}`,
                                             )
                                         }, err => {
                                             if (err) {
                                                 if (err.response && err.response.embed) {
                                                     const fields2 = fields.splice(fields.length / 2, Infinity)
                                                     msg(channelID, '', trapem(
-                                                        `${args[0]}'s trophies`, `Page ${args[1]}`,
                                                         `http://psntrophyleaders.com/${args[0]}#trophies`,
                                                         fields
+                                                        `${args[1]}'s trophies`, `Page ${args[2]}`,
                                                     ));
                                                     setTimeout(() => msg(channelID, '', trapem(
                                                         '', '', '', fields2, [true, false]
@@ -408,8 +410,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                     })
                                     .catch(err => msg(channelID, '', trapem(err.name, err.message)));
                             } else msg(channelID, '', trapem('Notice', 'Page required!'));
-                    }
-                } else msg(channelID, '', trapem('Notice', 'Username required!'));
+                        } else msg(channelID, '', trapem('Notice', 'Username required!'));
+                        break;
+                    default:
+                        // help
+                }
                 break;
             case 'trophyEmoji':
                 if (server && admin && args.length === 4) {
