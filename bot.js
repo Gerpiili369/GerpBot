@@ -263,17 +263,17 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                  * @arg {[{name: String, value: String}..]} [fields]
                  * @arg {[Boolean, Boolean]} [clean]
                  */
-                const trapem = (title, msg = '', url = '', fields = [], clean = [false, true]) => ({
+                const trapem = (title, msg, content = {}, clean = [false, true]) => ({
                     title: title,
-                    description: msg,
-                    url: url,
+                    description: msg || '',
+                    url: content.url || '',
                     author: {
                         name: clean[0]  ? '' : 'PSN Trophy API',
                         url: 'https://github.com/Gerpiili369/PSNTrophyAPI'
                     },
-                    color: server ? bot.servers[serverID].members[userID].color : 16738816,
-                    fields: fields,
-                    footer: {text: clean[1] ? '' : 'Trophy data from: psntrophyleaders.com'}
+                    color: content.err ? 16711680 : (server ? bot.servers[serverID].members[userID].color : 16738816),
+                    fields: content.fields || [],
+                    footer: {text: clean[1] ? '' : 'footer content here'}
                 });
 
                 switch (args[0]) {
@@ -295,22 +295,23 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                                     msg(channelID, '', trapem(
                                         `${data.username}'s trophy summary`,
-                                        `Trophies: ${data.count.total}`,
-                                        `http://psntrophyleaders.com/${args[0]}`, [
-                                            {
-                                                name: 'Trophies by type',
-                                                value: types
-                                            },
-                                            {
-                                                name: 'Trophies by platform',
-                                                value: platforms
-                                            }
-                                        ], [false, false]
+                                        `Trophies: ${data.count.total}`, {
+                                            embed: [
+                                                {
+                                                    name: 'Trophies by type',
+                                                    value: types
+                                                },
+                                                {
+                                                    name: 'Trophies by platform',
+                                                    value: platforms
+                                                }
+                                            ]
+                                        }, [false, false]
                                     ));
 
                                 })
-                                .catch(err => msg(channelID, '', trapem(err.name, err.message)));
-                        } else msg(channelID, '', trapem('Notice', 'Username required!'));
+                                .catch(err => msg(channelID, '', trapem(err.name, err.message, {err: true})));
+                        } else msg(channelID, '', trapem('Notice', 'Username required!', {err: true}));
                         break;
                         case 'games':
                             new Promise((resolve, reject) => {
@@ -342,14 +343,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                         setTimeout(embed => msg(channelID, i === 0 ? `<@${userID}>` : '', embed), i * 1000, trapem(
                                             `${data.username}'s games'`,
                                             `Page ${i + 1}/${embedFriendly.length}`,
-                                            `http://psntrophyleaders.com/user/view/${data.username}#games`,
-                                            fields
+                                            {fields}
                                         ));
 
                                         fields = [];
                                     }
                                 })
-                                .catch(err => msg(channelID, '', trapem(err.name, err.message)));
+                                .catch(err => msg(channelID, '', trapem(err.name, err.message, {err: true})));
                             break;
                     case 'list':
                         if (args[1]) {
@@ -388,29 +388,27 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                             to: channelID,
                                             message: '',
                                             embed: trapem(
-                                                `http://psntrophyleaders.com/${args[0]}#trophies`,
-                                                fields, [false, false]
                                                 `${args[1]}'s trophies`, `Page ${args[2]}`,
+                                                {fields}, [false, false]
                                             )
                                         }, err => {
                                             if (err) {
                                                 if (err.response && err.response.embed) {
                                                     const fields2 = fields.splice(fields.length / 2, Infinity)
                                                     msg(channelID, '', trapem(
-                                                        `http://psntrophyleaders.com/${args[0]}#trophies`,
-                                                        fields
                                                         `${args[1]}'s trophies`, `Page ${args[2]}`,
+                                                        {fields}
                                                     ));
                                                     setTimeout(() => msg(channelID, '', trapem(
-                                                        '', '', '', fields2, [true, false]
+                                                        '', '', {fields: fields2}, [true, false]
                                                     )), 100);
                                                 } else logger.error(err, '');
                                             }
                                         });
                                     })
-                                    .catch(err => msg(channelID, '', trapem(err.name, err.message)));
-                            } else msg(channelID, '', trapem('Notice', 'Page required!'));
-                        } else msg(channelID, '', trapem('Notice', 'Username required!'));
+                                    .catch(err => msg(channelID, '', trapem(err.name, err.message, {err: true})));
+                            } else msg(channelID, '', trapem('Notice', 'Page required!', {err: true}));
+                        } else msg(channelID, '', trapem('Notice', 'Username required!', {err: true}));
                         break;
                     case 'emoji':
                         if (server && admin && args.length === 5) {
@@ -422,7 +420,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             };
                             updateSettings();
                             msg(channelID, '', trapem('Trophy icons changed!'));
-                        } else msg(channelID, '', trapem('_**TRIGGERED**_'));
+                        } else msg(channelID, '', trapem('_**TRIGGERED**_', '', {err: true}));
                         break;
                     default:
                         // help
