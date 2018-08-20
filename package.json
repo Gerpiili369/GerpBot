@@ -7,6 +7,7 @@
   "dependencies": {
     "snowtime": "Gerpiili369/snowTime.js",
     "PSNTrophyAPI": "github:Gerpiili369/PSNTrophyAPI#2.0",
+    "canvas": "^1.6.11",
     "discord.io": "github:woor/discord.io#gateway_v6",
     "socket.io-client": "^2.1.0",
     "winston": "^2.4.0"

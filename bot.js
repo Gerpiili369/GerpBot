@@ -373,6 +373,18 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 })
                                 .catch(err => msg(channelID, '', trapem(err.name, err.message, {err: true})));
                             break;
+                    case 'timeline':
+                        if (args[1]) require('./scripts/timeline')(args[1], psnTrophy, isNaN(args[2]) ? undefined : args[2])
+                            .then(canvas => bot.uploadFile({
+                                to: channelID,
+                                file: canvas.toBuffer(),
+                                filename: 'timeline.png'
+                            }, (err, res) => {
+                                if (err) logger.error(err)
+                            }))
+                            .catch(err => msg(channelID, '', trapem(err.name, err.message, {err: true})));
+                        else msg(channelID, '', trapem('Notice', 'Username required!', {err: true}));
+                        break;
                     case 'list':
                         if (args[1]) {
                             if (!isNaN(args[2])) {
