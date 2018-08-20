@@ -355,8 +355,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (args[1]) {
                             if (!isNaN(args[2])) {
                                 msg(channelID, '', trapem('Status', 'Fetching data, hold up!'));
-                                psnTrophy.getPage(args[1], args[2])
-                                    .then(list => psnTrophy.groupByGame(list))
+                                psnTrophy.getAll(args[1])
+                                    .then(userData => psnTrophy.newToOld(userData.trophyList))
+                                    .then(trophyData => {
+                                        const list = [];
+                                        for (i = (args[2] - 1) * 50 ; (i < trophyData.trophyList.length && i < args[2] * 50); i++) {
+                                            list.push(trophyData.trophyList[i])
+                                        }
+                                        return list;
+                                    })
+                                    .then(psnTrophy.groupByGame)
                                     .then(list => {
                                         let fields = [], value, addition, continued;
                                         //list.splice(0,2);
