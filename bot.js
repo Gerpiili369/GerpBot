@@ -449,7 +449,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 platinum: args[4]
                             };
                             updateSettings();
-                            msg(channelID, '', trapem('Trophy icons changed!'));
+                            msg(channelID, '', trapem('Trophy icons changed!', `Bronze: ${args[1]} Silver: ${args[2]} Gold: ${args[3]} Platinum: ${args[4]}`));
                         } else msg(channelID, '', trapem('_**TRIGGERED**_', '', {err: true}));
                         break;
                     default:
