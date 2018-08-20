@@ -412,21 +412,21 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             } else msg(channelID, '', trapem('Notice', 'Page required!'));
                         } else msg(channelID, '', trapem('Notice', 'Username required!'));
                         break;
+                    case 'emoji':
+                        if (server && admin && args.length === 5) {
+                            settings.servers[serverID].trophyTypes = {
+                                bronze: args[1],
+                                silver: args[2],
+                                gold: args[3],
+                                platinum: args[4]
+                            };
+                            updateSettings();
+                            msg(channelID, '', trapem('Trophy icons changed!'));
+                        } else msg(channelID, '', trapem('_**TRIGGERED**_'));
+                        break;
                     default:
                         // help
                 }
-                break;
-            case 'trophyEmoji':
-                if (server && admin && args.length === 4) {
-                    settings.servers[serverID].trophyTypes = {
-                        bronze: args[0],
-                        silver: args[1],
-                        gold: args[2],
-                        platinum: args[3]
-                    };
-                    updateSettings();
-                    msg(channelID, 'Trophy icons changed!');
-                } else msg(channelID, '_**TRIGGERED**_');
                 break;
             case 'raffle':
                 if (!server && !bot.channels[snowmaker(args[0])]) {
