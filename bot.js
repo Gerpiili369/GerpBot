@@ -277,6 +277,28 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 });
 
                 switch (args[0]) {
+                    case 'auth':
+                        if (args[1]) psnTrophy.checkToken(args[1])
+                            .then(result => {
+                                if (result.usable) {
+                                    psnTrophy.token = args[1];
+                                    msg(channelID, '', trapem(
+                                        'Token update success',
+                                        'Authorization bearer token has been updated.'
+                                    ));
+                                } else {
+                                    msg(channelID, '', trapem(
+                                        'Token update failure',
+                                        result.message,
+                                        {err: true}
+                                    ))
+                                }
+                            })
+                            .catch(err => msg(channelID, '', trapem(
+                                err.name, err.message, {err: true}
+                            )));
+                        else msg(channelID, '', trapem('Token required!', '', {err: true}))
+                        break;
                     case 'summary':
                         if (args[1]) {
                             msg(channelID, '', trapem('Status', 'Fetching summary, hold up!'));
