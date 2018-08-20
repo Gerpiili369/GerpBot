@@ -1175,6 +1175,43 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
             msg(channelID,`<@${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
         }
+
+        for (word of message.split(' ')) {
+            word = snowmaker(word);
+            if (bot.channels[word] && channelID != word) {
+                const me = {
+                    title: `#${bot.channels[channelID].name} (${bot.servers[serverID].name})`,
+                    description: `*Latest messages:*`,
+                    color: server ? bot.servers[serverID].members[userID].color : 16738816,
+                    thumbnail: {},
+                    image: {},
+                    fields: []
+                };
+
+                bot.getMessages({channelID, limit: 5}, (err, msgList) => {
+                    if (err) logger.error(err, '');
+                    else for (m of msgList) {
+                        let extra = '';
+                        if (!me.image.url) for (ext of ['.gif', '.jpg', '.jpeg','.png']) {
+                            if (m.attachments[0] && m.attachments[0].url.indexOf(ext) > -1) {
+                                me.image.url = m.attachments[0].url;
+                                extra = ' (image below)';
+                            } else for (url of m.content.split(' ')) if (url.indexOf(ext) > -1 && isUrl(url)) {
+                                me.image.url = url;
+                                extra = ' (image below)';
+                            }
+                        }
+
+                        me.fields.push({
+                            name: m.author.username + extra,
+                            value: m.content || '`<attachment>`'
+                        });
+                    }
+                    me.fields.reverse();
+                    msg(word, 'This channel was mentioned on another channel.', me);
+                });
+            }
+        }
     }
 
     if (server && typeof settings.servers[serverID].autoShit == 'string' && bot.servers[serverID].members[userID].roles.indexOf(settings.servers[serverID].autoShit) != -1) emojiResponse('💩');

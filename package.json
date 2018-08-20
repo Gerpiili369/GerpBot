@@ -6,6 +6,7 @@
   "author": "Gerpiili369",
   "dependencies": {
     "discord.io": "izy521/discord.io",
+    "is-url": "^1.2.4",
     "node-fetch": "^2.1.2",
     "snowtime": "Gerpiili369/snowTime.js",
     "socket.io-client": "^2.1.0",
