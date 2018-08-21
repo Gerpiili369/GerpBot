@@ -4,6 +4,7 @@ const
     auth = require('./auth.json'),
     fs = require('fs'),
     io = require('socket.io-client'),
+    isUrl = require('is-url'),
     fetch = require('node-fetch'),
     ytdl = require('ytdl-core'),
     cp = require('child_process'),
