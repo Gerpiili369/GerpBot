@@ -137,15 +137,18 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     fields: [
                         {
                             name: 'Members:',
-                            value: `✅ Online: ${si.members.online}\n💤 Idle: ${si.members.idle}\n⛔ Do not disturb: ${si.members.dnd}\n⚫ Offline: ${si.members.offline}`
+                            value: `✅ Online: ${si.members.online}\n💤 Idle: ${si.members.idle}\n⛔ Do not disturb: ${si.members.dnd}\n⚫ Offline: ${si.members.offline}`,
+                            inline: true
                         },
                         {
                             name: 'Channels:',
-                            value: `💬 Text: ${si.channels[0]}\n🎙️ Voice: ${si.channels[2]}\n📁 Category: ${si.channels[4]}`
+                            value: `💬 Text: ${si.channels[0]}\n🎙️ Voice: ${si.channels[2]}\n📁 Category: ${si.channels[4]}`,
+                            inline: true
                         },
                         {
                             name: 'More stuff:',
-                            value: `Roles: ${Object.keys(bot.servers[serverID].roles).length}, Emojis: ${Object.keys(bot.servers[serverID].emojis).length}/50, Bots: ${si.members.bots}`
+                            value: `Roles: ${Object.keys(bot.servers[serverID].roles).length}, Emojis: ${Object.keys(bot.servers[serverID].emojis).length}/50, Bots: ${si.members.bots}`,
+                            inline: true
                         }
                     ]
                 };
@@ -429,12 +432,14 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (p[1] != undefined) {
                             ve.fields.push({
                                 name: `Vote for ${p[1]} with:`,
-                                value: `${p[0]}`
+                                value: `${p[0]}`,
+                                inline: true
                             });
                         } else {
                             ve.fields.push({
                                 name: `Vote with:`,
-                                value: `${p[0]}`
+                                value: `${p[0]}`,
+                                inline: true
                             });
                         }
                     } else {
