@@ -208,7 +208,8 @@ module.exports = class Ile extends Emitter {
         scoreboard.forEach((v,i) => {
             embed.fields.push({
                 name: `${i+1}. ${v.id}`,
-                value: uptimeToString(v.delay)
+                value: uptimeToString(v.delay),
+                inline: true
             });
         });
         return embed;
