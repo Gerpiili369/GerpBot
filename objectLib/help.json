@@ -105,6 +105,10 @@
             "value": "Makes one role shit."
         },
         {
+            "name": "`@GerpBot color #<hex> | <decimal> | default`",
+            "value": "Changes bot's color."
+        },
+        {
             "name": "`@GerpBot effect rainbow | shuffle`",
             "value": "Toggles GerpBot name effects."
         },
