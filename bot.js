@@ -1309,7 +1309,7 @@ bot.on('any', evt => {
 
                     bsga.extra = bsga.extra === 'a' ? 'b' : 'a';
                     bse.image = {
-                        url: settings.url + '/temp/bsga-imgage.png' + `?${bsga.extra}=${Math.random()}`
+                        url: settings.url + '/temp/bsga-image.png' + `?${bsga.extra}=${Math.random()}`
                     };
 
                     bot.editMessage({
