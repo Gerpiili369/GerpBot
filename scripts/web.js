@@ -3,6 +3,7 @@ const
     express = require('express'),
     app = express(),
     http = require('http').Server(app),
+    fs = require('fs'),
     tempath = path.join(__dirname, '..', 'temp');
 
 module.exports = {
