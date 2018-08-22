@@ -1,4 +1,5 @@
 node_modules/
+temp/
 auth.json
 settings.json
 package-lock.json

@@ -10,6 +10,7 @@ const
     cp = require('child_process'),
     snowTime = require('snowtime'),
 
+    web = require('./scripts/web.js'),
     Ile = require('./scripts/ile.js');
 
 logger.remove(logger.transports.Console);
@@ -38,6 +39,8 @@ var
     },
     kps = {};
     ile = new Ile(getJSON('ile'),objectLib.ileAcronym);
+
+web.activate('/discord').then(logger.info);
 
 if (settings.servers === undefined) settings.servers = {};
 if (settings.tz === undefined) settings.tz = {};
