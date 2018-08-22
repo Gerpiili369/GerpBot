@@ -5,6 +5,7 @@
   "main": "bot.js",
   "author": "Gerpiili369",
   "dependencies": {
+    "canvas": "^1.6.11",
     "discord.io": "izy521/discord.io",
     "express": "^4.16.3",
     "is-url": "^1.2.4",
