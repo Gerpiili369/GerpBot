@@ -3,6 +3,7 @@ const
     logger = require('winston'),
     auth = require('./auth.json'),
     fs = require('fs'),
+    path = require('path'),
     io = require('socket.io-client'),
     isUrl = require('is-url'),
     fetch = require('node-fetch'),
@@ -24,7 +25,7 @@ logger.level = 'debug';
 for (const func in snowTime) eval(`${func} = snowTime.${func}`);
 
 const
-    objectLib = getJSON(['help','compliments','defaultRes','games','answers','ileAcronym'],'objectLib/'),
+    objectLib = getJSON(['help', 'compliments', 'defaultRes', 'games', 'answers', 'ileAcronym'], 'objectLib'),
     bot = new Discord.Client({
         token: auth.token,
         autorun: true
@@ -1623,23 +1624,18 @@ function editNick (server,newName) {
  * @arg {String} [location]
  * @returns {Object}
  */
-function getJSON(file,location = '') {
-    let tempObj = {};
+function getJSON(file, location = '') {
+    const tempObj = {};
+    let fullPath;
 
-    switch (typeof file) {
-        case 'object':
-            file.forEach(v => {
-                if (fs.existsSync(`${location}${v}.json`)) {
-                    tempObj[v] = JSON.parse(fs.readFileSync(`${location}${v}.json`, 'utf-8', err => {if (err) logger.error(err,'');}));
-                }
-            });
-            break;
-        case 'string':
-            if (fs.existsSync(`${location}${file}.json`)) {
-                return JSON.parse(fs.readFileSync(`${location}${file}.json`, 'utf-8', err => {if (err) logger.error(err,'');}));
-            }
-            break;
-        default:
+    if (typeof file === 'string') {
+        fullPath = path.join(__dirname, location, file);
+        if (fs.existsSync(fullPath + '.json')) return require(fullPath);
+    }
+
+    if (typeof file === 'object') for (const key of file) {
+        fullPath = path.join(__dirname, location, key);
+        if (fs.existsSync(fullPath + '.json')) tempObj[key] = require(fullPath);
     }
     return tempObj;
 }
