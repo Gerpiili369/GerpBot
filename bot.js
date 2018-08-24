@@ -1,7 +1,7 @@
 const
+    // node_modules
     Discord = require('discord.io'),
     logger = require('winston'),
-    auth = require('./auth.json'),
     fs = require('fs'),
     path = require('path'),
     io = require('socket.io-client'),
@@ -10,10 +10,35 @@ const
     ytdl = require('ytdl-core'),
     cp = require('child_process'),
     snowTime = require('snowtime'),
-
+    // scripts
     web = require('./scripts/web.js'),
     bs = require('./scripts/bs.js'),
-    Ile = require('./scripts/ile.js');
+    Ile = require('./scripts/ile.js'),
+    // authentication file
+    auth = require('./auth.json'),
+    // load objectLib
+    objectLib = getJSON([
+        'help', 'compliments', 'defaultRes', 'games', 'answers', 'ileAcronym'
+    ], 'objectLib'),
+    // constant variables
+    bot = new Discord.Client({token: auth.token, autorun: true}),
+    ile = new Ile(getJSON('ile'), objectLib.ileAcronym),
+    bsga = new bs.GameArea();
+    kps = {},
+    reminderTimeouts = [],
+    timeOf = {
+        startUp: Date.now()
+    },
+    color = {
+        default: 16738816,  // GerpOrange
+        error: 16711680     // ErrorRed
+    };
+
+let
+    // other variables
+    startedOnce = false,
+    online = false,
+    settings = getJSON('settings');
 
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
@@ -24,32 +49,9 @@ logger.level = 'debug';
 
 for (const func in snowTime) eval(`${func} = snowTime.${func}`);
 
-const
-    objectLib = getJSON(['help', 'compliments', 'defaultRes', 'games', 'answers', 'ileAcronym'], 'objectLib'),
-    bot = new Discord.Client({
-        token: auth.token,
-        autorun: true
-    });
-
-var
-    online = false,
-    startedOnce = false;
-    settings = getJSON('settings'),
-    reminderTimeouts = [],
-    timeOf = {
-        startUp: Date.now()
-    },
-    color = {
-        default: 16738816,  // GerpOrange
-        error: 16711680     // ErrorRed
-    },
-    bsga = new bs.GameArea(),
-    kps = {};
-    ile = new Ile(getJSON('ile'),objectLib.ileAcronym);
+startLoops();
 
 web.activate('/discord').then(logger.info);
-
-startLoops();
 
 bot.on('ready', evt => {
     timeOf.connection = Date.now();
