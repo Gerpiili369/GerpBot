@@ -49,17 +49,41 @@ var
 
 web.activate('/discord').then(logger.info);
 
-if (settings.servers === undefined) settings.servers = {};
-if (settings.tz === undefined) settings.tz = {};
-
 startLoops();
 
 bot.on('ready', evt => {
     timeOf.connection = Date.now();
 
-    logger.info(`${bot.username} (user ${bot.id}) ready for world domination!`);
+    updateHelp();
+    startIle();
+    startReminding();
 
-    afterLogin();
+    if (!settings.tz) settings.tz = {};
+    if (!settings.servers) settings.servers = {};
+
+    for (const server in bot.servers) {
+        if (!settings.servers[server]) settings.servers[server] = {
+            autoCompliment: {
+                enabled: true,
+                targets: []
+            },
+            effects: {
+                rainbow: false,
+                shuffle: false
+            },
+            nick: bot.username
+        };
+
+        for (const role of bot.servers[server].members[bot.id].roles)
+            if (bot.servers[server].roles[role].name === bot.username)
+                settings.servers[server].roleID = bot.servers[server].roles[role].id;
+    }
+    logger.info(startedOnce ? 'Reconnection succesful!' : `${bot.username} (user ${bot.id}) ready for world domination!`);
+
+    online = true;
+    startedOnce = true;
+    updateSettings();
+
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
@@ -1366,46 +1390,6 @@ function msg(channel,msg,embed) {
         message: msg,
         embed: embed
     }, err => {if (err) logger.error(err,'');});
-}
-
-function afterLogin() {
-    updateHelp();
-    startIle();
-    startReminding();
-    let requests = Object.keys(bot.servers).map(server => {
-        if (typeof settings.servers[server] == 'undefined') {
-            settings.servers[server] = {
-                autoCompliment: {
-                    enabled: true,
-                    targets: []
-                },
-                autoShit: undefined,
-                effects: {
-                    rainbow: false,
-                    shuffle: false
-                },
-                nick: bot.username,
-                roleID: undefined
-            };
-        }
-
-        bot.servers[server].members[bot.id].roles.forEach(v => {
-            let role = bot.servers[server].roles[v];
-            if (role.name === bot.username) {
-                settings.servers[server].roleID = role.id;
-            }
-        });
-
-        return new Promise(resolve => {
-            resolve();
-        });
-    });
-
-    Promise.all(requests).then(() => {
-        online = true;
-        startedOnce = true;
-        updateSettings();
-    });
 }
 
 function updateHelp() {
