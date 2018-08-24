@@ -96,7 +96,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
     if ((!serverID || snowmaker(args[0]) == bot.id) && userID != bot.id) {
         // Messages with commands
-        bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
+        bot.simulateTyping(channelID, err => {if (err) logger.error(err, '');});
 
         if (serverID) {
             if (userID == bot.servers[serverID].owner_id) admin = true;
@@ -116,7 +116,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         switch (cmd) {
             case 'help':
                 objectLib.help.color = serverID ? bot.servers[serverID].members[userID].color : color.default;
-                msg(channelID,'Some commands:',objectLib.help);
+                msg(channelID, 'Some commands:', objectLib.help);
                 break;
             case 'server':
                 if (!serverID) {
@@ -188,7 +188,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 if (settings.tz[serverID]) ie.description += `\n**Server time:** \`${timeAt(settings.tz[serverID])}\``
 
-                msg(channelID,'Here you go:',ie);
+                msg(channelID, 'Here you go:', ie);
                 break;
             case 'user':
                 if (args[0]) {
@@ -255,8 +255,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         ui.roles.forEach(v => ue.description += ` ${v}`);
                     };
 
-                    msg(channelID,'High quality spying:',ue);
-                } else msg(channelID,'I would give you the info you seek, but it is clear you don\'t even know what you want');
+                    msg(channelID, 'High quality spying:', ue);
+                } else msg(channelID, 'I would give you the info you seek, but it is clear you don\'t even know what you want');
                 break;
             case 'role':
                 if (!serverID) {
@@ -290,8 +290,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         re.description += `\n<@${v}>`;
                     });
 
-                    msg(channelID,'Here is the gang:',re);
-                } else msg(channelID,'What is that supposed to be? It is called "role" not "roll"!');
+                    msg(channelID, 'Here is the gang:', re);
+                } else msg(channelID, 'What is that supposed to be? It is called "role" not "roll"!');
                 break;
             case 'raffle':
                 if (!serverID && !bot.channels[snowmaker(args[0])]) {
@@ -334,7 +334,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 let winners = [];
                 for (let i = 0; i < args[1]; i++) {
-                    winners = winners.concat(raffleList.splice(Math.floor(Math.random()*raffleList.length),1));
+                    winners = winners.concat(raffleList.splice(Math.floor(Math.random() * raffleList.length), 1));
                 }
 
                 let re = {
@@ -361,10 +361,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     }
                 }
 
-                msg(channelID,'',re);
+                msg(channelID, '', re);
                 break;
             case 'ping':
-                msg(channelID,'Pong!');
+                msg(channelID, 'Pong!');
                 break;
             case 'pi':
                 msg(channelID, `Here it is: \`${Math.PI}...\``);
@@ -409,24 +409,24 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'nerfThis':
             case 'nt':
-                msg(channelID,'Leenakop was the only one who died...');
+                msg(channelID, 'Leenakop was the only one who died...');
                 break;
             case 'echo':
-                msg(channelID,args.join(' '));
+                msg(channelID, args.join(' '));
                 break;
             case 'uptime':
             case 'ut':
                 if (typeof timeOf[args[0]] != 'undefined') {
                     let uptime = calculateUptime(timeOf[args[0]]);
-                    msg(channelID,`Time since '${args[0]}': ${uptimeToString(uptime)}\``
+                    msg(channelID, `Time since '${args[0]}': ${uptimeToString(uptime)}\``
                     );
                 } else {
-                    msg(channelID,`Missing arguments. Usage: \`@${bot.username} uptime startUp | connection | lastCommand\`.`);
+                    msg(channelID, `Missing arguments. Usage: \`@${bot.username} uptime startUp | connection | lastCommand\`.`);
                 }
                 break;
             case 'ask':
                 if (args[0]) {
-                    msg(channelID,objectLib.answers[Math.floor(Math.random()*objectLib.answers.length)]);
+                    msg(channelID, objectLib.answers[Math.floor(Math.random() * objectLib.answers.length)]);
                 } else msg(channelID, 'You didn\'t ask anything...');
                 break;
             case 'vote':
@@ -455,7 +455,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 ve.description += `\n*requested by:\n<@${userID}>*`;
 
                 if (options.length < 1) {
-                    msg(channelID,`Options were not included! Example: \`@${bot.username} vote :thinking:=genius\`.`);
+                    msg(channelID, `Options were not included! Example: \`@${bot.username} vote :thinking:=genius\`.`);
                     break;
                 }
                 options.forEach(v => {
@@ -476,7 +476,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             });
                         }
                     } else {
-                        msg(channelID,`Some options not defined! Example: \`@${bot.username} vote :thinking:=genius\`.`);
+                        msg(channelID, `Some options not defined! Example: \`@${bot.username} vote :thinking:=genius\`.`);
                         ve.error = true;
                     }
                 });
@@ -565,7 +565,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     getStream = voiceChannelID => new Promise((resolve, reject) => bot.getAudioContext(voiceChannelID, (err, stream) => err ? reject(err) : resolve(stream)));
 
                 if (!serverID) {
-                    msg(channelID,'`<sassy message about this command being server only>`');
+                    msg(channelID, '`<sassy message about this command being server only>`');
                     break;
                 } else if (!settings.servers[serverID].audio) settings.servers[serverID].audio = {que: []};
 
@@ -577,10 +577,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 if (settings.servers[serverID].audio.que[args[1]].request.id == userID) {
                                     settings.servers[serverID].audio.que.splice(args[1], 1);
                                     updateSettings();
-                                    msg(channelID,'Cancel succesful!');
-                                } else msg(channelID,'That\'s not yours!');
-                            } else msg(channelID,'Song doesn\'t exist!');
-                        } else msg(channelID,'Nothing could be cancelled!');
+                                    msg(channelID, 'Cancel succesful!');
+                                } else msg(channelID, 'That\'s not yours!');
+                            } else msg(channelID, 'Song doesn\'t exist!');
+                        } else msg(channelID, 'Nothing could be cancelled!');
                         break;
                     case 'skip': case 'stop':
                         if (bot.servers[serverID].ccp) {
@@ -658,7 +658,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (settings.servers[serverID].audio.que.length > 0) msg(channelID, `Playing ${result.action}`);
                         else msg(channelID, 'No songs queued right now.');
                     })
-                    .catch(err => err.type === 'msg' ? msg(channelID, '', {title: err.name, description: err.message, color: color.error}) : logger.error(err,''));
+                    .catch(err => err.type === 'msg' ? msg(channelID, '', {title: err.name, description: err.message, color: color.error}) : logger.error(err, ''));
                 break;
             case 'bs':
                 msg(channelID, '', {
@@ -684,26 +684,26 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         kps[userID].mem.player = player;
                     });
 
-                    kps[userID].socket.on('loginFail', data => msg(userID,'',kpsEmbed(data,0)));
+                    kps[userID].socket.on('loginFail', data => msg(userID, '', kpsEmbed(data, 0)));
 
                     kps[userID].socket.on('startGame', data => {
                         kps[userID].gameActive = true;
                         kps[userID].opponent = data;
-                        msg(userID,'',kpsEmbed(data,4));
+                        msg(userID, '', kpsEmbed(data, 4));
                     });
 
                     kps[userID].socket.on('toMainMenu', data => {
                         kps[userID].gameActive = false;
-                        msg(userID,'',kpsEmbed(data,0));
+                        msg(userID, '', kpsEmbed(data, 0));
                     });
 
-                    kps[userID].socket.on('msgFromServer', data => msg(userID,'',kpsEmbed(data,0)));
+                    kps[userID].socket.on('msgFromServer', data => msg(userID, '', kpsEmbed(data, 0)));
 
                     kps[userID].socket.on('result', (player, opponent) => {
                         kps[userID].mem.player = player;
                         kps[userID].mem.opponent = opponent;
 
-                        msg(userID,'',kpsEmbed('Oppnent\'s choice',5));
+                        msg(userID, '', kpsEmbed('Oppnent\'s choice', 5));
                     });
                 }
 
@@ -712,7 +712,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     kps[userID].socket.on('connect', () => kpsEmit(args));
 
                     setTimeout(() => {
-                        if (!kps[userID].socket.connected) msg(userID,'Could not connect!');
+                        if (!kps[userID].socket.connected) msg(userID, 'Could not connect!');
                     }, 10000);
                 }
 
@@ -729,7 +729,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (!kps[userID].gameActive) {
                                 kps[userID].socket.emit('setMode', data, args[1]);
                             } else {
-                                msg(userID,'This command is not available while in a game. Use `kps quit` to quit.');
+                                msg(userID, 'This command is not available while in a game. Use `kps quit` to quit.');
                             }
                             break;
                         case 'rock':
@@ -741,30 +741,30 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         case 'classic':
                             kps[userID].socket.emit('setTheme', 'defeault');
                             kps[userID].mem.player.theme = 'defeault';
-                            msg(userID,'',kpsEmbed('Theme updated!',3));
+                            msg(userID, '', kpsEmbed('Theme updated!', 3));
                             break;
                         case 'horror':
                             kps[userID].socket.emit('setTheme', data);
                             kps[userID].mem.player.theme = data;
-                            msg(userID,'',kpsEmbed('Theme updated!',3));
+                            msg(userID, '', kpsEmbed('Theme updated!', 3));
                             break;
                         case 'space':
                             kps[userID].socket.emit('setTheme', 'fuckrulla');
                             kps[userID].mem.player.theme = 'fuckrulla';
-                            msg(userID,'',kpsEmbed('Theme updated!',3));
+                            msg(userID, '', kpsEmbed('Theme updated!', 3));
                             break;
                         case 'hand':
                             kps[userID].socket.emit('setTheme', data);
                             kps[userID].mem.player.theme = data;
-                            msg(userID,'',kpsEmbed('Theme updated!',3));
+                            msg(userID, '', kpsEmbed('Theme updated!', 3));
                             break;
                         case 'quit':
-                            msg(userID,'',kpsEmbed('You left.',0));
+                            msg(userID, '', kpsEmbed('You left.', 0));
                             kps[userID].socket.disconnect();
                             kps[userID] = undefined;
                             break;
                         default:
-                            msg(userID,`Starting a game: \`play | ai | friend <friendname>\`\nChoosing: \`rock | paper | scissors\`\nTheme selection: \`classic | horror | space | hand\`\nTo quit: \`quit\`\nDon't forget the @${bot.username} kps!`);
+                            msg(userID, `Starting a game: \`play | ai | friend <friendname>\`\nChoosing: \`rock | paper | scissors\`\nTheme selection: \`classic | horror | space | hand\`\nTo quit: \`quit\`\nDon't forget the @${bot.username} kps!`);
                     }
                 }
 
@@ -849,11 +849,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     }
 
                     function addScore() {
-                        let emojis = ['✅','⚠️','💢']
+                        let emojis = ['✅', '⚠️', '💢']
 
-                        emojis[0] = emojis[0].repeat(Math.round(player.points.wins/player.games*15));
-                        emojis[1] = emojis[1].repeat(Math.round(player.points.draws/player.games*15));
-                        emojis[2] = emojis[2].repeat(Math.round(player.points.losses/player.games*15));
+                        emojis[0] = emojis[0].repeat(Math.round(player.points.wins / player.games * 15));
+                        emojis[1] = emojis[1].repeat(Math.round(player.points.draws / player.games * 15));
+                        emojis[2] = emojis[2].repeat(Math.round(player.points.losses / player.games * 15));
 
                         embed.fields.push({name: 'Current score:', value: emojis.join('')});
                     }
@@ -869,21 +869,21 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'ile':
                 switch (args[0]) {
                     case 'join':
-                        msg(channelID,ile.join(userID));
+                        msg(channelID, ile.join(userID));
                         break;
                     case 'leave':
-                        msg(channelID,ile.leave(userID));
+                        msg(channelID, ile.leave(userID));
                         break;
                     case 'here':
-                        msg(channelID,ile.attend(userID));
+                        msg(channelID, ile.attend(userID));
                         break;
                     case 'time':
                         let tzConv = ile.getCheckpoint().split(': ');
                         tzConv[1] = timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(tzConv[1]));
-                        msg(channelID,tzConv.join(': '));
+                        msg(channelID, tzConv.join(': '));
                         break;
                     default:
-                        msg(channelID,`${ile.getAcronym()}: command structure: \`ile join | leave | here | time\`.`);
+                        msg(channelID, `${ile.getAcronym()}: command structure: \`ile join | leave | here | time\`.`);
                         break;
                 }
                 break;
@@ -897,7 +897,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 fields: []
                             };
 
-                            settings.reminders.forEach((v,i,a) => {
+                            settings.reminders.forEach((v, i, a) => {
                                 if (typeof v == 'object' && v.creator.id == userID) {
                                     let target;
                                     if (bot.channels[v.channel]) {
@@ -928,9 +928,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                     delete settings.reminders[args[1]];
                                     clearTimeout(reminderTimeouts[args[1]]);
                                     updateSettings();
-                                    msg(channelID,'Cancel succesful!');
-                                } else msg(channelID,'That\'s not yours!');
-                            } else msg(channelID,'Reminder doesn\'t exist!');
+                                    msg(channelID, 'Cancel succesful!');
+                                } else msg(channelID, 'That\'s not yours!');
+                            } else msg(channelID, 'Reminder doesn\'t exist!');
                             break;
                         default:
                             let reminder = {
@@ -959,15 +959,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 else {
                                     if (serverID && settings.tz[serverID]) {
                                         args[0] += settings.tz[serverID];
-                                        msg(channelID,`Using the server default UTC${settings.tz[serverID]} timezone. You can change your timezone with "\`@${bot.username} timezone\` -command".`);
+                                        msg(channelID, `Using the server default UTC${settings.tz[serverID]} timezone. You can change your timezone with "\`@${bot.username} timezone\` -command".`);
                                     } else {
                                         args[0] += 'Z';
-                                        msg(channelID,`Using the default UTC+00:00 timezone. You can change your timezone with "\`@${bot.username} timezone\` -command".`);
+                                        msg(channelID, `Using the default UTC+00:00 timezone. You can change your timezone with "\`@${bot.username} timezone\` -command".`);
                                     }
                                 }
                                 reminder.time = datemaker([args[0]]);
                                 if (reminder.time == 'Invalid Date') {
-                                    msg(channelID,'Time syntax: `([<amount>](ms|s|min|h|d|y))...` or `[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]`.');
+                                    msg(channelID, 'Time syntax: `([<amount>](ms|s|min|h|d|y))...` or `[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]`.');
                                     break;
                                 } else reminder.time = reminder.time.getTime();
                             }
@@ -975,7 +975,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             for (let i = 1; i < args.length; i++) {
                                 if (!isNaN(anyTimeToMs(args[i]))) reminder.time += anyTimeToMs(args[i]);
                                 else {
-                                    args.splice(0,i);
+                                    args.splice(0, i);
 
                                     if (args.length > 0) reminder.message = args.join(' ');
                                     break;
@@ -1004,7 +1004,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             updateSettings();
                             remindTimeout(reminder);
 
-                            msg(channelID,'I will remind when the time comes...');
+                            msg(channelID, 'I will remind when the time comes...');
                     }
                 } else remindTimeout({
                     mentions: `<@${userID}>`,
@@ -1032,18 +1032,18 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (serverID && admin) {
                                 settings.tz[serverID] = args[0];
                                 updateSettings();
-                                msg(channelID,`Server timezone is set to: UTC${args[0]}.`);
+                                msg(channelID, `Server timezone is set to: UTC${args[0]}.`);
                             } else {
-                                msg(channelID,'Unauthorized timezoning command. Try to git gud instead.');
+                                msg(channelID, 'Unauthorized timezoning command. Try to git gud instead.');
                             }
                             break;
                         default:
                             settings.tz[userID] = args[0];
                             updateSettings();
-                            msg(channelID,`Your timezone is set to: UTC${args[0]}.`);
+                            msg(channelID, `Your timezone is set to: UTC${args[0]}.`);
                     }
                 } else {
-                    msg(channelID,'NA timezoning command. Try `+HH:MM` or `-HH:MM` instead.');
+                    msg(channelID, 'NA timezoning command. Try `+HH:MM` or `-HH:MM` instead.');
                 }
                 break;
             case 'autoAnswer':
@@ -1051,13 +1051,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (serverID) {
                     if (settings.servers[serverID].disableAnswers) {
                         settings.servers[serverID].disableAnswers = false;
-                        msg(channelID,'Nothing can stop me now!');
+                        msg(channelID, 'Nothing can stop me now!');
                     } else {
                         settings.servers[serverID].disableAnswers = true;
-                        msg(channelID,'You weren\'t asking me? Well, ok then.');
+                        msg(channelID, 'You weren\'t asking me? Well, ok then.');
                     }
                     updateSettings()
-                } else msg(channelID,'You can\'t escape me here!')
+                } else msg(channelID, 'You can\'t escape me here!')
                 break;
             case 'autoCompliment':
             case 'ac':
@@ -1070,24 +1070,24 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 switch (args[0]) {
                     case 'sample':
-                        msg(channelID,`<@${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
+                        msg(channelID, `<@${userID}> ${objectLib.compliments[Math.floor(Math.random() * objectLib.compliments.length)]}`);
                         break;
                     case 'on':
                         if (admin) {
                             settings.servers[serverID].autoCompliment.enabled = true;
-                            msg(channelID,'Automatic complimenting turned ON.');
-                        } else msg(channelID,'Request denied, not admin!');
+                            msg(channelID, 'Automatic complimenting turned ON.');
+                        } else msg(channelID, 'Request denied, not admin!');
                         break;
                     case 'off':
                         if (admin) {
                             settings.servers[serverID].autoCompliment.enabled = false;
-                            msg(channelID,'Automatic complimenting turned OFF.');
-                        } else msg(channelID,'Request denied, not admin!');
+                            msg(channelID, 'Automatic complimenting turned OFF.');
+                        } else msg(channelID, 'Request denied, not admin!');
                         break;
                     case 'list':
                         let list = []
-                        settings.servers[serverID].autoCompliment.targets.forEach((v,i) => list[i] = `<@${v}>`)
-                        msg(channelID,``,{
+                        settings.servers[serverID].autoCompliment.targets.forEach((v, i) => list[i] = `<@${v}>`)
+                        msg(channelID, '', {
                             title: 'List of cool people:',
                             description: list.join('\n'),
                             color: bot.servers[serverID].members[userID].color
@@ -1098,11 +1098,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (admin) {
                                 if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) == -1) {
                                     settings.servers[serverID].autoCompliment.targets.push(args[1]);
-                                    msg(channelID,`User <@${args[1]}> is now cool.`);
+                                    msg(channelID, `User <@${args[1]}> is now cool.`);
                                 } else {
-                                    msg(channelID,`User <@${args[1]}> is already cool!`);
+                                    msg(channelID, `User <@${args[1]}> is already cool!`);
                                 }
-                            } else {msg(channelID,'Request denied, not admin!');}
+                            } else {msg(channelID, 'Request denied, not admin!');}
                             break;
                         }
                     case 'remove':
@@ -1110,15 +1110,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (admin) {
                                 if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) != -1) {
                                     settings.servers[serverID].autoCompliment.targets.splice(settings.servers[serverID].autoCompliment.targets.indexOf(args[1]), 1);
-                                    msg(channelID,`User <@${args[1]}> ain't cool no more!`);
+                                    msg(channelID, `User <@${args[1]}> ain't cool no more!`);
                                 } else {
-                                    msg(channelID,`User <@${args[1]}> was never cool to begin with!`);
+                                    msg(channelID, `User <@${args[1]}> was never cool to begin with!`);
                                 }
-                            } else {msg(channelID,'Request denied, not admin!');}
+                            } else {msg(channelID, 'Request denied, not admin!');}
                             break;
                         }
                     default:
-                        msg(channelID,`Missing arguments. Usage: \`@${bot.username} autoCompliment sample | on | off | add <@mention> | remove <@mention> | list\`.`);
+                        msg(channelID, `Missing arguments. Usage: \`@${bot.username} autoCompliment sample | on | off | add <@mention> | remove <@mention> | list\`.`);
                         break;
                 }
                 updateSettings();
@@ -1136,21 +1136,21 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (args[1] != undefined) {
                                 args[1] = snowmaker(args[1]);
                                 settings.servers[serverID].autoShit = args[1];
-                                msg(channelID,`<@&${args[1]}> has been chosen to be shit.`);
+                                msg(channelID, `<@&${args[1]}> has been chosen to be shit.`);
                             } else {
-                                msg(channelID,`*Set hit the fan.*`);
+                                msg(channelID, `*Set hit the fan.*`);
                             }
                             break;
                         case 'clean':
                             settings.servers[serverID].autoShit = null;
-                            msg(channelID,`Shit has been cleaned up...`);
+                            msg(channelID, `Shit has been cleaned up...`);
                             break;
                         default:
-                            msg(channelID,`Missing arguments. Usage: \`@${bot.username} shit set <@role> | clean\`.`);
+                            msg(channelID, `Missing arguments. Usage: \`@${bot.username} shit set <@role> | clean\`.`);
                             break;
                     }
                     updateSettings();
-                } else msg(channelID,'Request denied, not admin.');
+                } else msg(channelID, 'Request denied, not admin.');
                 break;
             case 'color':
                 new Promise((resolve, reject) => {
@@ -1184,30 +1184,30 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             case 'rainbow':
                                 if (settings.servers[serverID].effects.rainbow) {
                                     settings.servers[serverID].effects.rainbow = false;
-                                    msg(channelID,'Rainbow effect deactivated!');
+                                    msg(channelID, 'Rainbow effect deactivated!');
                                 } else {
                                     settings.servers[serverID].effects.rainbow = true;
-                                    msg(channelID,'Rainbow effect activated!');
+                                    msg(channelID, 'Rainbow effect activated!');
                                 }
                                 break;
                             case 'shuffle':
                                 if (settings.servers[serverID].effects.shuffle) {
                                     settings.servers[serverID].effects.shuffle = false;
-                                    msg(channelID,'Shuffle effect deactivated!');
+                                    msg(channelID, 'Shuffle effect deactivated!');
                                 } else {
                                     settings.servers[serverID].effects.shuffle = true;
-                                    msg(channelID,'Shuffle effect activated!');
+                                    msg(channelID, 'Shuffle effect activated!');
                                 }
                                 break;
                             default:
-                                msg(channelID,'Shuffle or rainbow?');
+                                msg(channelID, 'Shuffle or rainbow?');
                                 break;
                         }
                         updateSettings();
                     } else {
-                        msg(channelID,'Please create me my own role (with some permissions pls).');
+                        msg(channelID, 'Please create me my own role (with some permissions pls).');
                     }
-                } else msg(channelID,'Request denied, not admin!');
+                } else msg(channelID, 'Request denied, not admin!');
                 break;
             case 'handle':
                 if (!serverID) {
@@ -1217,22 +1217,22 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 if (admin) {
                     if (args[0]) {
-                        msg(channelID,`I will now be known as "${args[0]}"!`);
+                        msg(channelID, `I will now be known as "${args[0]}"!`);
                     } else {
                         args[0] = null;
-                        msg(channelID,'Nickname reset.');
+                        msg(channelID, 'Nickname reset.');
                     }
 
                     settings.servers[serverID].nick = args[0];
                     updateSettings();
-                    editNick(serverID,args[0]);
-                } else msg(channelID,'Request denied, not admin!');
+                    editNick(serverID, args[0]);
+                } else msg(channelID, 'Request denied, not admin!');
                 break;
             default:
                 if (message.indexOf('?') != -1 && (!serverID || !settings.servers[serverID].disableAnswers)) {
-                    msg(channelID,objectLib.answers[Math.floor(Math.random()*objectLib.answers.length)]);
+                    msg(channelID, objectLib.answers[Math.floor(Math.random() * objectLib.answers.length)]);
                 } else {
-                    msg(channelID,objectLib.defaultRes[Math.floor(Math.random()*objectLib.defaultRes.length)]);
+                    msg(channelID, objectLib.defaultRes[Math.floor(Math.random() * objectLib.defaultRes.length)]);
                 }
                 break;
         }
@@ -1240,8 +1240,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     } else {
         // Messages without commands
         if (serverID && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
-            bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
-            msg(channelID,`<@${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
+            bot.simulateTyping(channelID, err => {if (err) logger.error(err, '');});
+            msg(channelID, `<@${userID}> ${objectLib.compliments[Math.floor(Math.random() * objectLib.compliments.length)]}`);
         }
 
         const mentionedChannels = [];
@@ -1294,16 +1294,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
     if (userID == bot.id && evt.d.embeds[0]) {
         if (evt.d.embeds[0].footer && evt.d.embeds[0].footer.text == 'Vote generated by your\'s truly.') {
-            evt.d.embeds[0].fields.forEach((v,i) => {
+            evt.d.embeds[0].fields.forEach((v, i) => {
                 console.log(v);
-                if (v.value.substring(v.value.length-1) == '>') v.value = v.value.substring(0,v.value.length-1);
-                setTimeout(() => emojiResponse(v.value),i*500);
+                if (v.value.substring(v.value.length - 1) == '>') v.value = v.value.substring(0, v.value.length - 1);
+                setTimeout(() => emojiResponse(v.value), i * 500);
             });
 
             bot.pinMessage({
                 channelID: channelID,
                 messageID: evt.d.id
-            }, err => {if (err) logger.error(err,'');});
+            }, err => {if (err) logger.error(err, '');});
         }
 
         if (evt.d.embeds[0].title == 'Blue Squares: The Game') {
@@ -1320,7 +1320,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             channelID: channelID,
             messageID: evt.d.id,
             reaction: emoji
-        }, err => {if (err) logger.error(err,'');});
+        }, err => {if (err) logger.error(err, '');});
     }
 });
 
@@ -1329,7 +1329,7 @@ bot.on('disconnect', (err, code) => {
     logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${uptimeToString(calculateUptime(timeOf.connection))}).`);
     setTimeout(() => {
         bot.connect();
-    },5000);
+    }, 5000);
 });
 
 // Special events
@@ -1386,12 +1386,12 @@ bot.on('any', evt => {
  * @arg {String} msg
  * @arg {Embed} [embed]
  */
-function msg(channel,msg,embed) {
+function msg(channel, msg, embed) {
     bot.sendMessage({
         to: channel,
         message: msg,
         embed: embed
-    }, err => {if (err) logger.error(err,'');});
+    }, err => {if (err) logger.error(err, '');});
 }
 
 function updateHelp() {
@@ -1406,13 +1406,13 @@ function startLoops() {
     setInterval(() => {
         bot.setPresence({
             game: {
-                name: objectLib.games[Math.floor(Math.random()*objectLib.games.length)],
+                name: objectLib.games[Math.floor(Math.random() * objectLib.games.length)],
                 type: 0
             }
         });
     }, 60000);
 
-    let colors = ['#ff0000','#ff6a00','#ffff00','#00ff00','#0000ff','#ff00ff'];
+    let colors = ['#ff0000', '#ff6a00', '#ffff00', '#00ff00', '#0000ff', '#ff00ff'];
     let i = 0;
     setInterval(() => {
         if (online) {
@@ -1421,7 +1421,7 @@ function startLoops() {
             for (const server in settings.servers) {
                 if (bot.servers[server]) {
                     if (settings.servers[server].effects.rainbow) {
-                        editColor(server,colors[i]);
+                        editColor(server, colors[i]);
                     } else if (
                         settings.servers[server].roleID &&
                         bot.servers[server].roles[settings.servers[server].roleID].color !=
@@ -1430,19 +1430,19 @@ function startLoops() {
 
                     if (settings.servers[server].effects.shuffle) {
                         let newName = settings.servers[server].nick.split('');
-                        newName.forEach((v,i,a) => {
-                            random = Math.floor(Math.random()*a.length);
+                        newName.forEach((v, i, a) => {
+                            random = Math.floor(Math.random() * a.length);
                             let help = a[random];
                             a[random] = v;
                             a[i] = help;
                         });
-                        editNick(server,newName.join(''));
-                    } else if (typeof bot.servers[server].members[bot.id].nick != 'undefined' && bot.servers[server].members[bot.id].nick != null && bot.servers[server].members[bot.id].nick != settings.servers[server].nick) editNick(server,settings.servers[server].nick);
+                        editNick(server, newName.join(''));
+                    } else if (typeof bot.servers[server].members[bot.id].nick != 'undefined' && bot.servers[server].members[bot.id].nick != null && bot.servers[server].members[bot.id].nick != settings.servers[server].nick) editNick(server, settings.servers[server].nick);
                 }
             }
             i++;
         }
-    },2000);
+    }, 2000);
 
 }
 
@@ -1473,7 +1473,7 @@ function startIle() {
         });
         ile.on('save', data => {
             fs.writeFile('ile.json', JSON.stringify(data, null, 4), err => {
-                if (err) logger.error(err,'');
+                if (err) logger.error(err, '');
             });
         });
     }
@@ -1587,7 +1587,7 @@ function editColor (serverID, color) {
         serverID,
         roleID: settings.servers[serverID].roleID,
         color: color
-    }, err => {if (err) logger.error(err,'');});
+    }, err => {if (err) logger.error(err, '');});
 }
 
 /**
@@ -1599,7 +1599,7 @@ function editNick (serverID, newName) {
         serverID,
         userID: bot.id,
         nick: newName
-    }, err => {if (err) logger.error(err,'');});
+    }, err => {if (err) logger.error(err, '');});
 }
 
 /**

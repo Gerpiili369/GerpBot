@@ -47,21 +47,21 @@ module.exports = class Ile extends Emitter {
             for (const player in this.players) {
                 if (this.players[player].joined === true && !this.players[player].checkIn) {
                     this.players[player].status = 'on time';
-                    this.emit('msg',player,'It is time');
+                    this.emit('msg', player, 'It is time');
                 }
             }
             setTimeout(() => {
                 for (const player in this.players) {
                     if (this.players[player].joined === true && !this.players[player].checkIn) {
                         this.players[player].status = 'late';
-                        this.emit('msg',player,'You are late');
+                        this.emit('msg', player, 'You are late');
                     }
                 }
                 setTimeout(() => {
                     for (const player in this.players) {
                         if (this.players[player].joined === true && !this.players[player].checkIn) {
                             this.players[player].status = 'missed';
-                            this.emit('msg',player,'You have missed the thing');
+                            this.emit('msg', player, 'You have missed the thing');
                         }
                     }
                     setTimeout(() => {
@@ -69,7 +69,7 @@ module.exports = class Ile extends Emitter {
 
                         for (const player in this.players) {
                             if (this.players[player].checkIn) {
-                                this.emit('msg',player,'',this.scoreboardToEmbed(this.getScoreboard()));
+                                this.emit('msg', player, '',this.scoreboardToEmbed(this.getScoreboard()));
                             }
                         }
                         if (this.activePlayers()) this.newRound();
@@ -93,7 +93,7 @@ module.exports = class Ile extends Emitter {
 
     sendEndtime() {
         for (const player in this.players) {
-            if (this.players[player].joined) this.emit('msg',player,this.getCheckpoint(player));
+            if (this.players[player].joined) this.emit('msg', player, this.getCheckpoint(player));
         }
     }
 
@@ -161,7 +161,7 @@ module.exports = class Ile extends Emitter {
         if (this.players[user] && this.players[user].joined && Date.now() > this.end && this.players[user].status != 'missed') {
             this.players[user].checkIn = true;
             this.players[user].delay = calculateUptime(this.end);
-            this.players[user].delayMs = calculateUptime(this.end,undefined,true).ms;
+            this.players[user].delayMs = calculateUptime(this.end, undefined, true).ms;
             this.save();
             return `You have checked in with the status: ${this.players[user].status}, and with the delay of ${uptimeToString(this.players[user].delay)}.`;
         } else {
@@ -191,7 +191,7 @@ module.exports = class Ile extends Emitter {
                 });
             }
         }
-        scoreboard.sort((a,b) => this.players[a.id].delayMs - this.players[b.id].delayMs);
+        scoreboard.sort((a, b) => this.players[a.id].delayMs - this.players[b.id].delayMs);
 
         return scoreboard;
     }
@@ -205,9 +205,9 @@ module.exports = class Ile extends Emitter {
             title: 'ILE Round Scoreboard',
             fields: []
         }
-        scoreboard.forEach((v,i) => {
+        scoreboard.forEach((v, i) => {
             embed.fields.push({
-                name: `${i+1}. ${v.id}`,
+                name: `${i + 1}. ${v.id}`,
                 value: uptimeToString(v.delay),
                 inline: true
             });
