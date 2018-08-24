@@ -63,17 +63,16 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
-    let serverID, server = true;
+    let serverID;
     if (bot.channels[channelID]) serverID = bot.channels[channelID].guild_id;
-    else if (bot.directMessages[channelID]) server = false;
-    else return;
+    else if (!bot.directMessages[channelID]) return;
 
-    if ((!server || snowmaker(message.split(' ')[0]) == bot.id) && userID != bot.id) {
+    if ((!serverID || snowmaker(message.split(' ')[0]) == bot.id) && userID != bot.id) {
         // Messages with commands
         bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
 
         let admin = false;
-        if (server) {
+        if (serverID) {
             if (userID == bot.servers[serverID].owner_id) admin = true;
             else bot.servers[serverID].members[userID].roles.forEach(v => {
                 if (bot.servers[serverID].roles[v]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
@@ -92,11 +91,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         switch (cmd) {
             case 'help':
-                objectLib.help.color = server ? bot.servers[serverID].members[userID].color : color.default;
+                objectLib.help.color = serverID ? bot.servers[serverID].members[userID].color : color.default;
                 msg(channelID,'Some commands:',objectLib.help);
                 break;
             case 'server':
-                if (!server) {
+                if (!serverID) {
                     msg(channelID, 'This is a private conversation!')
                     break;
                 }
@@ -187,7 +186,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         description: `**Also known as:** "<@${ui.id}>"\n` +
                             `**User created:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ui.id))}\`\n` +
                             `**Age:** \`${uptimeToString(ui.age)}\``,
-                        color: server ? bot.servers[serverID].members[ui.id].color : color.default
+                        color: serverID ? bot.servers[serverID].members[ui.id].color : color.default
                     };
 
                     ue.thumbnail = {
@@ -197,7 +196,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     if (settings.tz[ui.id]) ue.description += `\n**Local time:** \`${timeAt(settings.tz[ui.id])}\``
 
                     let cleanRoll = [], status = '';
-                    if (server) {
+                    if (serverID) {
                         ue.timestamp = new Date(bot.servers[serverID].members[ui.id].joined_at);
                         ue.footer = {
                             icon_url: `https://cdn.discordapp.com/icons/${serverID}/${bot.servers[serverID].icon}.png`,
@@ -236,7 +235,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID,'I would give you the info you seek, but it is clear you don\'t even know what you want');
                 break;
             case 'role':
-                if (!server) {
+                if (!serverID) {
                     msg(channelID, 'Please wait a moment. Let me just check that role in this PM.');
                     break;
                 }
@@ -271,7 +270,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID,'What is that supposed to be? It is called "role" not "roll"!');
                 break;
             case 'raffle':
-                if (!server && !bot.channels[snowmaker(args[0])]) {
+                if (!serverID && !bot.channels[snowmaker(args[0])]) {
                     msg(channelID, 'When you really think about it, how would that even work?');
                     break;
                 }
@@ -294,7 +293,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     default:
                         args[0] = snowmaker(args[0]);
 
-                        if (server && bot.servers[serverID].roles[args[0]]) {
+                        if (serverID && bot.servers[serverID].roles[args[0]]) {
                             for (const member in bot.servers[serverID].members) {
                                 if (bot.servers[serverID].members[member].roles.indexOf(bot.servers[serverID].roles[args[0]].id) != -1) raffleList.push(member);
                             }
@@ -317,10 +316,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 let re = {
                     title: 'Winners',
                     description: '',
-                    color: server ? bot.servers[serverID].members[userID].color : color.default,
+                    color: serverID ? bot.servers[serverID].members[userID].color : color.default,
                 }
 
-                if (bot.channels[args[0]] && (!server || bot.channels[args[0]].guild_id != serverID)) {
+                if (bot.channels[args[0]] && (!serverID || bot.channels[args[0]].guild_id != serverID)) {
                     winners.forEach(v => re.description += `\n${bot.users[v].username}`);
                 } else {
                     winners.forEach(v => re.description += `\n<@${v}>`);
@@ -409,7 +408,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'vote':
                 let options = [];
                 let ve = {
-                    color: server ? bot.servers[serverID].members[userID].color : color.default,
+                    color: serverID ? bot.servers[serverID].members[userID].color : color.default,
                     footer: { text: 'Vote generated by your\'s truly.' },
                     fields: [],
                     error: false
@@ -474,7 +473,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 description: song.description + '\n' +
                                     `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
                                 thumbnail: {url: song.thumbnail},
-                                color: server ? bot.servers[serverID].members[userID].color : color.default
+                                color: serverID ? bot.servers[serverID].members[userID].color : color.default
                             });
 
                             bot.servers[serverID].ccp = cp.spawn('ffmpeg', [
@@ -503,7 +502,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             description: song.description + '\nPublished at: ' +
                                 timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published)),
                             thumbnail: {url: song.thumbnail},
-                            color: server ? bot.servers[serverID].members[userID].color : color.default
+                            color: serverID ? bot.servers[serverID].members[userID].color : color.default
                         });
                         resolve(song);
                     }),
@@ -541,7 +540,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     ),
                     getStream = voiceChannelID => new Promise((resolve, reject) => bot.getAudioContext(voiceChannelID, (err, stream) => err ? reject(err) : resolve(stream)));
 
-                if (!server) {
+                if (!serverID) {
                     msg(channelID,'`<sassy message about this command being server only>`');
                     break;
                 } else if (!settings.servers[serverID].audio) settings.servers[serverID].audio = {que: []};
@@ -572,7 +571,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         let ale = {
                             title: 'No songs queued right now.',
                             fields: [],
-                            color: server ? bot.servers[serverID].members[userID].color : color.default,
+                            color: serverID ? bot.servers[serverID].members[userID].color : color.default,
                         }
 
                         for (song of settings.servers[serverID].audio.que) ale.fields.push({
@@ -640,7 +639,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'bs':
                 msg(channelID, '', {
                     title: 'Blue Squares: The Game',
-                    color: server ? bot.servers[serverID].members[userID].color : color.default,
+                    color: serverID ? bot.servers[serverID].members[userID].color : color.default,
                     image: {}
                 })
                 break;
@@ -870,7 +869,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         case 'list':
                             let rle = {
                                 title: 'List of your reminders',
-                                color: server ? bot.servers[serverID].members[userID].color : color.default,
+                                color: serverID ? bot.servers[serverID].members[userID].color : color.default,
                                 fields: []
                             };
 
@@ -916,7 +915,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                     name: user,
                                     id: userID
                                 },
-                                color: server ? bot.servers[serverID].members[userID].color : color.default,
+                                color: serverID ? bot.servers[serverID].members[userID].color : color.default,
                                 time: Date.now()
                             };
 
@@ -934,7 +933,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (isNaN(reminder.time)) {
                                 if (settings.tz[userID]) args[0] += settings.tz[userID];
                                 else {
-                                    if (server && settings.tz[serverID]) {
+                                    if (serverID && settings.tz[serverID]) {
                                         args[0] += settings.tz[serverID];
                                         msg(channelID,`Using the server default UTC${settings.tz[serverID]} timezone. You can change your timezone with "\`@${bot.username} timezone\` -command".`);
                                     } else {
@@ -965,7 +964,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                     let role = snowmaker(v);
                                     if (bot.channels[reminder.channel] && bot.servers[bot.channels[reminder.channel].guild_id].roles[role]) {
                                         reminder.mentions += `<@&${role}>`;
-                                    } else if (server && bot.servers[serverID].roles[role]) {
+                                    } else if (serverID && bot.servers[serverID].roles[role]) {
                                         reminder.message = reminder.message.replace(v, `@${bot.servers[serverID].roles[role].name}`);
                                     }
                                 }
@@ -989,7 +988,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         name: bot.username,
                         id: bot.id
                     },
-                    color: server ? bot.servers[serverID].members[userID].color : color.default,
+                    color: serverID ? bot.servers[serverID].members[userID].color : color.default,
                     time: Date.now(),
                     channel: channelID,
                     message: `**How to** \n` +
@@ -1006,7 +1005,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (isValidTimezone(args[0])) {
                     switch (args[1]) {
                         case 'server':
-                            if (server && admin) {
+                            if (serverID && admin) {
                                 settings.tz[serverID] = args[0];
                                 updateSettings();
                                 msg(channelID,`Server timezone is set to: UTC${args[0]}.`);
@@ -1025,7 +1024,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'autoAnswer':
             case 'aa':
-                if (server) {
+                if (serverID) {
                     if (settings.servers[serverID].disableAnswers) {
                         settings.servers[serverID].disableAnswers = false;
                         msg(channelID,'Nothing can stop me now!');
@@ -1038,7 +1037,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'autoCompliment':
             case 'ac':
-                if (!server) {
+                if (!serverID) {
                     msg(channelID, '**Feature not intended to be used in DM. Sending sample:**');
                     args[0] = 'sample'
                 }
@@ -1101,7 +1100,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 updateSettings();
                 break;
             case 'shit':
-                if (!server) {
+                if (!serverID) {
                     msg(channelID, 'no u');
                     emojiResponse('💩');
                     break;
@@ -1131,7 +1130,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'color':
                 new Promise((resolve, reject) => {
-                    if (server && admin && args[0]) {
+                    if (serverID && admin && args[0]) {
                         if (args[0][0] === '#') resolve(parseInt(args[0].substring(1), 16));
                         else if (!isNaN(args[0])) resolve(Number(args[0]));
                         else if (args[0] === 'default') resolve(null);
@@ -1150,7 +1149,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     }));
                 break;
             case 'effect':
-                if (!server) {
+                if (!serverID) {
                     msg(channelID, 'I think that is a bad idea...');
                     break;
                 }
@@ -1187,7 +1186,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID,'Request denied, not admin!');
                 break;
             case 'handle':
-                if (!server) {
+                if (!serverID) {
                     msg(channelID, 'Fun fact: YOU CAN\'T HAVE NICKNAMES IN DM!!!')
                     break;
                 }
@@ -1206,7 +1205,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID,'Request denied, not admin!');
                 break;
             default:
-                if (message.indexOf('?') != -1 && (!server || !settings.servers[serverID].disableAnswers)) {
+                if (message.indexOf('?') != -1 && (!serverID || !settings.servers[serverID].disableAnswers)) {
                     msg(channelID,objectLib.answers[Math.floor(Math.random()*objectLib.answers.length)]);
                 } else {
                     msg(channelID,objectLib.defaultRes[Math.floor(Math.random()*objectLib.defaultRes.length)]);
@@ -1216,7 +1215,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         timeOf.lastCommand = Date.now();
     } else {
         // Messages without commands
-        if (server && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
+        if (serverID && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
             bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
             msg(channelID,`<@${userID}> ${objectLib.compliments[Math.floor(Math.random()*objectLib.compliments.length)]}`);
         }
@@ -1235,7 +1234,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             const me = {
                 title: `#${bot.channels[channelID].name} (${bot.servers[serverID].name})`,
                 description: `*Latest messages:*`,
-                color: server ? bot.servers[serverID].members[userID].color : color.default,
+                color: serverID ? bot.servers[serverID].members[userID].color : color.default,
                 thumbnail: {},
                 image: {},
                 fields: []
@@ -1267,7 +1266,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     }
 
     // All messages
-    if (server && typeof settings.servers[serverID].autoShit == 'string' && bot.servers[serverID].members[userID].roles.indexOf(settings.servers[serverID].autoShit) != -1) emojiResponse('💩');
+    if (serverID && typeof settings.servers[serverID].autoShit == 'string' && bot.servers[serverID].members[userID].roles.indexOf(settings.servers[serverID].autoShit) != -1) emojiResponse('💩');
 
     if (userID == bot.id && evt.d.embeds[0]) {
         if (evt.d.embeds[0].footer && evt.d.embeds[0].footer.text == 'Vote generated by your\'s truly.') {
@@ -1549,18 +1548,18 @@ function membersInChannel(channel) {
 
     if (!bot.channels[channel]) return 'Channel not found!';
 
-    let members = {}, server = bot.channels[channel].guild_id;
+    let members = {}, serverID = bot.channels[channel].guild_id;
 
-    if (bot.channels[channel].permissions.role[server] && bot.channels[channel].permissions.role[server].deny.toString(2).split('').reverse()[10] == 1) {
-        for (const member in bot.servers[server].members) members[member] = false;
+    if (bot.channels[channel].permissions.role[serverID] && bot.channels[channel].permissions.role[serverID].deny.toString(2).split('').reverse()[10] == 1) {
+        for (const member in bot.servers[serverID].members) members[member] = false;
     } else {
-        for (const member in bot.servers[server].members) members[member] = true;
+        for (const member in bot.servers[serverID].members) members[member] = true;
     }
 
     for (const user in members) {
         let admin = false;
-        bot.servers[server].members[user].roles.forEach(v => {
-            if (bot.servers[server].roles[v]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
+        bot.servers[serverID].members[user].roles.forEach(v => {
+            if (bot.servers[serverID].roles[v]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
         });
 
         if (admin) {
@@ -1576,7 +1575,7 @@ function membersInChannel(channel) {
         ) {
             members[user] = false;
         } else for (const role in bot.channels[channel].permissions.role) {
-            if (bot.servers[server].members[user].roles.indexOf(role) != -1) {
+            if (bot.servers[serverID].members[user].roles.indexOf(role) != -1) {
                 if (bot.channels[channel].permissions.role[role].allow.toString(2).split('').reverse()[10] == 1) {
                     members[user] = true;
                     break;
@@ -1588,7 +1587,7 @@ function membersInChannel(channel) {
         }
     }
 
-    members[bot.servers[server].owner_id] = true;
+    members[bot.servers[serverID].owner_id] = true;
 
     for (const member in members) if (members[member] === false) delete members[member];
 
@@ -1596,24 +1595,24 @@ function membersInChannel(channel) {
 }
 
 /**
- * @arg {Snowflake} server
+ * @arg {Snowflake} serverID
  * @arg {Number|String} color
  */
-function editColor (server,color) {
+function editColor (serverID, color) {
     bot.editRole({
-        serverID: server,
-        roleID: settings.servers[server].roleID,
+        serverID,
+        roleID: settings.servers[serverID].roleID,
         color: color
     }, err => {if (err) logger.error(err,'');});
 }
 
 /**
- * @arg {Snowflake} server
+ * @arg {Snowflake} serverID
  * @arg {String} newName
  */
-function editNick (server,newName) {
+function editNick (serverID, newName) {
     bot.editNickname({
-        serverID: server,
+        serverID,
         userID: bot.id,
         nick: newName
     }, err => {if (err) logger.error(err,'');});
