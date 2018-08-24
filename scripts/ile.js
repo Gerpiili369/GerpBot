@@ -16,7 +16,7 @@ module.exports = class Ile extends Emitter {
 
         if (Object.keys(saveData).length === 0) {
             this.active = false;
-            this.end = undefined;
+            this.end;
             this.time = {
                 between: {
                     min: 3600000,
@@ -45,21 +45,21 @@ module.exports = class Ile extends Emitter {
         setTimeout(() => {
             this.end = Date.now();
             for (const player in this.players) {
-                if (this.players[player].joined === true && !this.players[player].checkIn) {
+                if (this.players[player].joined && !this.players[player].checkIn) {
                     this.players[player].status = 'on time';
                     this.emit('msg', player, 'It is time');
                 }
             }
             setTimeout(() => {
                 for (const player in this.players) {
-                    if (this.players[player].joined === true && !this.players[player].checkIn) {
+                    if (this.players[player].joined && !this.players[player].checkIn) {
                         this.players[player].status = 'late';
                         this.emit('msg', player, 'You are late');
                     }
                 }
                 setTimeout(() => {
                     for (const player in this.players) {
-                        if (this.players[player].joined === true && !this.players[player].checkIn) {
+                        if (this.players[player].joined && !this.players[player].checkIn) {
                             this.players[player].status = 'missed';
                             this.emit('msg', player, 'You have missed the thing');
                         }
@@ -82,9 +82,7 @@ module.exports = class Ile extends Emitter {
 
     newRound() {
         this.active = true;
-        for (const player in this.players) {
-            this.players[player].checkIn = false;
-        }
+        for (const player in this.players) this.players[player].checkIn = false;
         this.end = Date.now() + Math.floor(Math.random() * (this.time.between.max - this.time.between.min)) + this.time.between.min;
         this.activateRound();
         this.sendEndtime();
@@ -117,15 +115,13 @@ module.exports = class Ile extends Emitter {
      * @returns {String}
      */
     join(user) {
-        if (typeof this.players[user] == 'undefined') {
-            this.players[user] = {
-                joined: false,
-                checkIn: false,
-                status: null,
-                delayMs: null,
-                delay: {}
-            };
-        }
+        if (!this.players[user]) this.players[user] = {
+            joined: false,
+            checkIn: false,
+            status: null,
+            delayMs: null,
+            delay: {}
+        };
 
         let response;
         if (!this.players[user].joined) {
@@ -134,9 +130,7 @@ module.exports = class Ile extends Emitter {
             this.save();
             if (!this.active) this.newRound();
             else response += `\n${this.getCheckpoint()}`;
-        } else {
-            response = 'Already here ya\'know.';
-        }
+        } else response = 'Already here ya\'know.';
 
         return response;
     }
@@ -184,12 +178,10 @@ module.exports = class Ile extends Emitter {
     getScoreboard() {
         let scoreboard = [];
         for (const player in this.players) {
-            if (this.players[player].checkIn) {
-                scoreboard.push({
-                    id: player,
-                    delay: this.players[player].delay
-                });
-            }
+            if (this.players[player].checkIn) scoreboard.push({
+                id: player,
+                delay: this.players[player].delay
+            });
         }
         scoreboard.sort((a, b) => this.players[a.id].delayMs - this.players[b.id].delayMs);
 

@@ -227,12 +227,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             text: `${bot.users[ui.id].username} joined this server on`
                         };
 
-                        Object.keys(bot.servers[serverID].roles).forEach(v => {
-                            if (bot.servers[serverID].members[ui.id].roles.indexOf(v) != -1)
-                            ui.roles[bot.servers[serverID].roles[v].position] = '<@&'+v+'>';
-                        });
+                        for (const role in bot.servers[serverID].roles)
+                            if (bot.servers[serverID].members[ui.id].roles.indexOf(role) != -1)
+                                ui.roles[bot.servers[serverID].roles[role].position] = '<@&' + role + '>';
 
-                        ui.roles.forEach(v => {if (v) cleanRoll.push(v)});
+                        for (const role of ui.roles) if (role) cleanRoll.push(role);
                         ui.roles = cleanRoll.reverse();
 
                         switch (bot.servers[serverID].members[ui.id].status) {
@@ -252,7 +251,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         ue.description += `\n**Status:** ${status}`;
 
                         if (ui.roles.length > 0) ue.description +='\n**Roles:** ';
-                        ui.roles.forEach(v => ue.description += ` ${v}`);
+                        for (const role of ui.roles) ue.description += ` ${role}`;
                     };
 
                     msg(channelID, 'High quality spying:', ue);
@@ -282,13 +281,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     };
 
                     let rollMembers = [];
-                    for (const member in bot.servers[serverID].members) {
-                        if (bot.servers[serverID].members[member].roles.indexOf(role.id) != -1) rollMembers.push(member);
-                    }
+                    for (const user in bot.servers[serverID].members)
+                        if (bot.servers[serverID].members[user].roles.indexOf(role.id) != -1) rollMembers.push(user);
 
-                    rollMembers.forEach(v => {
-                        re.description += `\n<@${v}>`;
-                    });
+                    for (const user of rollMembers) re.description += `\n<@${user}>`;
 
                     msg(channelID, 'Here is the gang:', re);
                 } else msg(channelID, 'What is that supposed to be? It is called "role" not "roll"!');
@@ -344,9 +340,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 }
 
                 if (bot.channels[args[0]] && (!serverID || bot.channels[args[0]].guild_id != serverID)) {
-                    winners.forEach(v => re.description += `\n${bot.users[v].username}`);
+                    for (const winner of winners) re.description += `\n${bot.users[winner].username}`;
                 } else {
-                    winners.forEach(v => re.description += `\n<@${v}>`);
+                    for (const winner of winners) re.description += `\n<@${winner}>`;
                 }
 
                 if (winners.length === 1) {
@@ -416,7 +412,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'uptime':
             case 'ut':
-                if (typeof timeOf[args[0]] != 'undefined') {
+                if (timeOf[args[0]]) {
                     let uptime = calculateUptime(timeOf[args[0]]);
                     msg(channelID, `Time since '${args[0]}': ${uptimeToString(uptime)}\``
                     );
@@ -458,32 +454,27 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID, `Options were not included! Example: \`@${bot.username} vote :thinking:=genius\`.`);
                     break;
                 }
-                options.forEach(v => {
-                    let p = v.split('=');
+                for (const option of options) {
+                    let p = option.split('=');
 
                     if (p[0] != '') {
-                        if (p[1] != undefined) {
-                            ve.fields.push({
-                                name: `Vote for ${p[1]} with:`,
-                                value: `${p[0]}`,
-                                inline: true
-                            });
-                        } else {
-                            ve.fields.push({
-                                name: `Vote with:`,
-                                value: `${p[0]}`,
-                                inline: true
-                            });
-                        }
+                        if (p[1]) ve.fields.push({
+                            name: `Vote for ${p[1]} with:`,
+                            value: `${p[0]}`,
+                            inline: true
+                        });
+                        else ve.fields.push({
+                            name: `Vote with:`,
+                            value: `${p[0]}`,
+                            inline: true
+                        });
                     } else {
                         msg(channelID, `Some options not defined! Example: \`@${bot.username} vote :thinking:=genius\`.`);
                         ve.error = true;
                     }
-                });
-
-                if (!ve.error) {
-                    msg(channelID,'@everyone',ve);
                 }
+
+                if (!ve.error) msg(channelID, '@everyone', ve);
                 break;
             case 'music':
             case 'play':
@@ -539,15 +530,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         .then(result => result.json())
                         .then(data => {
                             if (data.error) return Promise.reject(data.error.errors);
-                            for (v of data.items) if (v.id.kind === 'youtube#video') return {
-                                id: v.id.videoId,
-                                title: v.snippet.title,
-                                description: v.snippet.description,
-                                thumbnail: v.snippet.thumbnails.high.url,
-                                published: v.snippet.publishedAt,
+                            for (const item of data.items) if (item.id.kind === 'youtube#video') return {
+                                id: item.id.videoId,
+                                title: item.snippet.title,
+                                description: item.snippet.description,
+                                thumbnail: item.snippet.thumbnails.high.url,
+                                published: item.snippet.publishedAt,
                                 channel: {
-                                    id: v.snippet.channelID,
-                                    Title: v.snippet.channelTitle
+                                    id: item.snippet.channelID,
+                                    Title: item.snippet.channelTitle
                                 },
                                 request: {
                                     id: userID,
@@ -598,7 +589,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             color: serverID ? bot.servers[serverID].members[userID].color : color.default,
                         }
 
-                        for (song of settings.servers[serverID].audio.que) ale.fields.push({
+                        for (const song of settings.servers[serverID].audio.que) ale.fields.push({
                             name: ale.fields.length + 1 + ': ' + song.title,
                             value: `Requested by: <@${song.request.id}>\n${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.request.time))}.`
                         });
@@ -670,7 +661,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'kps':
                 let url = 'http://plssave.help/kps';
 
-                if (typeof kps[userID] == 'undefined') {
+                if (!kps[userID]) {
                     kps[userID] = {};
                     kps[userID].gameActive = false;
                     kps[userID].mem = {player: {theme: 'defeault', selection: null, result: null}, opponent: null};
@@ -761,7 +752,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         case 'quit':
                             msg(userID, '', kpsEmbed('You left.', 0));
                             kps[userID].socket.disconnect();
-                            kps[userID] = undefined;
+                            kps[userID] = null;
                             break;
                         default:
                             msg(userID, `Starting a game: \`play | ai | friend <friendname>\`\nChoosing: \`rock | paper | scissors\`\nTheme selection: \`classic | horror | space | hand\`\nTo quit: \`quit\`\nDon't forget the @${bot.username} kps!`);
@@ -982,22 +973,20 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 }
                             }
 
-                            args.forEach(v => {
-                                if (v === '@everyone' || v === '@here') reminder.mentions += v;
+                            for (const arg of args) {
+                                if (arg === '@everyone' || arg === '@here') reminder.mentions += arg;
                                 else {
-                                    let role = snowmaker(v);
+                                    let role = snowmaker(arg);
                                     if (bot.channels[reminder.channel] && bot.servers[bot.channels[reminder.channel].guild_id].roles[role]) {
                                         reminder.mentions += `<@&${role}>`;
                                     } else if (serverID && bot.servers[serverID].roles[role]) {
-                                        reminder.message = reminder.message.replace(v, `@${bot.servers[serverID].roles[role].name}`);
+                                        reminder.message = reminder.message.replace(arg, `@${bot.servers[serverID].roles[role].name}`);
                                     }
                                 }
-                            });
+                            }
 
-                            if (bot.channels[reminder.channel]) {
-                                evt.d.mentions.forEach(v => {
-                                    if (v.id != bot.id) reminder.mentions += `<@${v.id}> `;
-                                });
+                            if (bot.channels[reminder.channel]) for (const mention of evt.d.mentions) {
+                                if (mention.id != bot.id) reminder.mentions += `<@${mention.id}> `;
                             } else reminder.mentions = '';
 
                             settings.reminders.push(reminder);
@@ -1066,7 +1055,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     args[0] = 'sample'
                 }
 
-                if (args[1] != undefined) args[1] = snowmaker(args[1]);
+                if (args[1]) args[1] = snowmaker(args[1]);
 
                 switch (args[0]) {
                     case 'sample':
@@ -1094,7 +1083,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         });
                         break;
                     case 'add':
-                        if (args[1] != undefined) {
+                        if (args[1]) {
                             if (admin) {
                                 if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) == -1) {
                                     settings.servers[serverID].autoCompliment.targets.push(args[1]);
@@ -1106,7 +1095,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             break;
                         }
                     case 'remove':
-                        if (args[1] != undefined) {
+                        if (args[1]) {
                             if (admin) {
                                 if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) != -1) {
                                     settings.servers[serverID].autoCompliment.targets.splice(settings.servers[serverID].autoCompliment.targets.indexOf(args[1]), 1);
@@ -1133,7 +1122,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (admin) {
                     switch (args[0]) {
                         case 'set':
-                            if (args[1] != undefined) {
+                            if (args[1]) {
                                 args[1] = snowmaker(args[1]);
                                 settings.servers[serverID].autoShit = args[1];
                                 msg(channelID, `<@&${args[1]}> has been chosen to be shit.`);
@@ -1179,7 +1168,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 }
 
                 if (admin) {
-                    if (settings.servers[serverID].roleID != undefined) {
+                    if (settings.servers[serverID].roleID) {
                         switch (args[0]) {
                             case 'rainbow':
                                 if (settings.servers[serverID].effects.rainbow) {
@@ -1266,13 +1255,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
             bot.getMessages({channelID, limit: 5}, (err, msgList) => {
                 if (err) logger.error(err, '');
-                else for (m of msgList) {
+                else for (const m of msgList) {
                     let extra = '';
-                    if (!me.image.url) for (ext of ['.gif', '.jpg', '.jpeg','.png']) {
+                    if (!me.image.url) for (const ext of ['.gif', '.jpg', '.jpeg', '.png']) {
                         if (m.attachments[0] && m.attachments[0].url.indexOf(ext) > -1) {
                             me.image.url = m.attachments[0].url;
                             extra = ' (image below)';
-                        } else for (url of m.content.split(' ')) if (url.indexOf(ext) > -1 && isUrl(url)) {
+                        } else for (const url of m.content.split(' ')) if (url.indexOf(ext) > -1 && isUrl(url)) {
                             me.image.url = url;
                             extra = ' (image below)';
                         }
@@ -1397,10 +1386,10 @@ function msg(channel, msg, embed) {
 
 function updateHelp() {
     objectLib.help.thumbnail.url = `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`;
-    objectLib.help.fields.forEach(v => {
-        v.name = v.name.replace('GerpBot', bot.username);
-        v.value = v.value.replace('GerpBot', bot.username);
-    });
+    for (const field of objectLib.help.fields) {
+        field.name = field.name.replace('GerpBot', bot.username);
+        field.value = field.value.replace('GerpBot', bot.username);
+    }
 }
 
 function startLoops() {
@@ -1438,7 +1427,7 @@ function startLoops() {
                             a[i] = help;
                         });
                         editNick(server, newName.join(''));
-                    } else if (typeof bot.servers[server].members[bot.id].nick != 'undefined' && bot.servers[server].members[bot.id].nick != null && bot.servers[server].members[bot.id].nick != settings.servers[server].nick) editNick(server, settings.servers[server].nick);
+                    } else if (bot.servers[server].members[bot.id].nick && bot.servers[server].members[bot.id].nick != settings.servers[server].nick) editNick(server, settings.servers[server].nick);
                 }
             }
             i++;
@@ -1457,11 +1446,10 @@ function startIle() {
                 message = tzConv.join(': ');
             }
 
-            if (typeof embed != 'undefined') embed.fields.forEach(v => {
-                let id = v.name.substring(v.name.indexOf('.') + 2);
-                v.name = v.name.replace(id,bot.users[id].username);
-            });
-            else {
+            if (embed) for (const field of embed.fields) {
+                let id = field.name.substring(field.name.indexOf('.') + 2);
+                field.name = field.name.replace(id, bot.users[id].username);
+            } else {
                 embed = {
                     title: ile.getAcronym(),
                     description: message
@@ -1481,18 +1469,14 @@ function startIle() {
 }
 
 function startReminding() {
-    if (!startedOnce) {
-        if (settings.reminders) {
-            for (let v, i = settings.reminders.length-1; i >= 0; i--) {
-                v = settings.reminders[i];
-                if (v == null) settings.reminders.splice(i,1);
-                else remindTimeout(v,i);
-            }
-            updateSettings();
-        } else {
-            settings.reminders = [];
+    if (!startedOnce) if (settings.reminders) {
+        for (let v, i = settings.reminders.length-1; i >= 0; i--) {
+            v = settings.reminders[i];
+            if (v == null) settings.reminders.splice(i, 1);
+            else remindTimeout(v, i);
         }
-    }
+        updateSettings();
+    } else settings.reminders = [];
 }
 
 /**
@@ -1535,31 +1519,31 @@ function membersInChannel(channel) {
 
     let members = {}, serverID = bot.channels[channel].guild_id;
 
-    if (bot.channels[channel].permissions.role[serverID] && bot.channels[channel].permissions.role[serverID].deny.toString(2).split('').reverse()[10] == 1) {
-        for (const member in bot.servers[serverID].members) members[member] = false;
+    if (
+        bot.channels[channel].permissions.role[serverID] &&
+        bot.channels[channel].permissions.role[serverID].deny.toString(2).split('').reverse()[10] == 1
+    ) {
+        for (const user in bot.servers[serverID].members) members[user] = false;
     } else {
-        for (const member in bot.servers[serverID].members) members[member] = true;
+        for (const user in bot.servers[serverID].members) members[user] = true;
     }
 
     for (const user in members) {
         let admin = false;
-        bot.servers[serverID].members[user].roles.forEach(v => {
-            if (bot.servers[serverID].roles[v]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
-        });
+        for (const role of bot.servers[serverID].members[user].roles) {
+            if (bot.servers[serverID].roles[role]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
+        }
 
-        if (admin) {
-            members[user] = true;
-        } else if (
+        if (admin) members[user] = true;
+        else if (
             bot.channels[channel].permissions.user[user] &&
             bot.channels[channel].permissions.user[user].allow.toString(2).split('').reverse()[10] == 1
-        ) {
-            members[user] = true;
-        } else if (
+        ) members[user] = true;
+        else if (
             bot.channels[channel].permissions.user[user] &&
             bot.channels[channel].permissions.user[user].deny.toString(2).split('').reverse()[10] == 1
-        ) {
-            members[user] = false;
-        } else for (const role in bot.channels[channel].permissions.role) {
+        ) members[user] = false;
+        else for (const role in bot.channels[channel].permissions.role) {
             if (bot.servers[serverID].members[user].roles.indexOf(role) != -1) {
                 if (bot.channels[channel].permissions.role[role].allow.toString(2).split('').reverse()[10] == 1) {
                     members[user] = true;
@@ -1574,7 +1558,7 @@ function membersInChannel(channel) {
 
     members[bot.servers[serverID].owner_id] = true;
 
-    for (const member in members) if (members[member] === false) delete members[member];
+    for (const user in members) if (!members[user]) delete members[user];
 
     return Object.keys(members);
 }
