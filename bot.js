@@ -63,29 +63,27 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
-    let serverID;
+    let serverID, admin = false, cmd, args = message.split(' ');
+
     if (bot.channels[channelID]) serverID = bot.channels[channelID].guild_id;
     else if (!bot.directMessages[channelID]) return;
 
-    if ((!serverID || snowmaker(message.split(' ')[0]) == bot.id) && userID != bot.id) {
+    if ((!serverID || snowmaker(args[0]) == bot.id) && userID != bot.id) {
         // Messages with commands
         bot.simulateTyping(channelID, err => {if (err) logger.error(err,'');});
 
-        let admin = false;
         if (serverID) {
             if (userID == bot.servers[serverID].owner_id) admin = true;
-            else bot.servers[serverID].members[userID].roles.forEach(v => {
-                if (bot.servers[serverID].roles[v]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
-            });
+            else for (const role of bot.servers[serverID].members[userID].roles) {
+                if (bot.servers[serverID].roles[role]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
+            }
         }
 
-        var args = message.split(' ');
-
-        if (snowmaker(message.split(' ')[0]) == bot.id) {
-            var cmd = args[1];
+        if (snowmaker(args[0]) == bot.id) {
+            cmd = args[1];
             args = args.splice(2);
         } else {
-            var cmd = args[0];
+            cmd = args[0];
             args = args.splice(1);
         }
 
