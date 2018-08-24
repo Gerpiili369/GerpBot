@@ -1640,17 +1640,18 @@ function getJSON(file, location = '') {
 }
 
 function updateSettings() {
-    if (JSON.stringify(settings) != '') {
-        fs.writeFile(`settings.json`, JSON.stringify(settings, null, 4), err => {
-            if (err) logger.error(err,'');
-            else try {
-                JSON.parse(fs.readFileSync('settings.json', 'utf-8', err => {if (err) logger.error(err,'');}));
-            }
-            catch(err) {
-                updateSettings();
-            }
-        });
-    }
+    json = JSON.stringify(settings, null, 4);
+    if (json) fs.writeFile('settings.json', json, err => {
+        if (err) logger.error(err, '');
+        else try {
+            require('./settings');
+        }
+        catch(err) {
+            logger.warn(err, '');
+            logger.warn('Updated settings.json was corrupted during update, updating again in 5 seconds.');
+            setTimeout(updateSettings, 5000);
+        }
+    });
 }
 
 /**
