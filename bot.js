@@ -1328,6 +1328,7 @@ bot.on('disconnect', (err, code) => {
     online = false;
     logger.warn(`Disconnected! error: ${err}, code: ${code} (uptime: ${uptimeToString(calculateUptime(timeOf.connection))}).`);
     setTimeout(() => {
+        logger.info('Trying to reconnect...');
         bot.connect();
     }, 5000);
 });
