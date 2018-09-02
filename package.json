@@ -1,7 +1,7 @@
 {
   "name": "GerpBot",
-  "version": "1.0.0",
-  "description": "My own Discord bot",
+  "version": "2.3.0",
+  "description": "It is pro GerpBot for Discord!",
   "main": "bot.js",
   "author": "Gerpiili369",
   "dependencies": {
