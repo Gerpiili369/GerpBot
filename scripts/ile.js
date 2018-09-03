@@ -69,7 +69,7 @@ module.exports = class Ile extends Emitter {
 
                         for (const player in this.players) {
                             if (this.players[player].checkIn) {
-                                this.emit('msg', player, '',this.scoreboardToEmbed(this.getScoreboard()));
+                                this.emit('msg', player, '', this.scoreboardToEmbed(this.getScoreboard()));
                             }
                         }
                         if (this.activePlayers()) this.newRound();

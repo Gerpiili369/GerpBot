@@ -21,9 +21,9 @@ const
         'help', 'compliments', 'defaultRes', 'games', 'answers', 'ileAcronym'
     ], 'objectLib'),
     // constant variables
-    bot = new Discord.Client({token: auth.token, autorun: true}),
+    bot = new Discord.Client({ token: auth.token, autorun: true }),
     ile = new Ile(getJSON('ile'), objectLib.ileAcronym),
-    bsga = new bs.GameArea();
+    bsga = new bs.GameArea(),
     kps = {},
     reminderTimeouts = [],
     timeOf = {
@@ -96,7 +96,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
     if ((!serverID || snowmaker(args[0]) == bot.id) && userID != bot.id) {
         // Messages with commands
-        bot.simulateTyping(channelID, err => {if (err) logger.error(err, '');});
+        bot.simulateTyping(channelID, err => { if (err) logger.error(err, ''); });
 
         if (serverID) {
             if (userID == bot.servers[serverID].owner_id) admin = true;
@@ -250,7 +250,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         }
                         ue.description += `\n**Status:** ${status}`;
 
-                        if (ui.roles.length > 0) ue.description +='\n**Roles:** ';
+                        if (ui.roles.length > 0) ue.description += '\n**Roles:** ';
                         for (const role of ui.roles) ue.description += ` ${role}`;
                     };
 
@@ -325,7 +325,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         }
                 }
 
-                if (args[1] && !isNaN(args[1])) ;
+                if (args[1] && !isNaN(args[1]));
                 else args[1] = 1;
 
                 let winners = [];
@@ -392,7 +392,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         min = max;
                         max = mem;
                     }
-                    max ++
+                    max++
 
                     if (!isNaN(Number(args[1]))) amount = args[1];
 
@@ -485,7 +485,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 title: song.title,
                                 description: song.description + '\n' +
                                     `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
-                                thumbnail: {url: song.thumbnail},
+                                thumbnail: { url: song.thumbnail },
                                 color: serverID ? bot.servers[serverID].members[userID].color : color.default
                             });
 
@@ -496,13 +496,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 '-ar', '48000',
                                 '-ac', '2',
                                 'pipe:1'
-                            ], {stdio: ['pipe', 'pipe', 'ignore']});
+                            ], { stdio: ['pipe', 'pipe', 'ignore'] });
                             bot.servers[serverID].ccp.stdout.once('readable', () => stream.send(bot.servers[serverID].ccp.stdout));
                             bot.servers[serverID].ccp.stdout.once('end', () => {
                                 bot.servers[serverID].playing = false;
                                 playNext(stream);
                                 bot.servers[serverID].stopped = false;
-                    		});
+                            });
                             bot.servers[serverID].playing = song;
                             updateSettings();
                         } else bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
@@ -514,7 +514,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             title: song.title,
                             description: song.description + '\nPublished at: ' +
                                 timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published)),
-                            thumbnail: {url: song.thumbnail},
+                            thumbnail: { url: song.thumbnail },
                             color: serverID ? bot.servers[serverID].members[userID].color : color.default
                         });
                         resolve(song);
@@ -546,17 +546,17 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             return Promise.reject('Song not found!');
                         })
                         .then(addUrl2song)
-                        .catch(err => Promise.reject({type: 'msg', name: 'Search failed!', message: typeof err === 'string' ? err : 'Code bad'})),
+                        .catch(err => Promise.reject({ type: 'msg', name: 'Search failed!', message: typeof err === 'string' ? err : 'Code bad' })),
                     joinVoice = (voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id) => new Promise((resolve, reject) => voiceChannelID ?
                         bot.joinVoiceChannel(voiceChannelID, err => err && err.toString().indexOf('Voice channel already active') == -1 ? reject(err) : resolve(voiceChannelID)) :
-                        reject({type: 'msg', name: 'Could not join!', message: 'You are not in a voice channel!'})
+                        reject({ type: 'msg', name: 'Could not join!', message: 'You are not in a voice channel!' })
                     ),
                     getStream = voiceChannelID => new Promise((resolve, reject) => bot.getAudioContext(voiceChannelID, (err, stream) => err ? reject(err) : resolve(stream)));
 
                 if (!serverID) {
                     msg(channelID, '`<sassy message about this command being server only>`');
                     break;
-                } else if (!settings.servers[serverID].audio) settings.servers[serverID].audio = {que: []};
+                } else if (!settings.servers[serverID].audio) settings.servers[serverID].audio = { que: [] };
 
                 if (cmd === 'music') switch (args[0]) {
                     case 'cancel':
@@ -596,7 +596,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (bot.servers[serverID].playing) {
                             ale.title = 'Current song: ' + bot.servers[serverID].playing.title;
                             ale.description = `Requested by: <@${bot.servers[serverID].playing.request.id}>\n${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(bot.servers[serverID].playing.request.time))}.`;
-                            ale.thumbnail = {url: bot.servers[serverID].playing.thumbnail};
+                            ale.thumbnail = { url: bot.servers[serverID].playing.thumbnail };
 
                             if (ale.fields.length > 0) ale.description += '\n\n**Queued songs:**';
                         }
@@ -635,11 +635,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 url: evt.d.attachments[0].url
                             })
                             else if (args[0]) resolveWithSong(searchSong(args));
-                            else resolve({stream, action: 'next in queue'})
+                            else resolve({ stream, action: 'next in queue' })
 
                         })
                             .then(queueSong)
-                            .then(() => resolve({stream, action: 'requested'}))
+                            .then(() => resolve({ stream, action: 'requested' }))
                             .catch(reject);
                     }))
                     .then(result => {
@@ -647,7 +647,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (settings.servers[serverID].audio.que.length > 0) msg(channelID, `Playing ${result.action}`);
                         else msg(channelID, 'No songs queued right now.');
                     })
-                    .catch(err => err.type === 'msg' ? msg(channelID, '', {title: err.name, description: err.message, color: color.error}) : logger.error(err, ''));
+                    .catch(err => err.type === 'msg' ? msg(channelID, '', { title: err.name, description: err.message, color: color.error }) : logger.error(err, ''));
                 break;
             case 'bs':
                 msg(channelID, '', {
@@ -662,8 +662,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (!kps[userID]) {
                     kps[userID] = {};
                     kps[userID].gameActive = false;
-                    kps[userID].mem = {player: {theme: 'defeault', selection: null, result: null}, opponent: null};
-                    kps[userID].socket = io('http://plssave.help', {path: '/socket2'});
+                    kps[userID].mem = { player: { theme: 'defeault', selection: null, result: null }, opponent: null };
+                    kps[userID].socket = io('http://plssave.help', { path: '/socket2' });
 
                     kps[userID].socket.on('connect', () => {
                         kps[userID].socket.emit('setName', `${bot.users[userID].username}#${bot.users[userID].discriminator}`);
@@ -823,7 +823,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                      * @arg {String} img
                      */
                     function addThumb(img) {
-                        embed.thumbnail = {url: `${url}/img/${player.theme}/${img}.png`};
+                        embed.thumbnail = { url: `${url}/img/${player.theme}/${img}.png` };
                     }
 
                     /**
@@ -831,9 +831,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                      */
                     function addImage(background) {
                         if (background) {
-                            embed.image = {url: `${url}/img/${player.theme}/background${player.theme === 'defeault' ? '' : 'new'}.${player.theme === 'horror' ? 'png' : 'jpg'}`};
+                            embed.image = { url: `${url}/img/${player.theme}/background${player.theme === 'defeault' ? '' : 'new'}.${player.theme === 'horror' ? 'png' : 'jpg'}` };
                         } else {
-                            embed.image = {url: `${url}/img/${player.theme}/${player.result}.png`};
+                            embed.image = { url: `${url}/img/${player.theme}/${player.result}.png` };
                         }
                     }
 
@@ -844,7 +844,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         emojis[1] = emojis[1].repeat(Math.round(player.points.draws / player.games * 15));
                         emojis[2] = emojis[2].repeat(Math.round(player.points.losses / player.games * 15));
 
-                        embed.fields.push({name: 'Current score:', value: emojis.join('')});
+                        embed.fields.push({ name: 'Current score:', value: emojis.join('') });
                     }
 
                     function addFooter() {
@@ -1084,7 +1084,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 } else {
                                     msg(channelID, `User <@${args[1]}> is already cool!`);
                                 }
-                            } else {msg(channelID, 'Request denied, not admin!');}
+                            } else { msg(channelID, 'Request denied, not admin!'); }
                             break;
                         }
                     case 'remove':
@@ -1096,7 +1096,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 } else {
                                     msg(channelID, `User <@${args[1]}> was never cool to begin with!`);
                                 }
-                            } else {msg(channelID, 'Request denied, not admin!');}
+                            } else { msg(channelID, 'Request denied, not admin!'); }
                             break;
                         }
                     default:
@@ -1146,7 +1146,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     .then(color => {
                         settings.servers[serverID].color = color;
                         updateSettings();
-                        msg(channelID, '', {title: 'Color changed!', color});
+                        msg(channelID, '', { title: 'Color changed!', color });
                     })
                     .catch(err => msg(channelID, '', {
                         title: err.name || 'Only color you will be seeing is red.',
@@ -1220,7 +1220,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     } else {
         // Messages without commands
         if (serverID && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
-            bot.simulateTyping(channelID, err => {if (err) logger.error(err, '');});
+            bot.simulateTyping(channelID, err => { if (err) logger.error(err, ''); });
             msg(channelID, `<@${userID}> ${objectLib.compliments[Math.floor(Math.random() * objectLib.compliments.length)]}`);
         }
 
@@ -1244,7 +1244,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 fields: []
             };
 
-            bot.getMessages({channelID, limit: 5}, (err, msgList) => {
+            bot.getMessages({ channelID, limit: 5 }, (err, msgList) => {
                 if (err) logger.error(err, '');
                 else for (const m of msgList) {
                     let extra = '';
@@ -1282,7 +1282,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             bot.pinMessage({
                 channelID: channelID,
                 messageID: evt.d.id
-            }, err => {if (err) logger.error(err, '');});
+            }, err => { if (err) logger.error(err, ''); });
         }
 
         if (evt.d.embeds[0].title == 'Blue Squares: The Game') {
@@ -1299,7 +1299,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             channelID: channelID,
             messageID: evt.d.id,
             reaction: emoji
-        }, err => {if (err) logger.error(err, '');});
+        }, err => { if (err) logger.error(err, ''); });
     }
 });
 
@@ -1371,7 +1371,7 @@ function msg(channel, msg, embed) {
         to: channel,
         message: msg,
         embed: embed
-    }, err => {if (err) logger.error(err, '');});
+    }, err => { if (err) logger.error(err, ''); });
 }
 
 function updateHelp() {
@@ -1402,7 +1402,7 @@ function startLoops() {
                 } else if (
                     settings.servers[server].roleID &&
                     bot.servers[server].roles[settings.servers[server].roleID].color !=
-                        (settings.servers[server].color || color.default)
+                    (settings.servers[server].color || color.default)
                 ) editColor(server, '#' + (settings.servers[server].color || color.default).toString(16));
 
                 if (settings.servers[server].effects.shuffle) {
@@ -1455,7 +1455,7 @@ function startIle() {
 
 function startReminding() {
     if (!startedOnce) if (settings.reminders) {
-        for (let v, i = settings.reminders.length-1; i >= 0; i--) {
+        for (let v, i = settings.reminders.length - 1; i >= 0; i--) {
             v = settings.reminders[i];
             if (v == null) settings.reminders.splice(i, 1);
             else remindTimeout(v, i);
@@ -1534,7 +1534,7 @@ function membersInChannel(channel) {
                     members[user] = true;
                     break;
                 }
-                if (bot.channels[channel].permissions.role[role].deny.toString(2).split('').reverse()[10] == 1)  {
+                if (bot.channels[channel].permissions.role[role].deny.toString(2).split('').reverse()[10] == 1) {
                     members[user] = false;
                 }
             }
@@ -1552,24 +1552,24 @@ function membersInChannel(channel) {
  * @arg {Snowflake} serverID
  * @arg {Number|String} color
  */
-function editColor (serverID, color) {
+function editColor(serverID, color) {
     bot.editRole({
         serverID,
         roleID: settings.servers[serverID].roleID,
         color: color
-    }, err => {if (err) logger.error(err, '');});
+    }, err => { if (err) logger.error(err, ''); });
 }
 
 /**
  * @arg {Snowflake} serverID
  * @arg {String} newName
  */
-function editNick (serverID, newName) {
+function editNick(serverID, newName) {
     bot.editNickname({
         serverID,
         userID: bot.id,
         nick: newName
-    }, err => {if (err) logger.error(err, '');});
+    }, err => { if (err) logger.error(err, ''); });
 }
 
 /**
@@ -1600,7 +1600,7 @@ function updateSettings() {
         else try {
             require('./settings');
         }
-        catch(err) {
+        catch (err) {
             logger.warn(err, '');
             logger.warn('Updated settings.json was corrupted during update, updating again in 5 seconds.');
             setTimeout(updateSettings, 5000);
