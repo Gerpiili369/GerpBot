@@ -1,8 +1,12 @@
 {
-  "name": "GerpBot",
-  "version": "2.3.0",
+  "name": "gerpbot",
+  "version": "2.4.0-beta",
   "description": "It is pro GerpBot for Discord!",
   "main": "bot.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gerpiili369/GerpBot.git"
+  },
   "author": "Gerpiili369",
   "dependencies": {
     "canvas": "^1.6.11",
@@ -17,5 +21,9 @@
   },
   "devDependencies": {
     "nodemon": "^1.12.5"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/Gerpiili369/GerpBot/issues"
+  },
+  "homepage": "https://github.com/Gerpiili369/GerpBot#readme"
 }
