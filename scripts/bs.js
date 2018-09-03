@@ -66,10 +66,10 @@ class Player {
     constructor(id, username) {
         this.id = id;
         this.username = username;
-        this.online = true,
-        this.speed = new GameArea().sSize,
-        this.x = 0,
-        this.y = 0
+        this.online = true;
+        this.speed = new GameArea().sSize;
+        this.x = 0;
+        this.y = 0;
     }
 
     move(dir) {
