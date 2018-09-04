@@ -1195,41 +1195,38 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'effect':
                 if (!serverID) return msg(channelID, 'I think that is a bad idea...');
+                if (!admin) return msg(channelID, 'Request denied, not admin!');
 
-                if (admin) {
-                    if (settings.servers[serverID].roleID) {
-                        switch (args[0]) {
-                            case 'rainbow':
-                                if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_MANAGE_ROLES'))
-                                    return pc.missage(msg, channelID, ['Manage Roles']);
+                switch (args[0]) {
+                    case 'rainbow':
+                        if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_MANAGE_ROLES'))
+                            return pc.missage(msg, channelID, ['Manage Roles']);
 
-                                if (settings.servers[serverID].effects.rainbow) {
-                                    settings.servers[serverID].effects.rainbow = false;
-                                    msg(channelID, 'Rainbow effect deactivated!');
-                                } else {
-                                    settings.servers[serverID].effects.rainbow = true;
-                                    msg(channelID, 'Rainbow effect activated!');
-                                }
-                                break;
-                            case 'shuffle':
-                                if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_CHANGE_NICKNAME'))
-                                    return pc.missage(msg, channelID, ['Change Nickname']);
-
-                                if (settings.servers[serverID].effects.shuffle) {
-                                    settings.servers[serverID].effects.shuffle = false;
-                                    msg(channelID, 'Shuffle effect deactivated!');
-                                } else {
-                                    settings.servers[serverID].effects.shuffle = true;
-                                    msg(channelID, 'Shuffle effect activated!');
-                                }
-                                break;
-                            default:
-                                msg(channelID, 'Shuffle or rainbow?');
-                                break;
+                        if (settings.servers[serverID].effects.rainbow) {
+                            settings.servers[serverID].effects.rainbow = false;
+                            msg(channelID, 'Rainbow effect deactivated!');
+                        } else {
+                            settings.servers[serverID].effects.rainbow = true;
+                            msg(channelID, 'Rainbow effect activated!');
                         }
-                        updateSettings();
-                    } else msg(channelID, 'Please create me my own role (with some permissions pls).');
-                } else msg(channelID, 'Request denied, not admin!');
+                        break;
+                    case 'shuffle':
+                        if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_CHANGE_NICKNAME'))
+                            return pc.missage(msg, channelID, ['Change Nickname']);
+
+                        if (settings.servers[serverID].effects.shuffle) {
+                            settings.servers[serverID].effects.shuffle = false;
+                            msg(channelID, 'Shuffle effect deactivated!');
+                        } else {
+                            settings.servers[serverID].effects.shuffle = true;
+                            msg(channelID, 'Shuffle effect activated!');
+                        }
+                        break;
+                    default:
+                        msg(channelID, 'Shuffle or rainbow?');
+                        break;
+                }
+                updateSettings();
                 break;
             case 'handle':
                 if (!serverID) return msg(channelID, 'Fun fact: YOU CAN\'T HAVE NICKNAMES IN DM!!!');
