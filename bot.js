@@ -35,7 +35,7 @@ const
         error: 16711680     // ErrorRed
     },
     // funky function stuff
-    userHasPerm = permCheck(bot);
+    pc = permCheck(bot);
 
 let
     // other variables
@@ -1504,7 +1504,7 @@ function membersInChannel(channel) {
     channel = snowmaker(channel);
     if (!bot.channels[channel]) return 'Channel not found!';
     let members = [], serverID = bot.channels[channel].guild_id;
-    for (const user in bot.servers[serverID].members) if (userHasPerm(serverID, user, 'TEXT_READ_MESSAGES', channel)) members.push(user);
+    for (const user in bot.servers[serverID].members) if (pc.userHasPerm(serverID, user, 'TEXT_READ_MESSAGES', channel)) members.push(user);
     return members;
 }
 
