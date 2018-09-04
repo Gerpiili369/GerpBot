@@ -14,6 +14,7 @@ const
     web = require('./scripts/web.js'),
     bs = require('./scripts/bs.js'),
     Ile = require('./scripts/ile.js'),
+    permCheck = require('./scripts/permCheck.js'),
     // authentication file
     auth = require('./auth.json'),
     // load objectLib
@@ -32,7 +33,9 @@ const
     color = {
         default: 16738816,  // GerpOrange
         error: 16711680     // ErrorRed
-    };
+    },
+    // funky function stuff
+    userHasPerm = permCheck(bot);
 
 let
     // other variables
