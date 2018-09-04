@@ -1502,53 +1502,10 @@ function remindTimeout(reminder, i = settings.reminders.indexOf(reminder)) {
  */
 function membersInChannel(channel) {
     channel = snowmaker(channel);
-
     if (!bot.channels[channel]) return 'Channel not found!';
-
-    let members = {}, serverID = bot.channels[channel].guild_id;
-
-    if (
-        bot.channels[channel].permissions.role[serverID] &&
-        bot.channels[channel].permissions.role[serverID].deny.toString(2).split('').reverse()[10] == 1
-    ) {
-        for (const user in bot.servers[serverID].members) members[user] = false;
-    } else {
-        for (const user in bot.servers[serverID].members) members[user] = true;
-    }
-
-    for (const user in members) {
-        let admin = false;
-        for (const role of bot.servers[serverID].members[user].roles) {
-            if (bot.servers[serverID].roles[role]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
-        }
-
-        if (admin) members[user] = true;
-        else if (
-            bot.channels[channel].permissions.user[user] &&
-            bot.channels[channel].permissions.user[user].allow.toString(2).split('').reverse()[10] == 1
-        ) members[user] = true;
-        else if (
-            bot.channels[channel].permissions.user[user] &&
-            bot.channels[channel].permissions.user[user].deny.toString(2).split('').reverse()[10] == 1
-        ) members[user] = false;
-        else for (const role in bot.channels[channel].permissions.role) {
-            if (bot.servers[serverID].members[user].roles.indexOf(role) != -1) {
-                if (bot.channels[channel].permissions.role[role].allow.toString(2).split('').reverse()[10] == 1) {
-                    members[user] = true;
-                    break;
-                }
-                if (bot.channels[channel].permissions.role[role].deny.toString(2).split('').reverse()[10] == 1) {
-                    members[user] = false;
-                }
-            }
-        }
-    }
-
-    members[bot.servers[serverID].owner_id] = true;
-
-    for (const user in members) if (!members[user]) delete members[user];
-
-    return Object.keys(members);
+    let members = [], serverID = bot.channels[channel].guild_id;
+    for (const user in bot.servers[serverID].members) if (userHasPerm(serverID, user, 'TEXT_READ_MESSAGES', channel)) members.push(user);
+    return members;
 }
 
 /**
