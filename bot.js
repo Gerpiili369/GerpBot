@@ -124,10 +124,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 msg(channelID, 'Some commands:', objectLib.help);
                 break;
             case 'server':
-                if (!serverID) {
-                    msg(channelID, 'This is a private conversation!')
-                    break;
-                }
+                if (!serverID) return msg(channelID, 'This is a private conversation!');
                 if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
 
@@ -267,10 +264,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID, 'I would give you the info you seek, but it is clear you don\'t even know what you want');
                 break;
             case 'role':
-                if (!serverID) {
-                    msg(channelID, 'Please wait a moment. Let me just check that role in this PM.');
-                    break;
-                }
+                if (!serverID) return msg(channelID, 'Please wait a moment. Let me just check that role in this PM.');
                 if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
 
@@ -573,10 +567,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     ),
                     getStream = voiceChannelID => new Promise((resolve, reject) => bot.getAudioContext(voiceChannelID, (err, stream) => err ? reject(err) : resolve(stream)));
 
-                if (!serverID) {
-                    msg(channelID, '`<sassy message about this command being server only>`');
-                    break;
-                } else if (!settings.servers[serverID].audio) settings.servers[serverID].audio = { que: [] };
+                if (!serverID) return msg(channelID, '`<sassy message about this command being server only>`');
+                else if (!settings.servers[serverID].audio) settings.servers[serverID].audio = { que: [] };
 
                 if (cmd === 'music') switch (args[0]) {
                     case 'cancel':
@@ -1202,10 +1194,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     }));
                 break;
             case 'effect':
-                if (!serverID) {
-                    msg(channelID, 'I think that is a bad idea...');
-                    break;
-                }
+                if (!serverID) return msg(channelID, 'I think that is a bad idea...');
 
                 if (admin) {
                     if (settings.servers[serverID].roleID) {
@@ -1243,10 +1232,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID, 'Request denied, not admin!');
                 break;
             case 'handle':
-                if (!serverID) {
-                    msg(channelID, 'Fun fact: YOU CAN\'T HAVE NICKNAMES IN DM!!!')
-                    break;
-                }
+                if (!serverID) return msg(channelID, 'Fun fact: YOU CAN\'T HAVE NICKNAMES IN DM!!!');
 
                 if (admin) {
                     if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_CHANGE_NICKNAME'))
