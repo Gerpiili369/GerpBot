@@ -97,7 +97,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     if (bot.channels[channelID]) serverID = bot.channels[channelID].guild_id;
     else if (!bot.directMessages[channelID]) return;
 
-    if ((!serverID || snowmaker(args[0]) == bot.id) && userID != bot.id) {
+    if ((!serverID || snowmaker(args[0]) == bot.id) && !bot.users[userID].bot) {
         // Messages with commands
         bot.simulateTyping(channelID, err => { if (err) logger.error(err, ''); });
 
