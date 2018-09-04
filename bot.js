@@ -99,7 +99,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
     if ((!serverID || snowmaker(args[0]) == bot.id) && !bot.users[userID].bot) {
         // Messages with commands
-        bot.simulateTyping(channelID, err => { if (err) logger.error(err, ''); });
 
         if (serverID) {
             if (userID == bot.servers[serverID].owner_id) admin = true;
@@ -1277,7 +1276,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     } else {
         // Messages without commands
         if (serverID && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
-            bot.simulateTyping(channelID, err => { if (err) logger.error(err, ''); });
             msg(channelID, `<@${userID}> ${objectLib.compliments[Math.floor(Math.random() * objectLib.compliments.length)]}`);
         }
 
