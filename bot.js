@@ -14,7 +14,7 @@ const
     snowTime = require('snowtime'),
     // scripts
     web = require('./scripts/web.js'),
-    bs = require('./scripts/bs.js'),
+    bs = config.canvasEnabled ? require('./scripts/bs.js') : null,
     Ile = require('./scripts/ile.js'),
     permCheck = require('./scripts/permCheck.js'),
     // load objectLib
@@ -672,6 +672,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     .catch(err => err.type === 'msg' ? msg(channelID, '', { title: err.name, description: err.message, color: color.error }) : logger.error(err, ''));
                 break;
             case 'bs':
+                if (!config.canvasEnabled) return msg(channelID, 'Bot owner has not enabled this feature.');
                 if (serverID &&
                     !pc.userHasPerm(serverID, bot.id, 'TEXT_MANAGE_MESSAGES', channelID) ||
                     !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID) ||
@@ -1363,6 +1364,7 @@ bot.on('any', evt => {
     }, (err, message) => {
         if (err) logger.error(err, '');
         else if (message.embeds[0] && message.embeds[0].title == 'Blue Squares: The Game') {
+            if (!config.canvasEnabled) return msg(channelID, 'Bot owner has not enabled this feature.');
             if (bsga.players[evt.d.user_id]) bsga.players[evt.d.user_id].online = true;
             else bsga.players[evt.d.user_id] = new bs.Player(evt.d.user_id, bot.users[evt.d.user_id].username);
             switch (evt.d.emoji.name) {
