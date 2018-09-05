@@ -656,6 +656,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 },
                                 url: evt.d.attachments[0].url
                             })
+                            else if (!config.auth.tubeKey) msg(channelID, 'YouTube API key not found!');
                             else if (args[0]) resolveWithSong(searchSong(args));
                             else resolve({ stream, action: 'next in queue' })
 
