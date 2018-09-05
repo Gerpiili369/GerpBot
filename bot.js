@@ -1,4 +1,6 @@
 const
+    // config file
+    config = require('./config'),
     // node_modules
     Discord = require('discord.io'),
     logger = require('winston'),
@@ -15,14 +17,12 @@ const
     bs = require('./scripts/bs.js'),
     Ile = require('./scripts/ile.js'),
     permCheck = require('./scripts/permCheck.js'),
-    // authentication file
-    auth = require('./auth.json'),
     // load objectLib
     objectLib = getJSON([
         'help', 'compliments', 'defaultRes', 'games', 'answers', 'ileAcronym'
     ], 'objectLib'),
     // constant variables
-    bot = new Discord.Client({ token: auth.token, autorun: true }),
+    bot = new Discord.Client({ token: config.auth.token, autorun: true }),
     ile = new Ile(getJSON('ile'), objectLib.ileAcronym),
     bsga = new bs.GameArea(),
     kps = {},
@@ -538,7 +538,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         song.url = info.formats[info.formats.length - 1].url;
                         resolve(song);
                     })),
-                    searchSong = keywords => fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keywords.join('+')}&key=${auth.tubeKey}`)
+                    searchSong = keywords => fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keywords.join('+')}&key=${config.auth.tubeKey}`)
                         .then(result => result.json())
                         .then(data => {
                             if (data.error) return Promise.reject(data.error.errors);
