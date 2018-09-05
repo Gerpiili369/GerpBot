@@ -24,7 +24,7 @@ const
     // constant variables
     bot = new Discord.Client({ token: config.auth.token, autorun: true }),
     ile = new Ile(getJSON('ile'), objectLib.ileAcronym),
-    bsga = new bs.GameArea(),
+    bsga = config.canvasEnabled ? new bs.GameArea() : null,
     kps = {},
     reminderTimeouts = [],
     timeOf = {
