@@ -1593,6 +1593,7 @@ function getJSON(file, location = '') {
 }
 
 function updateSettings() {
+    if (!config.saveSettings) return;
     json = JSON.stringify(settings, null, 4);
     if (json) fs.writeFile('settings.json', json, err => {
         if (err) logger.error(err, '');
