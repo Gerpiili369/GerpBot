@@ -54,7 +54,7 @@ for (const func in snowTime) eval(`${func} = snowTime.${func}`);
 
 startLoops();
 
-web.activate('/discord').then(logger.info);
+web.activate.then(logger.info);
 
 bot.on('ready', evt => {
     timeOf.connection = Date.now();
@@ -1379,7 +1379,7 @@ bot.on('any', evt => {
 
                     bsga.extra = bsga.extra === 'a' ? 'b' : 'a';
                     bse.image = {
-                        url: settings.url + '/temp/bsga-image.png' + `?${bsga.extra}=${Math.random()}`
+                        url: config.web.url + '/temp/bsga-image.png' + `?${bsga.extra}=${Math.random()}`
                     };
 
                     bot.editMessage({

@@ -1,4 +1,5 @@
 const
+    config = require('../config').web,
     path = require('path'),
     express = require('express'),
     app = express(),
@@ -7,9 +8,9 @@ const
     tempath = path.join(__dirname, '..', 'temp');
 
 module.exports = {
-    activate: root => new Promise(resolve => {
-        app.use(root + '/temp', express.static(tempath));
-        http.listen(3000, '127.0.0.1', () => {
+    activate: new Promise(resolve => {
+        app.use(config.root + '/temp', express.static(tempath));
+        http.listen(config.port, config.host, () => {
             resolve('Activated http-service.');
         });
     }),
