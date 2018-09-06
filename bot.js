@@ -1231,25 +1231,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 }
                 updateSettings();
                 break;
-            case 'handle':
-                if (!serverID) return msg(channelID, 'Fun fact: YOU CAN\'T HAVE NICKNAMES IN DM!!!');
-
-                if (admin) {
-                    if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_CHANGE_NICKNAME'))
-                        return pc.missage(msg, channelID, ['Change Nickname']);
-
-                    if (args[0]) {
-                        msg(channelID, `I will now be known as "${args[0]}"!`);
-                    } else {
-                        args[0] = null;
-                        msg(channelID, 'Nickname reset.');
-                    }
-
-                    settings.servers[serverID].nick = args[0];
-                    updateSettings();
-                    editNick(serverID, args[0]);
-                } else msg(channelID, 'Request denied, not admin!');
-                break;
             default:
                 if (message.indexOf('?') != -1 && (!serverID || !settings.servers[serverID].disableAnswers)) {
                     msg(channelID, objectLib.answers[Math.floor(Math.random() * objectLib.answers.length)]);
