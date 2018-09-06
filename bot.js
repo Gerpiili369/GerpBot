@@ -62,8 +62,6 @@ web.activate.then(logger.info);
 bot.on('ready', evt => {
     timeOf.connection = Date.now();
 
-    for (const server in bot.servers) if (!settings.servers[server].roleID) getBotRole(server);
-
     updateHelp();
     startIle();
     startReminding();
@@ -1357,7 +1355,6 @@ bot.on('disconnect', (err, code) => {
 bot.on('any', evt => {
     if (evt.t === 'GUILD_CREATE') {
         if (!settings.servers[evt.d.id]) settings.servers[evt.d.id] = {};
-        if (online) getBotRole(evt.d.id);
     }
 
     // Blue Squares game movement
@@ -1575,7 +1572,9 @@ function editNick(serverID, newName) {
 function getBotRole(serverID) {
     for (const role of bot.servers[serverID].members[bot.id].roles)
         if (bot.servers[serverID].roles[role].name === bot.username) {
-            return settings.servers[serverID].roleID = bot.servers[serverID].roles[role].id;
+            settings.servers[serverID].roleID = bot.servers[serverID].roles[role].id;
+            updateSettings();
+            return settings.servers[serverID].roleID;
         }
 }
 
@@ -1590,6 +1589,9 @@ function addColorRole(serverID) {
         bot.servers[serverID].roles[settings.servers[serverID].color.role] &&
         bot.servers[serverID].members[bot.id].roles.indexOf(settings.servers[serverID].color.role) > 0
     ) return Promise.resolve(settings.servers[serverID].color.role);
+
+    // Make sure roleID is defined
+    if (!settings.servers[serverID].roleID) getBotRole(serverID);
 
     // Fix the gaps
     return new Promise((resolve, reject) => {
