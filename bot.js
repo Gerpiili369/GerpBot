@@ -68,10 +68,6 @@ bot.on('ready', evt => {
 
     for (const server in bot.servers) {
         if (!settings.servers[server]) settings.servers[server] = {
-            autoCompliment: {
-                enabled: true,
-                targets: []
-            },
             effects: {
                 rainbow: false,
                 shuffle: false
@@ -1084,6 +1080,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (!serverID) {
                     msg(channelID, '**Feature not intended to be used in DM. Sending sample:**');
                     args[0] = 'sample'
+                } else if (!settings.servers[serverID].autoCompliment) {
+                    settings.servers[serverID].autoCompliment = {
+                        enabled: true,
+                        targets: []
+                    }
                 }
 
                 if (args[1]) args[1] = snowmaker(args[1]);
