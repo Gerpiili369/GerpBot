@@ -1174,9 +1174,19 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     } else reject({});
                 })
                     .then(color => {
-                        settings.servers[serverID].color = color;
-                        updateSettings();
-                        msg(channelID, '', { title: 'Color changed!', color });
+                        if (!settings.servers[serverID].color) settings.servers[serverID].color = {};
+                        settings.servers[serverID].color.value = color;
+
+                        addColorRole(serverID).catch(err => {
+                            if (err.name === 'Missing permissions!') {
+                                msg(channelID, 'Unable to add color role!')
+                                pc.missage(msg, channelID, ['Manage Roles']);
+                            } else logger.error(err, '');
+                        }).then(() => {
+                            updateSettings();
+                            editColor(serverID, '#' + (color || colors.gerp).toString(16));
+                            msg(channelID, '', { title: 'Color changed!', color });
+                        })
                     })
                     .catch(err => msg(channelID, '', {
                         title: err.name || 'Only color you will be seeing is red.',
@@ -1188,22 +1198,28 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (!serverID) return msg(channelID, 'I think that is a bad idea...');
                 if (!admin) return msg(channelID, 'Request denied, not admin!');
 
+                if (!settings.servers[serverID].color) settings.servers[serverID].color = {};
                 if (!settings.servers[serverID].effects) settings.servers[serverID].effects = {
                     rainbow: false, shuffle: false
                 }
 
                 switch (args[0]) {
                     case 'rainbow':
-                        if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_MANAGE_ROLES'))
-                            return pc.missage(msg, channelID, ['Manage Roles']);
-
-                        if (settings.servers[serverID].effects.rainbow) {
-                            settings.servers[serverID].effects.rainbow = false;
-                            msg(channelID, 'Rainbow effect deactivated!');
-                        } else {
-                            settings.servers[serverID].effects.rainbow = true;
-                            msg(channelID, 'Rainbow effect activated!');
-                        }
+                        addColorRole(serverID).then(() => {
+                            if (settings.servers[serverID].effects.rainbow) {
+                                settings.servers[serverID].effects.rainbow = false;
+                                editColor(serverID, '#' + (settings.servers[serverID].color.value || colors.gerp).toString(16));
+                                msg(channelID, 'Rainbow effect deactivated!');
+                            } else {
+                                settings.servers[serverID].effects.rainbow = true;
+                                msg(channelID, 'Rainbow effect activated!');
+                            }
+                            updateSettings();
+                        }).catch(err => {
+                            if (err.name === 'Missing permissions!') {
+                                pc.missage(msg, channelID, ['Manage Roles']);
+                            } else logger.error(err, '');
+                        });
                         break;
                     case 'shuffle':
                         if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_CHANGE_NICKNAME'))
@@ -1428,13 +1444,9 @@ function startLoops() {
             if (i >= rainbowColors.length) i = 0;
 
             for (const server in settings.servers) if (bot.servers[server]) {
-                } else if (
-                    settings.servers[server].roleID &&
-                    bot.servers[server].roles[settings.servers[server].roleID].color !=
-                    (settings.servers[server].color || color.default)
-                ) editColor(server, '#' + (settings.servers[server].color || color.default).toString(16));
                 if (settings.servers[server].effects && settings.servers[server].effects.rainbow) {
                     editColor(server, rainbowColors[i]);
+                }
 
                 if (settings.servers[server].effects && settings.servers[server].effects.shuffle) {
                     let newName = settings.servers[server].nick.split('');
@@ -1543,8 +1555,8 @@ function membersInChannel(channel) {
 function editColor(serverID, color) {
     bot.editRole({
         serverID,
-        roleID: settings.servers[serverID].roleID,
-        color: color
+        roleID: settings.servers[serverID].color.role,
+        color
     }, err => { if (err) logger.error(err, ''); });
 }
 
@@ -1565,6 +1577,46 @@ function getBotRole(serverID) {
         if (bot.servers[serverID].roles[role].name === bot.username) {
             return settings.servers[serverID].roleID = bot.servers[serverID].roles[role].id;
         }
+}
+
+function addColorRole(serverID) {
+    // Check bot's permission to Manage Roles
+    if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_MANAGE_ROLES')) return Promise.reject({
+        name: 'Missing permissions!', message: 'Manage Roles'
+    });
+
+    // Return if role is saved to settings, exists in the server and is assigned to the bot
+    if (settings.servers[serverID].color.role &&
+        bot.servers[serverID].roles[settings.servers[serverID].color.role] &&
+        bot.servers[serverID].members[bot.id].roles.indexOf(settings.servers[serverID].color.role) > 0
+    ) return Promise.resolve(settings.servers[serverID].color.role);
+
+    // Fix the gaps
+    return new Promise((resolve, reject) => {
+        // Find existing role from server
+        for (const role in bot.servers[serverID].roles) {
+            console.log(bot.servers[serverID].roles[role]);
+            if (
+                bot.servers[serverID].roles[role].name === bot.username + ' color' &&
+                bot.servers[serverID].roles[role].position <
+                bot.servers[serverID].roles[settings.servers[serverID].roleID].position
+            ) return resolve(bot.servers[serverID].roles[role].id);
+        }
+
+        // Create a new role for the bot
+        bot.createRole(serverID, (err, res) => err ? reject(err) : bot.editRole({
+            serverID,
+            roleID: res.id,
+            name: bot.username + ' color',
+            color: colors.gerp
+        }, (err, res) => err ? reject(err) : resolve(res.id)));
+    // Assign the found role to the bot
+    }).then(roleID => new Promise((resolve, reject) => bot.addToRole({
+        serverID,
+        userID: bot.id,
+        roleID
+    }, err => err ? reject(err) : resolve(roleID))))
+    .then(roleID => settings.servers[serverID].color.role = roleID);
 }
 
 /**
