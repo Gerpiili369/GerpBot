@@ -68,7 +68,6 @@ bot.on('ready', evt => {
 
     for (const server in bot.servers) {
         if (!settings.servers[server]) settings.servers[server] = {
-            nick: bot.username
         };
 
         for (const role of bot.servers[server].members[bot.id].roles)
@@ -1217,13 +1216,17 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_CHANGE_NICKNAME'))
                             return pc.missage(msg, channelID, ['Change Nickname']);
 
-                        if (settings.servers[serverID].effects.shuffle) {
+                        if (settings.servers[serverID].effects.shuffle) setTimeout(() => {
                             settings.servers[serverID].effects.shuffle = false;
+                            editNick(serverID, settings.servers[serverID].nick)
                             msg(channelID, 'Shuffle effect deactivated!');
-                        } else {
+                        }, 1000);
+                        else {
                             settings.servers[serverID].effects.shuffle = true;
+                            settings.servers[serverID].nick = bot.servers[serverID].members[bot.id].nick || bot.username
                             msg(channelID, 'Shuffle effect activated!');
                         }
+                        updateSettings();
                         break;
                     default:
                         msg(channelID, 'Shuffle or rainbow?');
@@ -1444,7 +1447,7 @@ function startLoops() {
                         a[i] = help;
                     });
                     editNick(server, newName.join(''));
-                } else if (bot.servers[server].members[bot.id].nick && bot.servers[server].members[bot.id].nick != settings.servers[server].nick) editNick(server, settings.servers[server].nick);
+                }
             }
             i++;
         }
