@@ -52,6 +52,9 @@ logger.level = 'debug';
 
 for (const func in snowTime) eval(`${func} = snowTime.${func}`);
 
+if (!settings.servers) settings.servers = {};
+if (!settings.tz) settings.tz = {};
+
 startLoops();
 
 web.activate.then(logger.info);
@@ -59,27 +62,17 @@ web.activate.then(logger.info);
 bot.on('ready', evt => {
     timeOf.connection = Date.now();
 
+    for (const server in bot.servers) if (!settings.servers[server].roleID) getBotRole(server);
+
     updateHelp();
     startIle();
     startReminding();
+    updateSettings();
 
-    if (!settings.tz) settings.tz = {};
-    if (!settings.servers) settings.servers = {};
-
-    for (const server in bot.servers) {
-        if (!settings.servers[server]) settings.servers[server] = {
-        };
-
-        for (const role of bot.servers[server].members[bot.id].roles)
-            if (bot.servers[server].roles[role].name === bot.username)
-                settings.servers[server].roleID = bot.servers[server].roles[role].id;
-    }
     logger.info(startedOnce ? 'Reconnection succesful!' : `${bot.username} (user ${bot.id}) ready for world domination!`);
 
     online = true;
     startedOnce = true;
-    updateSettings();
-
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
@@ -1346,6 +1339,11 @@ bot.on('disconnect', (err, code) => {
 
 // Special events
 bot.on('any', evt => {
+    if (evt.t === 'GUILD_CREATE') {
+        if (!settings.servers[evt.d.id]) settings.servers[evt.d.id] = {};
+        if (online) getBotRole(evt.d.id);
+    }
+
     // Blue Squares game movement
     if (evt.t === 'MESSAGE_REACTION_ADD' && evt.d.user_id != bot.id) bot.getMessage({
         channelID: evt.d.channel_id,
@@ -1560,6 +1558,13 @@ function editNick(serverID, newName) {
         userID: bot.id,
         nick: newName
     }, err => { if (err) logger.error(err, ''); });
+}
+
+function getBotRole(serverID) {
+    for (const role of bot.servers[serverID].members[bot.id].roles)
+        if (bot.servers[serverID].roles[role].name === bot.username) {
+            return settings.servers[serverID].roleID = bot.servers[serverID].roles[role].id;
+        }
 }
 
 /**
