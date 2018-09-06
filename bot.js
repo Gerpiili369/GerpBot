@@ -1242,7 +1242,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         timeOf.lastCommand = Date.now();
     } else {
         // Messages without commands
-        if (serverID && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
+        if (serverID && settings.servers[serverID].autoCompliment && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
             msg(channelID, `<@${userID}> ${objectLib.compliments[Math.floor(Math.random() * objectLib.compliments.length)]}`);
         }
 
