@@ -492,7 +492,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'play':
                 const
                     playNext = stream => {
-                        if (settings.servers[serverID].audio.que.length > 0 && !bot.servers[serverID].stopped) {
+                        if (settings.servers[serverID].audio.que.length > 0 && !bot.servers[serverID].audio.stopped) {
                             const song = settings.servers[serverID].audio.que.shift();
 
                             settings.servers[serverID].audio.channel && msg(settings.servers[serverID].audio.channel, 'Now playing:', {
@@ -513,11 +513,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             ], { stdio: ['pipe', 'pipe', 'ignore'] });
                             bot.servers[serverID].ccp.stdout.once('readable', () => stream.send(bot.servers[serverID].ccp.stdout));
                             bot.servers[serverID].ccp.stdout.once('end', () => {
-                                bot.servers[serverID].playing = false;
+                                bot.servers[serverID].audio.playing = false;
                                 playNext(stream);
-                                bot.servers[serverID].stopped = false;
+                                bot.servers[serverID].audio.stopped = false;
                             });
-                            bot.servers[serverID].playing = song;
+                            bot.servers[serverID].audio.playing = song;
                             updateSettings();
                         } else bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
                     },
@@ -585,7 +585,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         break;
                     case 'skip': case 'stop':
                         if (bot.servers[serverID].ccp) {
-                            if (args[0] === 'stop') bot.servers[serverID].stopped = true;
+                            if (args[0] === 'stop') bot.servers[serverID].audio.stopped = true;
                             bot.servers[serverID].ccp.kill();
                             msg(settings.servers[serverID].audio.channel || channelID, args[0] === 'skip' ? 'Skipped!' : 'Stopped!');
                         } else {
@@ -607,10 +607,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         });
 
                         if (ale.fields.length > 0) ale.title = 'Queued songs:';
-                        if (bot.servers[serverID].playing) {
-                            ale.title = 'Current song: ' + bot.servers[serverID].playing.title;
-                            ale.description = `Requested by: <@${bot.servers[serverID].playing.request.id}>\n${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(bot.servers[serverID].playing.request.time))}.`;
-                            ale.thumbnail = { url: bot.servers[serverID].playing.thumbnail };
+                        if (bot.servers[serverID].audio.playing) {
+                            ale.title = 'Current song: ' + bot.servers[serverID].audio.playing.title;
+                            ale.description = `Requested by: <@${bot.servers[serverID].audio.playing.request.id}>\n${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(bot.servers[serverID].audio.playing.request.time))}.`;
+                            ale.thumbnail = { url: bot.servers[serverID].audio.playing.thumbnail };
 
                             if (ale.fields.length > 0) ale.description += '\n\n**Queued songs:**';
                         }
@@ -666,7 +666,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             .catch(reject);
                     }))
                     .then(result => {
-                        bot.servers[serverID].playing ? result.action = 'current' : playNext(result.stream);
+                        bot.servers[serverID].audio.playing ? result.action = 'current' : playNext(result.stream);
                         if (settings.servers[serverID].audio.que.length > 0) msg(channelID, `Playing ${result.action}`);
                         else msg(channelID, 'No songs queued right now.');
                     })
