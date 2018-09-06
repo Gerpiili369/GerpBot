@@ -68,10 +68,6 @@ bot.on('ready', evt => {
 
     for (const server in bot.servers) {
         if (!settings.servers[server]) settings.servers[server] = {
-            effects: {
-                rainbow: false,
-                shuffle: false
-            },
             nick: bot.username
         };
 
@@ -1200,6 +1196,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (!serverID) return msg(channelID, 'I think that is a bad idea...');
                 if (!admin) return msg(channelID, 'Request denied, not admin!');
 
+                if (!settings.servers[serverID].effects) settings.servers[serverID].effects = {
+                    rainbow: false, shuffle: false
+                }
+
                 switch (args[0]) {
                     case 'rainbow':
                         if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_MANAGE_ROLES'))
@@ -1446,15 +1446,15 @@ function startLoops() {
             if (i >= rainbowColors.length) i = 0;
 
             for (const server in settings.servers) if (bot.servers[server]) {
-                if (settings.servers[server].effects.rainbow) {
                     editColor(server, colors[i]);
                 } else if (
                     settings.servers[server].roleID &&
                     bot.servers[server].roles[settings.servers[server].roleID].color !=
                     (settings.servers[server].color || color.default)
                 ) editColor(server, '#' + (settings.servers[server].color || color.default).toString(16));
+                if (settings.servers[server].effects && settings.servers[server].effects.rainbow) {
 
-                if (settings.servers[server].effects.shuffle) {
+                if (settings.servers[server].effects && settings.servers[server].effects.shuffle) {
                     let newName = settings.servers[server].nick.split('');
                     newName.forEach((v, i, a) => {
                         random = Math.floor(Math.random() * a.length);
