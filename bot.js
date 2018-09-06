@@ -1446,13 +1446,13 @@ function startLoops() {
             if (i >= rainbowColors.length) i = 0;
 
             for (const server in settings.servers) if (bot.servers[server]) {
-                    editColor(server, colors[i]);
                 } else if (
                     settings.servers[server].roleID &&
                     bot.servers[server].roles[settings.servers[server].roleID].color !=
                     (settings.servers[server].color || color.default)
                 ) editColor(server, '#' + (settings.servers[server].color || color.default).toString(16));
                 if (settings.servers[server].effects && settings.servers[server].effects.rainbow) {
+                    editColor(server, rainbowColors[i]);
 
                 if (settings.servers[server].effects && settings.servers[server].effects.shuffle) {
                     let newName = settings.servers[server].nick.split('');
