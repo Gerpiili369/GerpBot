@@ -1597,7 +1597,6 @@ function addColorRole(serverID) {
     return new Promise((resolve, reject) => {
         // Find existing role from server
         for (const role in bot.servers[serverID].roles) {
-            console.log(bot.servers[serverID].roles[role]);
             if (
                 bot.servers[serverID].roles[role].name === bot.username + ' color' &&
                 bot.servers[serverID].roles[role].position <
