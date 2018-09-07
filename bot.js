@@ -1227,19 +1227,19 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             settings.servers[serverID].effects.shuffle = false;
                             editNick(serverID, settings.servers[serverID].nick)
                             msg(channelID, 'Shuffle effect deactivated!');
+                            updateSettings();
                         }, 1000);
                         else {
                             settings.servers[serverID].effects.shuffle = true;
                             settings.servers[serverID].nick = bot.servers[serverID].members[bot.id].nick || bot.username
                             msg(channelID, 'Shuffle effect activated!');
+                            updateSettings();
                         }
-                        updateSettings();
                         break;
                     default:
                         msg(channelID, 'Shuffle or rainbow?');
                         break;
                 }
-                updateSettings();
                 break;
             default:
                 if (message.indexOf('?') != -1 && (!serverID || !settings.servers[serverID].disableAnswers)) {
