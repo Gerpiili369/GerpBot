@@ -49,6 +49,14 @@ module.exports = bot => ({
 
         return hasPerm;
     },
+    multiPerm: function (serverID, user = bot.id, perms = [], channelID = '') {
+        return new Promise((resolve, reject) => {
+            const missing = [];
+            for (const perm of perms) if (!this.userHasPerm(serverID, user, perm, channelID)) missing.push(perm);
+            if (missing.length === 0) resolve(perms);
+            else reject(missing);
+        })
+    },
     missage: function (msg, channelID, perms = []) {
         if (this.userHasPerm(bot.channels[channelID].guild_id, bot.id, 'TEXT_EMBED_LINKS', channelID)) {
             msg(channelID, '', {
