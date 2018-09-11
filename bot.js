@@ -616,42 +616,42 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     'VOICE_SPEAK',
                 ], bot.servers[serverID].members[userID].voice_channel_id)
                     .then(() => joinVoice()
-                    .then(getStream)
-                    .then(stream => new Promise((resolve, reject) => {
-                        new Promise(resolveWithSong => {
-                            if (evt.d.attachments.length === 1) resolveWithSong({
-                                id: evt.d.attachments[0].id,
-                                title: evt.d.attachments[0].filename,
-                                description: 'File uploaded by ' + user,
-                                thumbnail: `https://cdn.discordapp.com/avatars/${userID}/${bot.users[userID].avatar}.png`,
-                                published: sfToDate(evt.d.attachments[0].id),
-                                channel: {
-                                    id: channelID,
-                                    Title: bot.channels[channelID].name
-                                },
-                                request: {
-                                    id: userID,
-                                    time: Date.now()
-                                },
-                                url: evt.d.attachments[0].url
-                            })
-                            else if (!config.auth.tubeKey) msg(channelID, 'YouTube API key not found!');
-                            else if (args[0]) resolveWithSong(searchSong(args));
-                            else resolve({ stream, action: 'next in queue' })
+                        .then(getStream)
+                        .then(stream => new Promise((resolve, reject) => {
+                            new Promise(resolveWithSong => {
+                                if (evt.d.attachments.length === 1) resolveWithSong({
+                                    id: evt.d.attachments[0].id,
+                                    title: evt.d.attachments[0].filename,
+                                    description: 'File uploaded by ' + user,
+                                    thumbnail: `https://cdn.discordapp.com/avatars/${userID}/${bot.users[userID].avatar}.png`,
+                                    published: sfToDate(evt.d.attachments[0].id),
+                                    channel: {
+                                        id: channelID,
+                                        Title: bot.channels[channelID].name
+                                    },
+                                    request: {
+                                        id: userID,
+                                        time: Date.now()
+                                    },
+                                    url: evt.d.attachments[0].url
+                                })
+                                else if (!config.auth.tubeKey) msg(channelID, 'YouTube API key not found!');
+                                else if (args[0]) resolveWithSong(searchSong(args));
+                                else resolve({ stream, action: 'next in queue' })
 
-                        })
-                            .then(queueSong)
-                            .then(() => resolve({ stream, action: 'requested' }))
-                            .catch(reject);
-                    }))
-                    .then(result => {
-                        bot.servers[serverID].playing ? result.action = 'current' : playNext(result.stream);
-                        if (settings.servers[serverID].audio.que.length > 0) msg(channelID, `Playing ${result.action}`);
-                        else msg(channelID, 'No songs queued right now.');
-                    }),
-                missing => pc.missage(msg, channelID, missing)
-            )
-            .catch(err => err.type === 'msg' ? msg(channelID, '', { title: err.name, description: err.message, color: colors.error }) : logger.error(err, ''));
+                            })
+                                .then(queueSong)
+                                .then(() => resolve({ stream, action: 'requested' }))
+                                .catch(reject);
+                        }))
+                        .then(result => {
+                            bot.servers[serverID].playing ? result.action = 'current' : playNext(result.stream);
+                            if (settings.servers[serverID].audio.que.length > 0) msg(channelID, `Playing ${result.action}`);
+                            else msg(channelID, 'No songs queued right now.');
+                        }),
+                    missing => pc.missage(msg, channelID, missing)
+                )
+                .catch(err => err.type === 'msg' ? msg(channelID, '', { title: err.name, description: err.message, color: colors.error }) : logger.error(err, ''));
                 break;
             case 'bs':
                 if (!config.canvasEnabled) return msg(channelID, 'Bot owner has not enabled this feature.');
