@@ -1,7 +1,7 @@
 const permDic = require('discord.io').Permissions;
 
 module.exports = bot => ({
-    userHasPerm: function (serverID, user = bot.id, perm = 'admin', channelID = '') {
+    userHasPerm: function (serverID, user = bot.id, perm = 'GENERAL_ADMINISTRATOR', channelID = '') {
         // Owner override
         if (user == bot.servers[serverID].owner_id) return true;
 
