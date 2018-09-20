@@ -1,6 +1,32 @@
 const permDic = require('discord.io').Permissions;
 
 module.exports = bot => ({
+    roleHasPerm: function (serverID, role, perm = 'GENERAL_ADMINISTRATOR', channelID = '') {
+        // Admin override
+        if (bot.servers[serverID].roles[role]._permissions.toString(2).split('').reverse()[3] == 1) return true;
+
+        const permdex = permDic[perm];
+        let hasPerm = false
+
+        // Server everyone permissions
+        if (bot.servers[serverID].roles[serverID]._permissions.toString(2).split('').reverse()[permdex] == 1) hasPerm = true;
+
+        // Server role permissions
+        if (bot.servers[serverID].roles[role]._permissions.toString(2).split('').reverse()[permdex] == 1) hasPerm = true;
+        // Channel role permissions
+        if (channelID) {
+            // Channel role deny
+            if (bot.channels[channelID].permissions.role[role].deny.toString(2).split('').reverse()[permdex] == 1) {
+                hasPerm = false;
+            }
+            // Channel role allow
+            if (bot.channels[channelID].permissions.role[role].allow.toString(2).split('').reverse()[permdex] == 1) {
+                hasPerm = true;
+            }
+        }
+
+        return hasPerm;
+    },
     userHasPerm: function (serverID, user = bot.id, perm = 'GENERAL_ADMINISTRATOR', channelID = '') {
         // Owner override
         if (user == bot.servers[serverID].owner_id) return true;
@@ -13,8 +39,8 @@ module.exports = bot => ({
         // Server role permissions
         for (const role of bot.servers[serverID].members[user].roles) {
             // Admin override
-            if (bot.servers[serverID].roles[role]._permissions.toString(2).split('').reverse()[3] == 1) return true;
-            if (bot.servers[serverID].roles[role]._permissions.toString(2).split('').reverse()[permdex] == 1) hasPerm = true;
+            if (this.roleHasPerm(serverID, role)) return true;
+            if (this.roleHasPerm(serverID, role, perm)) hasPerm = true;
         }
 
         if (bot.channels[channelID]) {
