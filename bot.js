@@ -102,7 +102,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
 
-                objectLib.help.color = serverID ? bot.servers[serverID].members[userID].color : colors.gerp;
+                objectLib.help.color = getColor(serverID, userID);
+                objectLib.help.image.url = `https://img.shields.io/badge/bot-${bot.username.replace(' ', '_')}-${fillHex(getColor(serverID, userID).toString(16))}.png`;
+                console.log(objectLib.help.image.url);
                 msg(channelID, 'Some commands:', objectLib.help);
                 break;
             case 'server':
@@ -1659,6 +1661,26 @@ function addColorRole(serverID) {
         roleID
     }, err => err ? reject(err) : resolve(roleID))))
     .then(roleID => settings.servers[serverID].color.role = roleID);
+}
+
+function getColor(serverID, userID) {
+    if (serverID && settings.servers[serverID].color) return settings.servers[serverID].color.value
+    if (serverID && bot.servers[serverID].members[userID].color) return bot.servers[serverID].members[userID].color
+    return colors.gerp
+}
+
+function fillHex(str) {
+    return (
+        `${str}`.length > 1 ? (
+            `${str}`.length > 2 ? (
+                `${str}`.length > 3 ? (
+                    `${str}`.length > 4 ? (
+                        `${str}`.length > 5 ? '' : '0'
+                    ) : '00'
+                ) : '000'
+            ) : '0000'
+        ) : '00000'
+    ) + str
 }
 
 /**
