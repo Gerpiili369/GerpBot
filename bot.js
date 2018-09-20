@@ -176,6 +176,49 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 msg(channelID, 'Here you go:', ie);
                 break;
+            case 'channel':
+                if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
+                    return pc.missage(msg, channelID, ['Embed Links']);
+
+                if (args[0]) {
+                    args[0] = snowmaker(args[0]);
+                    if (!bot.channels[args[0]]) return msg(channelID, 'Channel not found!');
+                }
+
+                const ci = {
+                    id: args[0] || channelID,
+                    serverID: bot.channels[args[0] || channelID].guild_id,
+                    age: calculateUptime(sfToDate(args[0] || channelID))
+                };
+
+                const ce = {
+                    title: `Information about "#${bot.channels[ci.id].name}"`,
+                    description: (bot.channels[ci.id].topic ? `**Topic:** ${bot.channels[ci.id].topic}\n` : '') +
+                        `**Server:** ${bot.servers[ci.serverID].name}\n` +
+                        (bot.channels[ci.id].parent_id ? `**Channel group:** \`${bot.channels[bot.channels[ci.id].parent_id].name.toUpperCase()}\`\n` : '') +
+                        `**Channel created:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ci.id))}\`\n` +
+                        `**Age:** \`${uptimeToString(ci.age)}\``,
+                    color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
+                };
+
+                if (bot.channels[ci.id].nsfw) ce.description += `\n*Speaking of age, this channel is marked as NSFW, you have been warned.*`
+
+                ce.description += '\n**Members:** ';
+                if (
+                    Object.keys(bot.channels[ci.id].permissions.user).length > 0 ||
+                    Object.keys(bot.channels[ci.id].permissions.role).length > 0
+                ) {
+                    ci.members = membersInChannel(ci.id);
+
+                    if (ci.members.length !== Object.keys(bot.servers[ci.serverID].members).length)
+                        for (const user of ci.members) ce.description += `<@${user}>`;
+                    else ce.description += ' @everyone';
+                } else ce.description += ' @everyone';
+
+                ce.description += '\n';
+
+                msg(channelID, 'channel info', ce);
+                break;
             case 'user':
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);

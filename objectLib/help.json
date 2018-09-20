@@ -21,6 +21,10 @@
             "value": "Gives information about the server."
         },
         {
+            "name":"`@GerpBot channel [<#channel>]`",
+            "value":"Gives information about the channel"
+        },
+        {
             "name": "`@GerpBot user <@mention>`",
             "value": "Gives information about an user."
         },
