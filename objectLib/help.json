@@ -26,11 +26,11 @@
         },
         {
             "name": "`@GerpBot user <@mention>`",
-            "value": "Gives information about an user."
+            "value": "Gives information about the user."
         },
         {
             "name": "`@GerpBot role <@role>`",
-            "value": "Gives information about a role."
+            "value": "Gives information about the role."
         },
         {
             "name": "`@GerpBot raffle [everyone|here|<@role>] [<number of winners>]`",
