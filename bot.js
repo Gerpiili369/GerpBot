@@ -104,7 +104,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 objectLib.help.color = getColor(serverID, userID);
                 objectLib.help.image.url = `https://img.shields.io/badge/bot-${bot.username.replace(' ', '_')}-${fillHex(getColor(serverID, userID).toString(16))}.png`;
-                console.log(objectLib.help.image.url);
                 msg(channelID, 'Some commands:', objectLib.help);
                 break;
             case 'server':
