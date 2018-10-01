@@ -1380,6 +1380,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         }
     }
 
+    // Word detection
+    for (const word of args) {
+        if (word.substring(0, 2) === 'r/') msg(channelID, 'https://reddit.com/' + word);
+    }
+
     /**
      * @arg {String} emoji
      */
