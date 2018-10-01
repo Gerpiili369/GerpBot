@@ -1681,18 +1681,9 @@ function getColor(serverID, userID) {
     return colors.gerp
 }
 
-function fillHex(str) {
-    return (
-        `${str}`.length > 1 ? (
-            `${str}`.length > 2 ? (
-                `${str}`.length > 3 ? (
-                    `${str}`.length > 4 ? (
-                        `${str}`.length > 5 ? '' : '0'
-                    ) : '00'
-                ) : '000'
-            ) : '0000'
-        ) : '00000'
-    ) + str
+function fillHex(str, l = 6) {
+    while (`${str}`.length < l) str = '0' + str;
+    return str;
 }
 
 /**
