@@ -33,6 +33,10 @@
             "value": "Gives information about the role."
         },
         {
+            "name": "`@GerpBot osu <user>`",
+            "value": "Check osu! user's profile."
+        },
+        {
             "name": "`@GerpBot raffle [everyone|here|<@role>] [<number of winners>]`",
             "value": "Randomly selects users from given category."
         },

@@ -16,6 +16,7 @@ const
     web = require('./scripts/web.js'),
     bs = config.canvasEnabled ? require('./scripts/bs.js') : null,
     Ile = require('./scripts/ile.js'),
+    osu = require('./scripts/osu.js');
     permCheck = require('./scripts/permCheck.js'),
     // load objectLib
     objectLib = getJSON([
@@ -319,6 +320,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                     msg(channelID, 'Here is the gang:', re);
                 } else msg(channelID, 'What is that supposed to be? It is called "role" not "roll"!');
+                break;
+            case 'osu':
+                if (!config.auth.osu) return msg(channelID, 'osu! API key not found!');
+                if (!args[0]) return msg(channelID, 'Please enter username or user ID');
+                osu.getUser(args[0])
+                    .then(embed => msg(channelID, '', embed))
+                    .catch(err => logger.error(err, ''));
                 break;
             case 'raffle':
                 if (!serverID && !bot.channels[snowmaker(args[0])]) {
