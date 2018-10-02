@@ -177,8 +177,8 @@ function modulator(input) {
 }
 
 function dEsc(input) {
-    return input.replace('_', '\\_\\').replace('*', '\\*\\')
-        .replace('`', '\\`\\').replace('~', '\\~\\');
+    return input.replace('_', '\\_').replace('*', '\\*')
+        .replace('`', '\\`').replace('~', '\\~');
 }
 
 function res2json(res, action) {
