@@ -109,7 +109,7 @@ function getUser(user) {
 
             return u.user_id;
         })
-        .then(getUserBest)
+        .then(user => getUserBest(user, 5))
         .then(playsToString)
         .then(playsListStr => {
             if (playsListStr) oue.fields.push({
@@ -118,7 +118,7 @@ function getUser(user) {
             })
             return u.user_id
         })
-        .then(getUserRecentPlays)
+        .then(user => getUserRecentPlays(user, 5))
         .then(playsToString)
         .then(playsListStr => {
             if (playsListStr) oue.fields.push({
@@ -137,13 +137,13 @@ function getMap(id) {
         .then(res => res2json(res, 'beatmap information.'))
 }
 
-function getUserBest(user) {
-    return fetch(endpoint + '/get_user_best?k=' + key + '&u=' + user + '&limit=5')
+function getUserBest(user, limit = 10) {
+    return fetch(endpoint + '/get_user_best?k=' + key + '&u=' + user + '&limit=' + limit)
         .then(res => res2json(res, 'user\'s best performance.'));
 }
 
-function getUserRecentPlays(user) {
-    return fetch(endpoint + '/get_user_recent?k=' + key + '&u=' + user + '&limit=5')
+function getUserRecentPlays(user, limit = 10) {
+    return fetch(endpoint + '/get_user_recent?k=' + key + '&u=' + user + '&limit=' + limit)
         .then(res => res2json(res, 'user\'s recent plays.'));
 }
 
