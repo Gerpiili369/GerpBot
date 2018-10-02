@@ -118,7 +118,9 @@ function getUser(user) {
             })
             return u.user_id
         })
-        .then(user => getUserRecentPlays(user, 5))
+        .then(user => getUserRecentPlays(user, 50))
+        .then(removeFailsFromPlays)
+        .then(removeOlderFromPlays)
         .then(playsToString)
         .then(playsListStr => {
             if (playsListStr) oue.fields.push({
@@ -145,6 +147,18 @@ function getUserBest(user, limit = 10) {
 function getUserRecentPlays(user, limit = 10) {
     return fetch(endpoint + '/get_user_recent?k=' + key + '&u=' + user + '&limit=' + limit)
         .then(res => res2json(res, 'user\'s recent plays.'));
+}
+
+function removeFailsFromPlays(playList) {
+    const playListNew = [];
+    for (const perf of playList) if (perf.rank !== 'F') playListNew.push(perf);
+    return playListNew;
+}
+
+function removeOlderFromPlays(playList, limit = 5) {
+    const playListNew = [];
+    for (let i = 0; i < playList.length && i < limit; i++) playListNew.push(playList[i]);
+    return playListNew;
 }
 
 function playsToString(playList) {
