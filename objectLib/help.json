@@ -1,128 +1,255 @@
 {
-    "color": 16738816,
-    "thumbnail": {
-        "url": ""
+    "main": {
+        "title": "GerpBot",
+        "description": "List of commands. Use `@GerpBot help <command>` for more details.",
+        "url": "https://github.com/Gerpiili369/GerpBot",
+        "footer": {
+            "text": "<footer content here>"
+        },
+        "fields": [
+            {
+                "name": "`@GerpBot help`",
+                "value": "Displays this message."
+            },
+            {
+                "name": "`@GerpBot server`",
+                "value": "Gives information about the server."
+            },
+            {
+                "name":"`@GerpBot channel`",
+                "value":"Gives information about the channel"
+            },
+            {
+                "name": "`@GerpBot user`",
+                "value": "Gives information about the user."
+            },
+            {
+                "name": "`@GerpBot role`",
+                "value": "Gives information about the role."
+            },
+            {
+                "name": "`@GerpBot osu`",
+                "value": "Check osu! user's profile."
+            },
+            {
+                "name": "`@GerpBot raffle`",
+                "value": "Randomly selects users from given category."
+            },
+            {
+                "name": "`@GerpBot ping`",
+                "value": "Pong!"
+            },
+            {
+                "name": "`@GerpBot pi`",
+                "value": "Gives you the π."
+            },
+            {
+                "name": "`@GerpBot rng`",
+                "value": "Get a random number (or numbers). Smallest and biggest number as imputs. If only one number is given the other will be 0."
+            },
+            {
+                "name": "`@GerpBot nerfThis`",
+                "value": "Activates D.Va's ultimate ability \"Self destruct\"."
+            },
+            {
+                "name": "`@GerpBot echo`",
+                "value": "GerpBot responds with argument determined message. This command will have **no** issues."
+            },
+            {
+                "name": "`@GerpBot uptime`",
+                "value": "Get uptime since a specific event."
+            },
+            {
+                "name": "`@GerpBot ask`",
+                "value": "Ask anything! Even works without the `ask` -part, if `?` is used instead: `@GerpBot [<question>]... ? [<question>]...`."
+            },
+            {
+                "name": "`@GerpBot vote`",
+                "value": "Starts a vote. A really cool one."
+            },
+            {
+                "name": "`@GerpBot play`",
+                "value": "Adds songs to queue and starts playing. Attachments also supported and must be part of the same message as the command."
+            },
+            {
+                "name": "`@GerpBot music`",
+                "value": "Music commands and control. Use `@GerpBot play` to start playing."
+            },
+            {
+                "name": "`@GerpBot bs`",
+                "value": "Play the Blue Square the Game"
+            },
+            {
+                "name": "`@GerpBot kps`",
+                "value": "Play KPS."
+            },
+            {
+                "name": "`@GerpBot ile`",
+                "value": "For more info: `@GerpBot ile`."
+            },
+            {
+                "name": "`@GerpBot remind`",
+                "value": "Reminds after a specific amount of time or at a specific time. Can be sent to another channel or person (PM). A message can also be displayed."
+            },
+            {
+                "name": "`@GerpBot remind`",
+                "value": "Gives you a list of your reminders or cancel one of your reminders."
+            },
+            {
+                "name": "`@GerpBot timezone`",
+                "value": "Set your timezone for the bot."
+            },
+            {
+                "name": "`@GerpBot autoCompliment`",
+                "value": "Our little secret :3"
+            },
+            {
+                "name": "`@GerpBot shit`",
+                "value": "Makes one role shit."
+            },
+            {
+                "name": "`@GerpBot color`",
+                "value": "Changes bot's color."
+            },
+            {
+                "name": "`@GerpBot effect`",
+                "value": "Toggles GerpBot name effects."
+            },
+            {
+                "name": "Shorter versions of commands are also available:",
+                "value": "`nt` - `nerfThis`\n`ut` - `uptime`\n`tz` - `timezone`\n`aa` - `autoAnswer`\n`ac` - `autoCompliment`"
+            }
+        ]
     },
-    "image": {
-        "url": ""
+    "help": {
+        "title": "Help for `help` -command",
+        "description": "Usage: `@GerpBot help`\nDisplays this message.",
+        "fields": []
     },
-    "title": "GerpBot",
-    "url": "https://github.com/Gerpiili369/GerpBot",
-    "footer": {
-        "text": "<footer content here>"
+    "server": {
+        "title": "Help for `server` -command",
+        "description": "Usage: `@GerpBot server`\nGives information about the server.",
+        "fields": [
+        ]
     },
-    "fields": [
-        {
-            "name": "`@GerpBot help`",
-            "value": "Displays this message."
-        },
-        {
-            "name": "`@GerpBot server`",
-            "value": "Gives information about the server."
-        },
-        {
-            "name":"`@GerpBot channel [<#channel>]`",
-            "value":"Gives information about the channel"
-        },
-        {
-            "name": "`@GerpBot user <@mention>`",
-            "value": "Gives information about the user."
-        },
-        {
-            "name": "`@GerpBot role <@role>`",
-            "value": "Gives information about the role."
-        },
-        {
-            "name": "`@GerpBot osu <user>`",
-            "value": "Check osu! user's profile."
-        },
-        {
-            "name": "`@GerpBot raffle [everyone|here|<@role>] [<number of winners>]`",
-            "value": "Randomly selects users from given category."
-        },
-        {
-            "name": "`@GerpBot ping`",
-            "value": "Pong!"
-        },
-        {
-            "name": "`@GerpBot pi`",
-            "value": "Gives you the π."
-        },
-        {
-            "name": "`@GerpBot rng <number>[..<number>] [<amount>]`",
-            "value": "Get a random number (or numbers). Smallest and biggest number as imputs. If only one number is given the other will be 0."
-        },
-        {
-            "name": "`@GerpBot nerfThis`",
-            "value": "Activates D.Va's ultimate ability \"Self destruct\"."
-        },
-        {
-            "name": "`@GerpBot echo <message>...`",
-            "value": "GerpBot responds with argument determined message. This command will have **no** issues."
-        },
-        {
-            "name": "`@GerpBot uptime startUp | connection | lastCommand`",
-            "value": "Get uptime since a specific event."
-        },
-        {
-            "name": "`@GerpBot ask <question>`",
-            "value": "Ask anything! Even works without the `ask` -part, if `?` is used instead: `@GerpBot [<question>]... ? [<question>]...`."
-        },
-        {
-            "name": "`@GerpBot vote [gold <user>] <emoji1>[=<option1>]...`",
-            "value": "Starts a vote. A really cool one."
-        },
-        {
-            "name": "`@GerpBot play [<keywords>...]`",
-            "value": "Adds songs to queue and starts playing. Attachments also supported and must be part of the same message as the command."
-        },
-        {
-            "name": "`@GerpBot music (cancel <number>) | skip | stop | list | channel`",
-            "value": "Music commands and control. Use `@GerpBot play` to start playing."
-        },
-        {
-            "name": "`@GerpBot bs`",
-            "value": "Play the Blue Square the Game"
-        },
-        {
-            "name": "`@GerpBot kps play | ai | friend <name> | rock | paper | scissors | classic | horror | space | hand | quit`",
-            "value": "Play KPS."
-        },
-        {
-            "name": "`@GerpBot ile join | leave | here | time`",
-            "value": "For more info: `@GerpBot ile`."
-        },
-        {
-            "name": "`@GerpBot remind [<#channel>|<@mention>] (([<amount>](ms|s|min|h|d|y))...|[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]) [<message>]...`",
-            "value": "Reminds after a specific amount of time or at a specific time. Can be sent to another channel or person (PM). A message can also be displayed."
-        },
-        {
-            "name": "`@GerpBot remind list | (cancel <number>)`",
-            "value": "Gives you a list of your reminders or cancel one of your reminders."
-        },
-        {
-            "name": "`@GerpBot timezone +<HH>:<MM> | -<HH>:<MM>`",
-            "value": "Set your timezone for the bot."
-        },
-        {
-            "name": "`@GerpBot autoCompliment sample | on | off | add <@mention> | remove <@mention> | list`",
-            "value": "Our little secret :3"
-        },
-        {
-            "name": "`@GerpBot shit set <@role> | clean`",
-            "value": "Makes one role shit."
-        },
-        {
-            "name": "`@GerpBot color #<hex> | <decimal> | default`",
-            "value": "Changes bot's color."
-        },
-        {
-            "name": "`@GerpBot effect rainbow | shuffle`",
-            "value": "Toggles GerpBot name effects."
-        },
-        {
-            "name": "Shorter versions of commands are also available:",
-            "value": "`nt` - `nerfThis`\n`ut` - `uptime`\n`tz` - `timezone`\n`aa` - `autoAnswer`\n`ac` - `autoCompliment`"
-        }
-    ]
+    "channel": {
+        "title": "Help for `channel` -command",
+        "description": "Usage: `@GerpBot channel [<#channel>]`\nGives information about the channel",
+        "fields": []
+    },
+    "user": {
+        "title": "Help for `user` -command",
+        "description": "Usage: `@GerpBot user <@mention>`\nGives information about the user.",
+        "fields": []
+    },
+    "role": {
+        "title": "Help for `role` -command",
+        "description": "Usage: `@GerpBot role <@role>`\nGives information about the role.",
+        "fields": []
+    },
+    "osu": {
+        "title": "Help for `osu` -command",
+        "description": "Usage: `@GerpBot osu <user>`\nCheck osu! user's profile.",
+        "fields": []
+    },
+    "raffle": {
+        "title": "Help for `raffle` -command",
+        "description": "Usage: `@GerpBot raffle [everyone|here|<@role>] [<number of winners>]`\nRandomly selects users from given category.",
+        "fields": []
+    },
+    "ping" :{
+        "title": "Help for `ping` -command",
+        "description": "Usage: `@GerpBot ping`\nPong!",
+        "fields": []
+    },
+    "pi": {
+        "title": "Help for `pi` -command",
+        "description": "Usage: `GerpBot pi`\nGives you the π.",
+        "fields": []
+    },
+    "rng": {
+        "title": "Help for `rng` -command",
+        "description": "Usage: `@GerpBot rng <number>[..<number>] [<amount>]`\nGet a random number (or numbers). Smallest and biggest number as imputs. If only one number is given the other will be 0.",
+        "fields": []
+    },
+    "nerfThis": {
+        "title": "Help for `nerfThis` -command",
+        "description": "Usage: `@GerpBot nerfThis`\nActivates D.Va's ultimate ability \"Self destruct\".",
+        "fields": []
+    },
+    "echo": {
+        "title": "Help for `echo` -command",
+        "description": "Usage: `@GerpBot echo <message>...`\nGerpBot responds with argument determined message. This command will have **no** issues.",
+        "fields": []
+    },
+    "uptime": {
+        "title": "Help for `uptime` -command",
+        "description": "Usage: `@GerpBot uptime startUp | connection | lastCommand`\nGet uptime since a specific event.",
+        "fields": []
+    },
+    "ask": {
+        "title": "Help for `ask` -command",
+        "description": "Usage: `@GerpBot ask <question>`\nAsk anything! Even works without the `ask` -part, if `?` is used instead: `@GerpBot [<question>]... ? [<question>]...`.",
+        "fields": []
+    },
+    "vote": {
+        "title": "Help for `vote` -command",
+        "description": "Usage: `@GerpBot vote [gold <user>] <emoji1>[=<option1>]...`\nStarts a vote. A really cool one.",
+        "fields": []
+    },
+    "play": {
+        "title": "Help for `play` -command",
+        "description": "Usage: `@GerpBot play [<keywords>...]`\nAdds songs to queue and starts playing. Attachments also supported and must be part of the same message as the command.",
+        "fields": []
+    },
+    "music": {
+        "title": "Help for `music` -command",
+        "description": "Usage: `@GerpBot music (cancel <number>) | skip | stop | list | channel`\nMusic commands and control. Use `@GerpBot play` to start playing.",
+        "fields": []
+    },
+    "bs": {
+        "title": "Help for `bs` -command",
+        "description": "Usage: `GerpBot bs`\nPlay the Blue Square the Game",
+        "fields": []
+    },
+    "kps": {
+        "title": "Help for `kps` -command",
+        "description": "Usage: `@GerpBot kps play | ai | friend <name> | rock | paper | scissors | classic | horror | space | hand | quit`\nPlay KPS.",
+        "fields": []
+    },
+    "ile": {
+        "title": "Help for `ile` -command",
+        "description": "Usage: `@GerpBot ile join | leave | here | time`\nFor more info: `@GerpBot ile`.",
+        "fields": []
+    },
+    "remind": {
+        "title": "Help for `remind` -command",
+        "description": "Usage: `@GerpBot remind [<#channel>|<@mention>] (([<amount>](ms|s|min|h|d|y))...|[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]) [<message>]...`\nReminds after a specific amount of time or at a specific time. Can be sent to another channel or person (PM). A message can also be displayed.\nUsage: `@GerpBot remind list | (cancel <number>)`\nGives you a list of your reminders or cancel one of your reminders.",
+        "fields": []
+    },
+    "timezone": {
+        "title": "Help for `timezone` -command",
+        "description": "Usage: `@GerpBot timezone +<HH>:<MM> | -<HH>:<MM>`\nSet your timezone for the bot.",
+        "fields": []
+    },
+    "autoCompliment": {
+        "title": "Help for `autoCompliment` -command",
+        "description": "Usage: Bot autoCompliment sample | on | off | add <@mention> | remove <@mention> | list`\nOur little secret :3",
+        "fields": []
+    },
+    "shit": {
+        "title": "Help for `shit` -command",
+        "description": "Usage: `@GerpBot shit set <@role> | clean`\nMakes one role shit.",
+        "fields": []
+    },
+    "color": {
+        "title": "Help for `color` -command",
+        "description": "Usage: `@GerpBot color #<hex> | <decimal> | default`\nChanges bot's color.",
+        "fields": []
+    },
+    "effect": {
+        "title": "Help for `effect` -command",
+        "description": "Usage: `@GerpBot effect rainbow | shuffle`\nToggles GerpBot name effects.",
+        "fields": []
+    }
 }

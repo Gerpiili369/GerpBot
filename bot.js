@@ -102,10 +102,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'help':
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
-
-                objectLib.help.color = getColor(serverID, userID);
-                objectLib.help.image.url = `https://img.shields.io/badge/bot-${bot.username.replace(' ', '_')}-${fillHex(getColor(serverID, userID).toString(16))}.png`;
-                msg(channelID, 'Some commands:', objectLib.help);
+                const help = (args[0] && objectLib.help[args[0]]) || objectLib.help.main;
+                help.color = getColor(serverID, userID);
+                help.image = {
+                    url: `https://img.shields.io/badge/bot-${bot.username.replace(' ', '_')}-${fillHex(getColor(serverID, userID).toString(16))}.png`
+                };
+                msg(channelID, '', help);
                 break;
             case 'server':
                 if (!serverID) return msg(channelID, 'This is a private conversation!');
@@ -1474,10 +1476,14 @@ function msg(channel, msg, embed) {
 }
 
 function updateHelp() {
-    objectLib.help.thumbnail.url = `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`;
-    for (const field of objectLib.help.fields) {
-        field.name = field.name.replace('GerpBot', bot.username);
-        field.value = field.value.replace('GerpBot', bot.username);
+    for (const page in objectLib.help) {
+        if (!objectLib.help[page].thumbnail) objectLib.help[page].thumbnail = {
+            url: `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`
+        };
+        for (const field of objectLib.help[page].fields) {
+            field.name = field.name.replace('GerpBot', bot.username);
+            field.value = field.value.replace('GerpBot', bot.username);
+        }
     }
 }
 
