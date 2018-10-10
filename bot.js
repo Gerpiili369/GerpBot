@@ -324,6 +324,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID, 'What is that supposed to be? It is called "role" not "roll"!');
                 break;
             case 'osu':
+                if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
+                    return pc.missage(msg, channelID, ['Embed Links']);
                 if (!config.auth.osu) return msg(channelID, 'osu! API key not found!');
                 if (!args[0]) return msg(channelID, 'Please enter username or user ID');
                 osu.getUser(args[0])
@@ -1146,6 +1148,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     case 'list':
                         let list = []
                         settings.servers[serverID].autoCompliment.targets.forEach((v, i) => list[i] = `<@${v}>`)
+
+                        if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
+                            return msg(channelID, list.join('\n'));
+
                         msg(channelID, '', {
                             title: 'List of cool people:',
                             description: list.join('\n'),
@@ -1189,7 +1195,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     break;
                 }
 
-                if (admin) {
+                if (admin) pc.multiPerm(serverID, bot.id, [
+                    'TEXT_READ_MESSAGE_HISTORY',
+                    'TEXT_ADD_REACTIONS'
+                ], channelID).then(() => {
                     switch (args[0]) {
                         case 'set':
                             if (args[1]) {
@@ -1209,7 +1218,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             break;
                     }
                     updateSettings();
-                } else msg(channelID, 'Request denied, not admin.');
+                }, missing => pc.missage(msg, channelID, missing)).catch(err => logger.error(err, ''));
+                else msg(channelID, 'Request denied, not admin.');
                 break;
             case 'color':
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
