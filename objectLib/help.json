@@ -16,8 +16,8 @@
                 "value": "Gives information about the server."
             },
             {
-                "name":"`@GerpBot channel`",
-                "value":"Gives information about the channel"
+                "name": "`@GerpBot channel`",
+                "value": "Gives information about the channel."
             },
             {
                 "name": "`@GerpBot user`",
@@ -33,7 +33,7 @@
             },
             {
                 "name": "`@GerpBot raffle`",
-                "value": "Randomly selects users from given category."
+                "value": "Randomly selects user(s) from given category."
             },
             {
                 "name": "`@GerpBot ping`",
@@ -45,7 +45,7 @@
             },
             {
                 "name": "`@GerpBot rng`",
-                "value": "Get a random number (or numbers). Smallest and biggest number as inputs. If only one number is given the other will be 0."
+                "value": "Generates a random number(s)."
             },
             {
                 "name": "`@GerpBot nerfThis`",
@@ -53,7 +53,7 @@
             },
             {
                 "name": "`@GerpBot echo`",
-                "value": "GerpBot responds with argument determined message. This command will have **no** issues."
+                "value": "GerpBot responds with the same message. This command will have **no** issues."
             },
             {
                 "name": "`@GerpBot uptime`",
@@ -89,11 +89,7 @@
             },
             {
                 "name": "`@GerpBot remind`",
-                "value": "Reminds after a specific amount of time or at a specific time. Can be sent to another channel or person (PM). A message can also be displayed."
-            },
-            {
-                "name": "`@GerpBot remind`",
-                "value": "Gives you a list of your reminders or cancel one of your reminders."
+                "value": "Add, list and cancel reminders. Details: `@GerpBot help remind`"
             },
             {
                 "name": "`@GerpBot timezone`",
@@ -142,7 +138,7 @@
     },
     "channel": {
         "title": "Help for `channel` -command",
-        "description": "Usage: `@GerpBot channel [<#channel>]`\nGives information about the channel",
+        "description": "Usage: `@GerpBot channel [<#channel>]`\nGives information about the channel.",
         "fields": [
             {
                 "name": "Server only",
@@ -190,7 +186,7 @@
     },
     "raffle": {
         "title": "Help for `raffle` -command",
-        "description": "Usage: `@GerpBot raffle [everyone|here|<@role>] [<number of winners>]`\nRandomly selects users from given category.",
+        "description": "Usage: `@GerpBot raffle [everyone|here|<@role>] [<number of winners>]`\nRandomly selects user(s) from given category.",
         "fields": [
             {
                 "name": "Server only",
@@ -214,8 +210,13 @@
     },
     "rng": {
         "title": "Help for `rng` -command",
-        "description": "Usage: `@GerpBot rng <number>[..<number>] [<amount>]`\nGet a random number (or numbers). Smallest and biggest number as inputs. If only one number is given the other will be 0.",
-        "fields": []
+        "description": "Usage: `@GerpBot rng <number>[..<number>] [<amount>]`\nGet a random number (or numbers). Lowest and highest value as inputs. If only one number is given the result will be between the entered number and zero.",
+        "fields": [
+            {
+                "name": "Examples",
+                "value": "`rng 0..2` number between 0 and 2.\n`rng 10` number between 0 and 10.\n`rng 3..15 8` 8 numbers between 3 and 15.\n`rng -3..6` number between -3 and 6.\n`rng -10 20` 20 numbers between -10 and 0."
+            }
+        ]
     },
     "nerfThis": {
         "title": "Help for `nerfThis` -command",
@@ -223,13 +224,13 @@
         "fields": [
             {
                 "name": "Shortcut",
-                "value": "`@GerpBot nt"
+                "value": "`@GerpBot nt`"
             }
         ]
     },
     "echo": {
         "title": "Help for `echo` -command",
-        "description": "Usage: `@GerpBot echo <message>...`\nGerpBot responds with argument determined message. This command will have **no** issues since they have already been fixed a long time ago.",
+        "description": "Usage: `@GerpBot echo <message>...`\nGerpBot responds with the same message. This command will have **no** issues since they have already been fixed a long time ago.",
         "fields": []
     },
     "uptime": {
@@ -237,20 +238,20 @@
         "description": "Usage: `@GerpBot uptime startUp | connection | lastCommand`\nGet uptime since a specific event.",
         "fields": [
             {
-                "name": "`@GerpBot uptime startUp",
+                "name": "`@GerpBot uptime startUp`",
                 "value": "How long has bot's script been running without a fatal crash."
             },
             {
-                "name": "`@GerpBot uptime connection",
-                "value": "How long has bot been connected Discord without disconnecting."
+                "name": "`@GerpBot uptime connection`",
+                "value": "How long has bot been connected to Discord without disconnecting."
             },
             {
-                "name": "`@GerpBot uptime lastCommand",
+                "name": "`@GerpBot uptime lastCommand`",
                 "value": "How long time ago was the last command used."
             },
             {
                 "name": "Shortcut",
-                "value": "`@GerpBot ut"
+                "value": "`@GerpBot ut`"
             }
         ]
     },
@@ -261,23 +262,19 @@
     },
     "vote": {
         "title": "Help for `vote` -command",
-        "description": "Usage: `@GerpBot vote [gold <user>] <emoji1>[=<option1>]...`\nStarts a vote. A really cool one.",
+        "description": "Usage: `@GerpBot vote [gold <@mention>] <emoji1>[=<option1>]...`\nStarts a vote. A really cool one.",
         "fields": [
             {
-                "name": "Permission info",
-                "value": "`Manage Messages` - required. Vote message will be auto-pinned."
+                "name": "Gold vote",
+                "value": "Optional `[gold <@mention>]` changes vote into a golden weapon vote for the mentioned user."
+            },
+            {
+                "name": "Adding choices",
+                "value": "Add things to vote for with `<emoji1>[=<option1>]...`. Select your favourite emoji(s) and label the choices with descriptive names (optional). Examples: `:thinking:=Genius` or `:ok_hand:`"
             },
             {
                 "name": "Permission info",
-                "value": "`Embed Links` - required. Vote is delivered inside an embed."
-            },
-            {
-                "name": "Permission info",
-                "value": "`Read Message History` - required. Message history needs to be available for the auto-pin and choice auto-add."
-            },
-            {
-                "name": "Permission info",
-                "value": "`Add Reactions` - required. Vote choices are auto-added to vote message."
+                "value": "`Manage Messages` - required. Vote message will be auto-pinned.\n\n`Embed Links` - required. Vote is delivered inside an embed.\n\n`Read Message History` - required. Message history needs to be available for the auto-pin and choice auto-add.\n\n`Add Reactions` - required. Vote choices are auto-added to vote message."
             }
         ]
     },
@@ -295,7 +292,7 @@
             },
             {
                 "name": "Voice channel",
-                "value": "This command only works when you are in a voice channel, which bot can access."
+                "value": "This command only works when you are in a voice channel, which the bot can access."
             },
             {
                 "name": "Server only",
@@ -303,15 +300,7 @@
             },
             {
                 "name": "Permission info",
-                "value": "`View channel` - required. Bot needs to be able to view voice channel before joining. Notice: sometimes called \"Read Messages\""
-            },
-            {
-                "name": "Permission info",
-                "value": "`Connect` - required. Fun fact: you can make bot follow you to another voice channel by re-doing the command. Audio playback will not be interrupted."
-            },
-            {
-                "name": "Permission info",
-                "value": "`Speak` - strongly recommended. How can one play music without voice?"
+                "value": "`View channel` - required. Bot needs to be able to view voice channel before joining. Notice: Sometimes called `Read Messages`.\n\n`Connect` - required. Fun fact: You can make bot follow you to another voice channel by re-doing the command. Audio playback will not be interrupted.\n\n`Speak` - strongly recommended. How can one play music without voice?"
             }
         ]
     },
@@ -325,7 +314,7 @@
             },
             {
                 "name": "`@GerpBot music skip`",
-                "value": "Skips the current song and plays next in queue if available. Don't be mean and skip other people's favourites please."
+                "value": "Skips the current song and plays next in queue if available. Don't be mean and skip other people's favourites, please."
             },
             {
                 "name": "`@GerpBot music stop`",
@@ -355,19 +344,7 @@
         "fields": [
             {
                 "name": "Permission info",
-                "value": "`Manage Messages` - required. Using reactions as controls means that they will have to be auto-removed for smoother usage."
-            },
-            {
-                "name": "Permission info",
-                "value": "`Embed Links` - required. Game area is inside an embed."
-            },
-            {
-                "name": "Permission info",
-                "value": "`Read Message History` - required. Message history needs to be available for the controls (reactions) to be added."
-            },
-            {
-                "name": "Permission info",
-                "value": "`Add Reactions` - required. Controls are auto-added to the embed message."
+                "value": "`Manage Messages` - required. Using reactions as controls means that they will have to be auto-removed for smoother usage.\n\n`Embed Links` - required. Game area is inside an embed.\n\n`Read Message History` - required. Message history needs to be available for the controls (reactions) to be added.\n\n`Add Reactions` - required. Controls are auto-added to the embed message."
             }
         ]
     },
@@ -385,7 +362,7 @@
             },
             {
                 "name": "`@GerpBot kps friend <name>`",
-                "value": "Searches for a friend who needs to be online but cannot be in a match. Discord user's are automatically assigned a name based on their username and discriminator."
+                "value": "Searches for a friend who needs to be online but cannot be in a match. Discord users are automatically assigned a name based on their username and discriminator."
             },
             {
                 "name": "`@GerpBot kps rock`",
@@ -431,7 +408,7 @@
             },
             {
                 "name": "`@GerpBot ile join`",
-                "value": "Allows you to participate, check your DMs."
+                "value": "Allows you to participate. Check your DMs."
             },
             {
                 "name": "`@GerpBot ile leave`",
@@ -449,7 +426,7 @@
     },
     "remind": {
         "title": "Help for `remind` -command",
-        "description": "Usage: `@GerpBot remind [<#channel>|<@mention>] (([<amount>](ms|s|min|h|d|y))...|[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]) [<message>]...`\nReminds after a specific amount of time or at a specific time. Can be sent to another channel or person (PM). A message can also be displayed.\nUsage: `@GerpBot remind list | (cancel <number>)`\nGives you a list of your reminders or cancel one of your reminders.",
+        "description": "Usage: `@GerpBot remind [<#channel>|<@mention>] (([<amount>](ms|s|min|h|d|y))...|[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]) [<message>]...`\nReminds after a specific amount of time or at a specific time. Can be sent to another channel or person (DM). A message can also be displayed.\nUsage: `@GerpBot remind list | (cancel <number>)`\nGives you a list of your reminders or cancel one of your reminders.",
         "fields": [
             {
                 "name": "First part `[<#channel>|<@mention>]`",
@@ -457,7 +434,7 @@
             },
             {
                 "name": "Second part (timer mode) `([<amount>](ms|s|min|h|d|y))...`",
-                "value": "Amount of time before reminder activates. Can have multiple units: `2min 5h`. If no number is added, amount will be one: `1d` is same as `d`."
+                "value": "Amount of time before reminder activates. Can have multiple units: `5h 2min`. If no number is added, amount will be one: `1d` is same as `d`."
             },
             {
                 "name": "Second part (alarm mode) `[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]`",
@@ -499,7 +476,7 @@
             },
             {
                 "name": "Shortcut",
-                "value": "`@GerpBot tz"
+                "value": "`@GerpBot tz`"
             }
         ]
     },
@@ -541,7 +518,7 @@
             },
             {
                 "name": "Shortcut",
-                "value": "`@GerpBot ac"
+                "value": "`@GerpBot ac`"
             }
         ]
     },
@@ -555,7 +532,7 @@
             },
             {
                 "name": "`@GerpBot shit clean`",
-                "value": "Removes current role from shit status."
+                "value": "Removes current role from the shit status."
             },
             {
                 "name": "Permission info",
@@ -607,11 +584,7 @@
             },
             {
                 "name": "Permission info",
-                "value": "`Change Nickname` - required. For nickname change?"
-            },
-            {
-                "name": "Permission info",
-                "value": "`Manage roles` - required. GerpBot will create a role for color effects."
+                "value": "`Change Nickname` - required. For nickname change?\n`Manage roles` - required. GerpBot will create a role for color effects."
             },
             {
                 "name": "Admin only",
