@@ -77,7 +77,7 @@
             },
             {
                 "name": "`@GerpBot bs`",
-                "value": "Play the Blue Square the Game"
+                "value": "Play the Blue Square the Game."
             },
             {
                 "name": "`@GerpBot kps`",
@@ -89,7 +89,7 @@
             },
             {
                 "name": "`@GerpBot remind`",
-                "value": "Add, list and cancel reminders. Details: `@GerpBot help remind`"
+                "value": "Add, list and cancel reminders. Details: `@GerpBot help remind`."
             },
             {
                 "name": "`@GerpBot timezone`",
@@ -97,7 +97,7 @@
             },
             {
                 "name": "`@GerpBot autoCompliment`",
-                "value": "Our little secret :3"
+                "value": "Automatic compliments."
             },
             {
                 "name": "`@GerpBot shit`",
@@ -198,7 +198,7 @@
             }
         ]
     },
-    "ping" :{
+    "ping": {
         "title": "Help for `ping` -command",
         "description": "Usage: `@GerpBot ping`\nPong! Bot go pong when you go ping. Unuseful for ping-pong!",
         "fields": []
