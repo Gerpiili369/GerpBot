@@ -324,7 +324,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else msg(channelID, 'What is that supposed to be? It is called "role" not "roll"!');
                 break;
             case 'osu':
-                if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
+                if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
                 if (!config.auth.osu) return msg(channelID, 'osu! API key not found!');
                 if (!args[0]) return msg(channelID, 'Please enter username or user ID');
