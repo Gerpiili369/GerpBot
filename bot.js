@@ -63,7 +63,7 @@ web.activate.then(logger.info);
 bot.on('ready', evt => {
     timeOf.connection = Date.now();
 
-    updateHelp();
+    updateObjectLib();
     startIle();
     startReminding();
     updateSettings();
@@ -1489,7 +1489,8 @@ function msg(channel, msg, embed) {
     }, err => { if (err) logger.error(err, ''); });
 }
 
-function updateHelp() {
+function updateObjectLib() {
+    // help
     for (const page in objectLib.help) {
         if (!objectLib.help[page].thumbnail) objectLib.help[page].thumbnail = {
             url: `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`
@@ -1498,6 +1499,17 @@ function updateHelp() {
             field.name = field.name.replace('GerpBot', bot.username);
             field.value = field.value.replace('GerpBot', bot.username);
         }
+        objectLib.help[page].description = objectLib.help[page].description.replace('GerpBot', bot.username);
+    }
+
+    // games
+    for (const game in objectLib.games) {
+        objectLib.games[game] = objectLib.games[game].replace('@GerpBot', '@' + bot.username);
+    }
+
+    // defaultRes
+    for (const res in objectLib.defaultRes) {
+        objectLib.defaultRes[res] = objectLib.defaultRes[res].replace('GerpBot', bot.username);
     }
 }
 
