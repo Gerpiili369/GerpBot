@@ -234,23 +234,27 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         break;
                     }
 
-                    let ui = {
+                    const ui = {
                         id: args[0],
                         roles: [],
                         age: calculateUptime(sfToDate(args[0]))
                     };
 
-                    let ue = {
-                        title: `Information about "${bot.users[ui.id].username}#${bot.users[ui.id].discriminator}"`,
-                        description: `**Also known as:** "<@${ui.id}>"\n` +
-                            `**User created:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ui.id))}\`\n` +
-                            `**Age:** \`${uptimeToString(ui.age)}\``,
-                        color: serverID ? bot.servers[serverID].members[ui.id].color : colors.gerp
-                    };
+                    ui.color = serverID ? bot.servers[serverID].members[ui.id].color || colors.gerp : colors.gerp;
 
-                    ue.thumbnail = {
-                        url: `https://cdn.discordapp.com/avatars/${ui.id}/${bot.users[ui.id].avatar}.png`
-                    }
+                    const ue = {
+                        title: `Information about "${ bot.users[ui.id].username }#${ bot.users[ui.id].discriminator }"`,
+                        description: `**Also known as:** "<@${ ui.id }>"\n` +
+                            `**User created:** \`${ timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ui.id)) }\`\n` +
+                            `**Age:** \`${ uptimeToString(ui.age) }\``,
+                        color: ui.color,
+                        thumbnail: {
+                            url: `https://cdn.discordapp.com/avatars/${ ui.id }/${ bot.users[ui.id].avatar }.png`
+                        },
+                        image: {
+                            url: encodeURI(`https://img.shields.io/badge/${ bot.users[ui.id].bot ? 'bot' : 'user' }-${ bot.users[ui.id].username }-${ fillHex(ui.color.toString(16)) }.png`)
+                        }
+                    };
 
                     if (settings.tz[ui.id]) ue.description += `\n**Local time:** \`${timeAt(settings.tz[ui.id])}\``
 
@@ -258,8 +262,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     if (serverID) {
                         ue.timestamp = new Date(bot.servers[serverID].members[ui.id].joined_at);
                         ue.footer = {
-                            icon_url: `https://cdn.discordapp.com/icons/${serverID}/${bot.servers[serverID].icon}.png`,
-                            text: `${bot.users[ui.id].username} joined this server on`
+                            icon_url: `https://cdn.discordapp.com/icons/${ serverID }/${ bot.servers[serverID].icon }.png`,
+                            text: `${ bot.users[ui.id].username } joined this server on`
                         };
 
                         for (const role in bot.servers[serverID].roles)
