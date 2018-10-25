@@ -68,7 +68,7 @@ bot.on('ready', evt => {
     startReminding();
     updateSettings();
 
-    logger.info(startedOnce ? 'Reconnection succesful!' : `${bot.username} (user ${bot.id}) ready for world domination!`);
+    logger.info(startedOnce ? 'Reconnection successful!' : `${bot.username} (user ${bot.id}) ready for world domination!`);
 
     online = true;
     startedOnce = true;
@@ -618,7 +618,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 if (settings.servers[serverID].audio.que[args[1]].request.id == userID) {
                                     settings.servers[serverID].audio.que.splice(args[1], 1);
                                     updateSettings();
-                                    msg(channelID, 'Cancel succesful!');
+                                    msg(channelID, 'Cancel successful!');
                                 } else msg(channelID, 'That\'s not yours!');
                             } else msg(channelID, 'Song doesn\'t exist!');
                         } else msg(channelID, 'Nothing could be cancelled!');
@@ -990,7 +990,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                     delete settings.reminders[args[1]];
                                     clearTimeout(reminderTimeouts[args[1]]);
                                     updateSettings();
-                                    msg(channelID, 'Cancel succesful!');
+                                    msg(channelID, 'Cancel successful!');
                                 } else msg(channelID, 'That\'s not yours!');
                             } else msg(channelID, 'Reminder doesn\'t exist!');
                             break;

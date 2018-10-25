@@ -514,7 +514,7 @@
             },
             {
                 "name": "Admin only",
-                "value": "Only server admins are allowed to use this command. The `sample` -command is an exeption."
+                "value": "Only server admins are allowed to use this command. The `sample` -command is an exception."
             },
             {
                 "name": "Shortcut",

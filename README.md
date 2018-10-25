@@ -1,6 +1,6 @@
 # GerpBot
 GerpBot is a multi-purpose Discord bot.
-## Invite the offical bot
+## Invite the official bot
 - [GerpBot](https://discordapp.com/oauth2/authorize?client_id=388670149127045121&scope=bot&permissions=8):
 Official version using master branch.
 - [GB dev](https://discordapp.com/oauth2/authorize?client_id=423480559730163722&scope=bot&permissions=338783296):
