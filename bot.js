@@ -997,6 +997,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         default:
                             let reminder = {
                                 mentions: '',
+                                links: [],
                                 creator: {
                                     name: user,
                                     id: userID
@@ -1052,7 +1053,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                         reminder.mentions += `<@&${role}>`;
                                     } else if (serverID && bot.servers[serverID].roles[role]) {
                                         reminder.message = reminder.message.replace(arg, `@${bot.servers[serverID].roles[role].name}`);
-                                    }
+                                    } else if (isUrl(arg)) reminder.links.push(arg);
                                 }
                             }
 
@@ -1060,11 +1061,22 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 if (mention.id != bot.id) reminder.mentions += `<@${mention.id}> `;
                             } else reminder.mentions = '';
 
-                            settings.reminders.push(reminder);
-                            updateSettings();
-                            remindTimeout(reminder);
+                            addLatestMsgToEmbed(reminder, channelID)
+                                .then(reminder => {
+                                    if (reminder.image.url) {
+                                        const i = reminder.links.indexOf(reminder.image.url);
+                                        if (i > -1) reminder.links.splice(i, 1);
+                                    }
 
-                            msg(channelID, 'I will remind when the time comes...');
+                                    reminder.fields = [];
+
+                                    settings.reminders.push(reminder);
+                                    updateSettings();
+                                    remindTimeout(reminder);
+
+                                    msg(channelID, 'I will remind when the time comes...');
+                                })
+                                .catch(err => logger.error(err, ''));
                     }
                 } else if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID)) {
                     pc.missage(msg, channelID, ['Embed Links']);
@@ -1618,6 +1630,7 @@ function remindTimeout(reminder, i = settings.reminders.indexOf(reminder)) {
         title: 'Reminder',
         description: reminder.message,
         color: reminder.color,
+        image: reminder.image,
         footer: {
             text: `Created by ${reminder.creator.name}`
         }
@@ -1628,6 +1641,8 @@ function remindTimeout(reminder, i = settings.reminders.indexOf(reminder)) {
         updateSettings();
 
         msg(reminder.channel, reminder.mentions, re);
+
+        if (reminder.links.length > 0) setTimeout(msg, 500, reminder.channel, reminder.links.join('\n'));
     }, reminder.time - Date.now());
 }
 
