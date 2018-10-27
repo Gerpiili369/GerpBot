@@ -1345,28 +1345,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     fields: []
                 };
 
-                bot.getMessages({ channelID, limit: 5 }, (err, msgList) => {
-                    if (err) logger.error(err, '');
-                    else for (const m of msgList) {
-                        let extra = '';
-                        if (!me.image.url) for (const ext of ['.gif', '.jpg', '.jpeg', '.png']) {
-                            if (m.attachments[0] && m.attachments[0].url.indexOf(ext) > -1) {
-                                me.image.url = m.attachments[0].url;
-                                extra = ' (image below)';
-                            } else for (const url of m.content.split(' ')) if (url.indexOf(ext) > -1 && isUrl(url)) {
-                                me.image.url = url;
-                                extra = ' (image below)';
-                            }
-                        }
-
-                        me.fields.push({
-                            name: m.author.username + extra,
-                            value: m.content || '`<attachment>`'
-                        });
-                    }
-                    me.fields.reverse();
-                    msg(channel, 'This channel was mentioned on another channel.', me);
-                });
+                addLatestMsgToEmbed(me, channelID)
+                    .then(me => msg(channel, 'This channel was mentioned on another channel.', me))
+                    .catch(err => logger.error(err, ''));
             }
         }
     }
@@ -1412,6 +1393,36 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         }, err => { if (err) logger.error(err, ''); });
     }
 });
+
+function addLatestMsgToEmbed(me, channelID, limit = 5) {
+    return new Promise((resolve, reject) => {
+        if (!me.fields) me.fields = [];
+        if (!me.image) me.image = {};
+
+        bot.getMessages({ channelID, limit }, (err, msgList) => {
+            if (err) reject(err);
+            else for (const m of msgList) {
+                let extra = '';
+                if (!me.image.url) for (const ext of ['.gif', '.jpg', '.jpeg', '.png']) {
+                    if (m.attachments[0] && m.attachments[0].url.indexOf(ext) > -1) {
+                        me.image.url = m.attachments[0].url;
+                        extra = ' (image below)';
+                    } else for (const url of m.content.split(' ')) if (url.indexOf(ext) > -1 && isUrl(url)) {
+                        me.image.url = url;
+                        extra = ' (image below)';
+                    }
+                }
+
+                me.fields.push({
+                    name: m.author.username + extra,
+                    value: m.content || '`<attachment>`'
+                });
+            }
+            me.fields.reverse();
+            resolve(me);
+        });
+    });
+}
 
 bot.on('disconnect', (err, code) => {
     online = false;
