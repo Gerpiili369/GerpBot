@@ -369,11 +369,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 }
                 if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
+                let target = args[0], raffleList = [], winnerAmt = args[1];
+                if (!target) target = 'everyone';
 
-                if (!args[0]) args[0] = 'everyone';
-                let raffleList = [];
-
-                switch (args[0]) {
+                switch (target) {
                     case 'everyone':
                     case '@everyone':
                         raffleList = Object.keys(bot.servers[serverID].members)
@@ -386,25 +385,25 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         }
                         break;
                     default:
-                        args[0] = snowmaker(args[0]);
+                        target = snowmaker(target);
 
-                        if (serverID && bot.servers[serverID].roles[args[0]]) {
+                        if (serverID && bot.servers[serverID].roles[target]) {
                             for (const member in bot.servers[serverID].members) {
-                                if (bot.servers[serverID].members[member].roles.indexOf(bot.servers[serverID].roles[args[0]].id) != -1) raffleList.push(member);
+                                if (bot.servers[serverID].members[member].roles.indexOf(bot.servers[serverID].roles[target].id) != -1) raffleList.push(member);
                             }
-                        } else if (bot.channels[args[0]]) {
-                            raffleList = membersInChannel(args[0]);
+                        } else if (bot.channels[target]) {
+                            raffleList = membersInChannel(target);
                         } else {
                             msg(channelID, 'Role or channel not found!');
                             return;
                         }
                 }
 
-                if (args[1] && !isNaN(args[1]));
-                else args[1] = 1;
+                if (winnerAmt && !isNaN(winnerAmt));
+                else winnerAmt = 1;
 
                 let winners = [];
-                for (let i = 0; i < args[1]; i++) {
+                for (let i = 0; i < winnerAmt; i++) {
                     winners = winners.concat(raffleList.splice(Math.floor(Math.random() * raffleList.length), 1));
                 }
 
@@ -414,16 +413,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp,
                 }
 
-                if (bot.channels[args[0]] && (!serverID || bot.channels[args[0]].guild_id != serverID)) {
                     for (const winner of winners) re.description += `\n${bot.users[winner].username}`;
+                if (bot.channels[target] && (!serverID || bot.channels[target].guild_id != serverID)) {
                 } else {
                     for (const winner of winners) re.description += `\n<@${winner}>`;
                 }
 
                 if (winners.length === 1) {
                     re.title = 'Winner';
-                    if (bot.channels[args[0]]) {
-                        re.color = bot.servers[bot.channels[args[0]].guild_id].members[winners[0]].color;
+                    if (bot.channels[target]) {
+                        re.color = bot.servers[bot.channels[target].guild_id].members[winners[0]].color;
                     } else {
                         re.color = bot.servers[serverID].members[winners[0]].color;
                     }
@@ -1416,8 +1415,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     }
 
     // Word detection
-    for (const word of args) {
-        if (word.substring(0, 2) === 'r/') msg(channelID, 'https://reddit.com/' + word);
+    for (let word of args) {
+        if (`${word}`.substring(0, 2) === 'r/') msg(channelID, 'https://reddit.com/' + word);
     }
 
     /**
