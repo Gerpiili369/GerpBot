@@ -331,10 +331,36 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
                 if (!config.auth.osu) return msg(channelID, 'osu! API key not found!');
-                if (!args[0]) return msg(channelID, 'Please enter username or user ID');
-                osu.getUser(args[0])
-                    .then(embed => msg(channelID, '', embed))
-                    .catch(err => logger.error(err, ''));
+
+                switch (args.length) {
+                    case 0:
+                        msg(channelID, 'Please enter username or user ID');
+                        break;
+                    case 1:
+                        osu.getUser(args[0])
+                            .then(embed => msg(channelID, '', embed))
+                            .catch(err => logger.error(err, ''));
+                        break;
+                    case 2:
+                        if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_ATTACH_FILES', channelID))
+                            return pc.missage(msg, channelID, ['Attach Files']);
+                        osu.getBestReplay(...args)
+                            .then(file => bot.uploadFile({
+                                to: channelID,
+                                file: file.toBuffer(),
+                                filename: `replay-osu_${args[0]}.osr`,
+                                message: 'Here is some top play action!'
+                            }, (err, res) => {
+                                if (err) logger.error(err, '');
+                            }))
+                            .catch(err => msg(channelID, '', {
+                                title: err.name,
+                                description: err.message,
+                                color: colors.error
+                            }));
+                    default:
+
+                }
                 break;
             case 'raffle':
                 if (!serverID && !bot.channels[snowmaker(args[0])]) {

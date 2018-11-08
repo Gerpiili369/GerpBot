@@ -19,6 +19,12 @@ const
 
 module.exports = {
     getUser,
+    getBestReplay: require('./osuBestReplay.js')({
+        getUser,
+        getMap,
+        getUserBest,
+        getReplayData
+    })
 };
 
 function getUser(user) {
@@ -147,6 +153,11 @@ function getUserBest(user, limit = 10) {
 function getUserRecentPlays(user, limit = 10) {
     return fetch(endpoint + '/get_user_recent?k=' + key + '&u=' + user + '&limit=' + limit)
         .then(res => res2json(res, 'user\'s recent plays.'));
+}
+
+function getReplayData(user, mapId, mode = 0) {
+    return fetch(endpoint + '/get_replay?k=' + key + '&m=' + mode + '&b=' + mapId + '&u=' + user)
+        .then(res => res2json(res, 'replay data.'));
 }
 
 function removeFailsFromPlays(playList) {

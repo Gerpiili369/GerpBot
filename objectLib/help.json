@@ -176,11 +176,19 @@
     },
     "osu": {
         "title": "Help for `osu` -command",
-        "description": "Usage: `@GerpBot osu <user>`\nCheck osu! user's profile.",
+        "description": "Usage: `@GerpBot osu <user> [<playNumber>]`\nCheck osu! user's profile or download replays.",
         "fields": [
             {
+                "name": "`@GerpBot osu <username>`",
+                "value": "Shows almost everything you need from osu! user's profile."
+            },
+            {
+                "name": "`@GerpBot osu <username> <playNumber>`",
+                "value": "Download replay (.osr -file) for one of users's best performances."
+            },
+            {
                 "name": "Permission info",
-                "value": "`Embed Links` - required. Osu! information is delivered inside an embed."
+                "value": "`Embed Links` - required. Osu! information is delivered inside an embed.\n`Attach Files` - optional. Required for replay download."
             }
         ]
     },
