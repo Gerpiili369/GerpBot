@@ -1415,8 +1415,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     }
 
     // Word detection
-    for (let word of args) {
-        if (`${word}`.substring(0, 2) === 'r/') msg(channelID, 'https://reddit.com/' + word);
+    for (let word of message.split(' ')) {
+        if (word.substring(0, 2) === 'r/') msg(channelID, 'https://reddit.com/' + word);
     }
 
     /**
