@@ -623,7 +623,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             return Promise.reject('Song not found!');
                         })
                         .then(addUrl2song)
-                        .catch(err => Promise.reject({ type: 'msg', name: 'Search failed!', message: typeof err === 'string' ? err : 'Code bad' })),
+                        .catch(err => {
+                            if (typeof err !== 'string') logger.error(err, '');
+                            return Promise.reject({ type: 'msg', name: 'Search failed!', message: typeof err === 'string' ? err : 'Code bad' })
+                        }),
                     joinVoice = (voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id) => new Promise((resolve, reject) => voiceChannelID ?
                         bot.joinVoiceChannel(voiceChannelID, err => err && err.toString().indexOf('Voice channel already active') == -1 ? reject(err) : resolve(voiceChannelID)) :
                         reject({ type: 'msg', name: 'Could not join!', message: 'You are not in a voice channel!' })
