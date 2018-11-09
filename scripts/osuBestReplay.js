@@ -3,7 +3,6 @@ module.exports = osu => (username, playNumber = 1) => new Promise((resolve, reje
 
     osu.getUserBest(username, 100)
         .then(data => {
-            console.log(data);
             if (data[playNumber - 1]) play = data[playNumber - 1];
             else reject({ name: 'Not found', message: 'User or top play not found!' });
         })
