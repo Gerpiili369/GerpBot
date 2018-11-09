@@ -1,4 +1,5 @@
-const permDic = require('discord.io').Permissions;
+const permDic = require('discord.io').Permissions,
+    common = require('./common.js');
 
 module.exports = bot => ({
     roleHasPerm: function (serverID, role, perm = 'GENERAL_ADMINISTRATOR', channelID = '') {
@@ -85,11 +86,10 @@ module.exports = bot => ({
     },
     missage: function (msg, channelID, perms = []) {
         if (this.userHasPerm(bot.channels[channelID].guild_id, bot.id, 'TEXT_EMBED_LINKS', channelID)) {
-            msg(channelID, '', {
-                title: 'Following permissions required:',
-                description: '`' + perms.join('\n') + '`',
-                color: 16711680
-            });
+            msg(channelID, '', new common.Embed(
+                'Following permissions required:',
+                '`' + perms.join('\n') + '`'
+            ).error().errorIfInvalid());
         } else msg(channelID, 'Following permissions required:\n`' + perms.join('\n') + '`');
     }
 });

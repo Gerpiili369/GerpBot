@@ -24,6 +24,7 @@ const
         'help', 'compliments', 'defaultRes', 'games', 'answers', 'ileAcronym'
     ], 'objectLib'),
     // constant variables
+    Embed = common.Embed,
     logger = common.logger,
     bot = new Discord.Client({ token: config.auth.token, autorun: true }),
     ile = new Ile(getJSON('ile'), objectLib.ileAcronym),
@@ -94,19 +95,17 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'help':
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
-                const help = (args[0] && objectLib.help[args[0]]) || objectLib.help.main;
+                const help = new Embed((args[0] && objectLib.help[args[0]]) || objectLib.help.main);
                 help.color = getColor(serverID, userID);
-                help.image = {
-                    url: `https://img.shields.io/badge/bot-${bot.username.replace(' ', '_')}-${fillHex(getColor(serverID, userID).toString(16))}.png`
-                };
-                msg(channelID, '', help);
+                help.image.url = `https://img.shields.io/badge/bot-${bot.username.replace(' ', '_')}-${fillHex(getColor(serverID, userID).toString(16))}.png`;
+                msg(channelID, '', help.errorIfInvalid());
                 break;
             case 'server':
                 if (!serverID) return msg(channelID, 'This is a private conversation!');
                 if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
 
-                let si = {
+                const si = {
                     members: {
                         online: 0,
                         idle: 0,
@@ -135,42 +134,41 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     if (type == 0 || type == 2 || type == 4) si.channels[type]++;
                 }
 
-                let ie = {
-                    title: `Information about "${bot.servers[serverID].name}"`,
-                    description: `**Created by:** <@${bot.servers[serverID].owner_id}>\n` +
-                        `**Creation date:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(serverID))}\`\n` +
-                        `**Age:** \`${uptimeToString(si.age)}\``,
-                    color: bot.servers[serverID].members[userID].color,
-                    timestamp: bot.servers[serverID].joined_at,
-                    footer: {
-                        icon_url: `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`,
-                        text: `${settings.servers[serverID].nick != null ? settings.servers[serverID].nick : bot.username} joined this server on`
-                    },
-                    thumbnail: {
-                        url: `https://cdn.discordapp.com/icons/${serverID}/${bot.servers[serverID].icon}.png`
-                    },
-                    fields: [
-                        {
-                            name: 'Members:',
-                            value: `✅ Online: ${si.members.online}\n💤 Idle: ${si.members.idle}\n⛔ Do not disturb: ${si.members.dnd}\n⚫ Offline: ${si.members.offline}`,
-                            inline: true
+                const ie = new Embed(
+                    `Information about "${bot.servers[serverID].name}"`,
+                    `**Created by:** <@${bot.servers[serverID].owner_id}>\n` +
+                    `**Creation date:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(serverID))}\`\n` +
+                    `**Age:** \`${uptimeToString(si.age)}\``,
+                    {
+                        color: bot.servers[serverID].members[userID].color,
+                        timestamp: bot.servers[serverID].joined_at,
+                        footer: {
+                            icon_url: `https://cdn.discordapp.com/avatars/${bot.id}/${bot.users[bot.id].avatar}.png`,
+                            text: `${settings.servers[serverID].nick != null ? settings.servers[serverID].nick : bot.username} joined this server on`
                         },
-                        {
-                            name: 'Channels:',
-                            value: `💬 Text: ${si.channels[0]}\n🎙️ Voice: ${si.channels[2]}\n📁 Category: ${si.channels[4]}`,
-                            inline: true
+                        thumbnail: {
+                            url: `https://cdn.discordapp.com/icons/${serverID}/${bot.servers[serverID].icon}.png`
                         },
-                        {
-                            name: 'More stuff:',
-                            value: `Roles: ${Object.keys(bot.servers[serverID].roles).length}, Emojis: ${Object.keys(bot.servers[serverID].emojis).length}/50, Bots: ${si.members.bots}`,
-                            inline: true
-                        }
-                    ]
-                };
+                    }
+                );
 
-                if (settings.tz[serverID]) ie.description += `\n**Server time:** \`${timeAt(settings.tz[serverID])}\``
+                ie.addField(
+                    'Members:',
+                    `✅ Online: ${si.members.online}\n💤 Idle: ${si.members.idle}\n⛔ Do not disturb: ${si.members.dnd}\n⚫ Offline: ${si.members.offline}`,
+                    true
+                ).addField(
+                    'Channels:',
+                    `💬 Text: ${si.channels[0]}\n🎙️ Voice: ${si.channels[2]}\n📁 Category: ${si.channels[4]}`,
+                    true
+                ).addField(
+                    'More stuff:',
+                    `Roles: ${Object.keys(bot.servers[serverID].roles).length}, Emojis: ${Object.keys(bot.servers[serverID].emojis).length}/50, Bots: ${si.members.bots}`,
+                    true
+                )
 
-                msg(channelID, 'Here you go:', ie);
+                if (settings.tz[serverID]) ie.addDesc(`\n**Server time:** \`${timeAt(settings.tz[serverID])}\``);
+
+                msg(channelID, 'Here you go:', ie.errorIfInvalid());
                 break;
             case 'channel':
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
@@ -187,19 +185,19 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     age: calculateUptime(sfToDate(args[0] || channelID))
                 };
 
-                const ce = {
-                    title: `Information about "#${bot.channels[ci.id].name}"`,
-                    description: (bot.channels[ci.id].topic ? `**Topic:** ${bot.channels[ci.id].topic}\n` : '') +
-                        `**Server:** ${bot.servers[ci.serverID].name}\n` +
-                        (bot.channels[ci.id].parent_id ? `**Channel group:** \`${bot.channels[bot.channels[ci.id].parent_id].name.toUpperCase()}\`\n` : '') +
-                        `**Channel created:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ci.id))}\`\n` +
-                        `**Age:** \`${uptimeToString(ci.age)}\``,
-                    color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
-                };
+                const ce = new Embed(
+                    `Information about "#${bot.channels[ci.id].name}"`,
+                    (bot.channels[ci.id].topic ? `**Topic:** ${bot.channels[ci.id].topic}\n` : '') +
+                    `**Server:** ${bot.servers[ci.serverID].name}\n` +
+                    (bot.channels[ci.id].parent_id ? `**Channel group:** \`${bot.channels[bot.channels[ci.id].parent_id].name.toUpperCase()}\`\n` : '') +
+                    `**Channel created:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ci.id))}\`\n` +
+                    `**Age:** \`${uptimeToString(ci.age)}\``,
+                    { color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp }
+                );
 
-                if (bot.channels[ci.id].nsfw) ce.description += `\n*Speaking of age, this channel is marked as NSFW, you have been warned.*`
+                if (bot.channels[ci.id].nsfw) ce.addDesc(`\n*Speaking of age, this channel is marked as NSFW, you have been warned.*`);
 
-                ce.description += '\n**Members:** ';
+                ce.addDesc('\n**Members:** ');
                 if (
                     Object.keys(bot.channels[ci.id].permissions.user).length > 0 ||
                     Object.keys(bot.channels[ci.id].permissions.role).length > 0
@@ -207,13 +205,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     ci.members = membersInChannel(ci.id);
 
                     if (ci.members.length !== Object.keys(bot.servers[ci.serverID].members).length)
-                        for (const user of ci.members) ce.description += `<@${user}>`;
-                    else ce.description += ' @everyone';
-                } else ce.description += ' @everyone';
+                        for (const user of ci.members) ce.addDesc(`<@${user}>`);
+                    else ce.addDesc(' @everyone');
+                } else ce.addDesc(' @everyone');
 
-                ce.description += '\n';
+                ce.addDesc('\n');
 
-                msg(channelID, 'channel info', ce);
+                msg(channelID, 'channel info', ce.errorIfInvalid());
                 break;
             case 'user':
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
@@ -234,21 +232,23 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                     ui.color = serverID ? bot.servers[serverID].members[ui.id].color || colors.gerp : colors.gerp;
 
-                    const ue = {
-                        title: `Information about "${ bot.users[ui.id].username }#${ bot.users[ui.id].discriminator }"`,
-                        description: `**Also known as:** "<@${ ui.id }>"\n` +
-                            `**User created:** \`${ timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ui.id)) }\`\n` +
-                            `**Age:** \`${ uptimeToString(ui.age) }\``,
-                        color: ui.color,
-                        thumbnail: {
-                            url: `https://cdn.discordapp.com/avatars/${ ui.id }/${ bot.users[ui.id].avatar }.png`
-                        },
-                        image: {
-                            url: encodeURI(`https://img.shields.io/badge/${ bot.users[ui.id].bot ? 'bot' : 'user' }-${ bot.users[ui.id].username }-${ fillHex(ui.color.toString(16)) }.png`)
+                    const ue = new Embed(
+                        `Information about "${ bot.users[ui.id].username }#${ bot.users[ui.id].discriminator }"`,
+                        `**Also known as:** "<@${ ui.id }>"\n` +
+                        `**User created:** \`${ timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ui.id)) }\`\n` +
+                        `**Age:** \`${ uptimeToString(ui.age) }\``,
+                        {
+                            color: ui.color,
+                            thumbnail: {
+                                url: `https://cdn.discordapp.com/avatars/${ ui.id }/${ bot.users[ui.id].avatar }.png`
+                            },
+                            image: {
+                                url: encodeURI(`https://img.shields.io/badge/${ bot.users[ui.id].bot ? 'bot' : 'user' }-${ bot.users[ui.id].username }-${ fillHex(ui.color.toString(16)) }.png`)
+                            }
                         }
-                    };
+                    );
 
-                    if (settings.tz[ui.id]) ue.description += `\n**Local time:** \`${timeAt(settings.tz[ui.id])}\``
+                    if (settings.tz[ui.id]) ue.addDesc(`\n**Local time:** \`${timeAt(settings.tz[ui.id])}\``);
 
                     let cleanRoll = [], status = '';
                     if (serverID) {
@@ -279,13 +279,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 status = '⚫ Offline';
                                 break;
                         }
-                        ue.description += `\n**Status:** ${status}`;
+                        ue.addDesc(`\n**Status:** ${status}`);
 
-                        if (ui.roles.length > 0) ue.description += '\n**Roles:** ';
-                        for (const role of ui.roles) ue.description += ` ${role}`;
+                        if (ui.roles.length > 0) ue.addDesc('\n**Roles:** ');
+                        for (const role of ui.roles) ue.addDesc(` ${role}`);
                     };
 
-                    msg(channelID, 'High quality spying:', ue);
+                    msg(channelID, 'High quality spying:', ue.errorIfInvalid());
                 } else msg(channelID, 'I would give you the info you seek, but it is clear you don\'t even know what you want');
                 break;
             case 'role':
@@ -302,21 +302,21 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         break;
                     }
 
-                    let re = {
-                        title: `Information about "${role.name}"`,
-                        description: `<@&${role.id}>\n` +
-                            `**Role created:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(role.id))}\`\n` +
-                            `**Age:** ${uptimeToString(calculateUptime(sfToDate(role.id)))}\``,
-                        color: role.color
-                    };
+                    const re = new Embed(
+                        `Information about "${role.name}"`,
+                        `<@&${role.id}>\n` +
+                        `**Role created:** \`${timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(role.id))}\`\n` +
+                        `**Age:** ${uptimeToString(calculateUptime(sfToDate(role.id)))}\``,
+                        { color: role.color }
+                    );
 
                     let rollMembers = [];
                     for (const user in bot.servers[serverID].members)
                         if (bot.servers[serverID].members[user].roles.indexOf(role.id) != -1) rollMembers.push(user);
 
-                    for (const user of rollMembers) re.description += `\n<@${user}>`;
+                    for (const user of rollMembers) re.addDesc(`\n<@${user}>`);
 
-                    msg(channelID, 'Here is the gang:', re);
+                    msg(channelID, 'Here is the gang:', re.errorIfInvalid());
                 } else msg(channelID, 'What is that supposed to be? It is called "role" not "roll"!');
                 break;
             case 'osu':
@@ -343,13 +343,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 filename: `replay-osu_${args[0]}.osr`,
                                 message: 'Here is some top play action!'
                             }, (err, res) => {
-                                if (err) logger.error(err, '');
+                                if (err) return Promise.reject(err);
                             }))
-                            .catch(err => msg(channelID, '', {
-                                title: err.name,
-                                description: err.message,
-                                color: colors.error
-                            }));
+                            .catch(err => msg(channelID, '', new Embed().error(err)));
                     default:
 
                 }
@@ -399,16 +395,14 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     winners = winners.concat(raffleList.splice(Math.floor(Math.random() * raffleList.length), 1));
                 }
 
-                let re = {
-                    title: 'Winners',
-                    description: '',
-                    color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp,
-                }
+                const re = new Embed('Winners', '', {
+                    color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
+                });
 
-                    for (const winner of winners) re.description += `\n${bot.users[winner].username}`;
                 if (bot.channels[target] && (!serverID || bot.channels[target].guild_id != serverID)) {
+                    for (const winner of winners) re.addDesc(`\n${bot.users[winner].username}`);
                 } else {
-                    for (const winner of winners) re.description += `\n<@${winner}>`;
+                    for (const winner of winners) re.addDesc(`\n<@${winner}>`);
                 }
 
                 if (winners.length === 1) {
@@ -518,7 +512,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         options = args.splice(0);
                     }
 
-                    ve.description += `\n*requested by:\n<@${userID}>*`;
+                    ve.addDesc(`\n*requested by:\n<@${userID}>*`);
 
                     if (options.length < 1) return msg(channelID, `Options were not included! Example: \`@${bot.username} vote :thinking:=genius\`.`);
 
@@ -552,13 +546,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (settings.servers[serverID].audio.que.length > 0 && !bot.servers[serverID].stopped) {
                             const song = settings.servers[serverID].audio.que.shift();
 
-                            settings.servers[serverID].audio.channel && msg(settings.servers[serverID].audio.channel, 'Now playing:', {
-                                title: song.title,
-                                description: song.description + '\n' +
-                                    `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
-                                thumbnail: { url: song.thumbnail },
-                                color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
-                            });
+                            settings.servers[serverID].audio.channel && msg(settings.servers[serverID].audio.channel, 'Now playing:', new Embed(
+                                song.title,
+                                song.description + '\n' +
+                                `Published at: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published))}`,
+                                {
+                                    thumbnail: { url: song.thumbnail },
+                                    color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
+                                }
+                            ).errorIfInvalid());
 
                             bot.servers[serverID].ccp = cp.spawn('ffmpeg', [
                                 '-loglevel', '0',
@@ -661,27 +657,25 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     case 'list':
                         if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                             return pc.missage(msg, channelID, ['Embed Links']);
-                        let ale = {
-                            title: 'No songs queued right now.',
-                            fields: [],
+                        const ale = new Embed('No songs queued right now.', {
                             color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp,
-                        }
-
-                        for (const song of settings.servers[serverID].audio.que) ale.fields.push({
-                            name: ale.fields.length + 1 + ': ' + song.title,
-                            value: `Requested by: <@${song.request.id}>\n${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.request.time))}.`
                         });
+
+                        for (const song of settings.servers[serverID].audio.que) ale.addField(
+                            ale.fields.length + 1 + ': ' + song.title,
+                            `Requested by: <@${song.request.id}>\n${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.request.time))}.`
+                        );
 
                         if (ale.fields.length > 0) ale.title = 'Queued songs:';
                         if (bot.servers[serverID].playing) {
                             ale.title = 'Current song: ' + bot.servers[serverID].playing.title;
                             ale.description = `Requested by: <@${bot.servers[serverID].playing.request.id}>\n${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(bot.servers[serverID].playing.request.time))}.`;
-                            ale.thumbnail = { url: bot.servers[serverID].playing.thumbnail };
+                            ale.thumbnail.url = bot.servers[serverID].playing.thumbnail;
 
-                            if (ale.fields.length > 0) ale.description += '\n\n**Queued songs:**';
+                            if (ale.fields.length > 0) ale.addDesc('\n\n**Queued songs:**');
                         }
 
-                        msg(channelID, '', ale);
+                        msg(channelID, '', ale.errorIfInvalid());
                         break;
                     case 'channel':
                         if (admin) {
@@ -737,7 +731,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         }),
                     missing => pc.missage(msg, channelID, missing)
                 )
-                .catch(err => err.type === 'msg' ? msg(channelID, '', { title: err.name, description: err.message, color: colors.error }) : logger.error(err, ''));
+                .catch(err => err.type === 'msg' ? msg(channelID, '', new Embed().error(err)) : logger.error(err, ''));
                 break;
             case 'bs':
                 if (!config.canvasEnabled) return msg(channelID, 'Bot owner has not enabled this feature.');
@@ -746,11 +740,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     'TEXT_EMBED_LINKS',
                     'TEXT_READ_MESSAGE_HISTORY',
                     'TEXT_ADD_REACTIONS'
-                ], channelID) : '').then(() => msg(channelID, '', {
-                    title: 'Blue Squares: The Game',
-                    color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp,
-                    image: {}
-                }), missing => pc.missage(msg, channelID, missing)).catch(err => logger.error(err, ''));
+                ], channelID) : '').then(() => msg(channelID, '', new Embed(
+                    'Blue Squares: The Game',
+                    { color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp }
+                )), missing => pc.missage(msg, channelID, missing)).catch(err => logger.error(err, ''));
                 break;
             case 'kps':
                 let url = 'http://plssave.help/kps';
@@ -797,7 +790,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     kps[userID].socket.on('connect', () => kpsEmit(args));
 
                     setTimeout(() => {
-                        if (!kps[userID].socket.connected) msg(userID, 'Could not connect!');
+                        if (!kps[userID].socket.connected) msg(userID, '', new Embed().error(new Error('Could not connect!')));
                     }, 10000);
                 }
 
@@ -860,14 +853,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                  */
                 function kpsEmbed(msg, type) {
                     let player = kps[userID].mem.player;
-                    let embed = {
-                        title: msg,
+                    const embed = new Embed(msg, {
                         author: {
                             name: 'KPS',
-                            url: 'http://plssave.help/PlayKPS'
-                        },
-                        fields: []
-                    };
+                            url: 'https://plssave.help/PlayKPS'
+                        }
+                    });
 
                     switch (player.theme) {
                         case 'defeault':
@@ -913,13 +904,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             break;
                     }
 
-                    return embed;
+                    return embed.errorIfInvalid();
 
                     /**
                      * @arg {String} img
                      */
                     function addThumb(img) {
-                        embed.thumbnail = { url: `${url}/img/${player.theme}/${img}.png` };
+                        embed.thumbnail.url = `${url}/img/${player.theme}/${img}.png`;
                     }
 
                     /**
@@ -927,9 +918,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                      */
                     function addImage(background) {
                         if (background) {
-                            embed.image = { url: `${url}/img/${player.theme}/background${player.theme === 'defeault' ? '' : 'new'}.${player.theme === 'horror' ? 'png' : 'jpg'}` };
+                            embed.image.url = `${url}/img/${player.theme}/background${player.theme === 'defeault' ? '' : 'new'}.${player.theme === 'horror' ? 'png' : 'jpg'}`;
                         } else {
-                            embed.image = { url: `${url}/img/${player.theme}/${player.result}.png` };
+                            embed.image.url = `${url}/img/${player.theme}/${player.result}.png`;
                         }
                     }
 
@@ -940,7 +931,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         emojis[1] = emojis[1].repeat(Math.round(player.points.draws / player.games * 15));
                         emojis[2] = emojis[2].repeat(Math.round(player.points.losses / player.games * 15));
 
-                        embed.fields.push({ name: 'Current score:', value: emojis.join('') });
+                        embed.addField('Current score:', emojis.join(''));
                     }
 
                     function addFooter() {
@@ -979,11 +970,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                                 return pc.missage(msg, channelID, ['Embed Links']);
 
-                            let rle = {
-                                title: 'List of your reminders',
-                                color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp,
-                                fields: []
-                            };
+                            const rle = new Embed('List of your reminders', {
+                                color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
+                            });
 
                             settings.reminders.forEach((v, i, a) => {
                                 if (typeof v == 'object' && v.creator.id == userID) {
@@ -998,17 +987,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                         target = v.channel;
                                     }
 
-                                    rle.fields.push({
-                                        name: `Reminder #${i}`,
-                                        value:
-                                            `Time: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(v.time))} \n` +
-                                            `Channel: ${target} \n` +
-                                            `${v.message ? `Message: ${v.message}` : ''}`
-                                    });
+                                    rle.addField(
+                                        `Reminder #${i}`,
+                                        `Time: ${timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(v.time))} \n` +
+                                        `Channel: ${target} \n` +
+                                        `${v.message ? `Message: ${v.message}` : ''}`
+                                    );
                                 }
                             });
 
-                            msg(channelID, '', rle);
+                            msg(channelID, '', rle.errorIfInvalid());
                             break;
                         case 'cancel':
                             if (typeof settings.reminders[args[1]] == 'object') {
@@ -1029,6 +1017,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                     id: userID
                                 },
                                 color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp,
+                                image: {},
                                 time: Date.now()
                             };
 
@@ -1087,14 +1076,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 if (mention.id != bot.id) reminder.mentions += `<@${mention.id}> `;
                             } else reminder.mentions = '';
 
-                            addLatestMsgToEmbed(reminder, channelID)
-                                .then(reminder => {
-                                    if (reminder.image.url) {
+                            addLatestMsgToEmbed(new Embed(), channelID)
+                                .then(embed => {
+                                    if (embed.image.url) {
+                                        reminder.image = embed.image;
                                         const i = reminder.links.indexOf(reminder.image.url);
                                         if (i > -1) reminder.links.splice(i, 1);
                                     }
-
-                                    reminder.fields = [];
 
                                     settings.reminders.push(reminder);
                                     updateSettings();
@@ -1194,11 +1182,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                             return msg(channelID, list.join('\n'));
 
-                        msg(channelID, '', {
-                            title: 'List of cool people:',
-                            description: list.join('\n'),
+                        msg(channelID, '', new Embed('List of cool people:', list.join('\n'), {
                             color: bot.servers[serverID].members[userID].color
-                        });
+                        }).errorIfInvalid());
                         break;
                     case 'add':
                         if (args[1]) {
@@ -1287,14 +1273,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         }).then(() => {
                             updateSettings();
                             editColor(serverID, '#' + (color || colors.gerp).toString(16));
-                            msg(channelID, '', { title: 'Color changed!', color });
+                            msg(channelID, '', new Embed('Color changed!', { color }));
                         })
                     })
-                    .catch(err => msg(channelID, '', {
-                        title: err.name || 'Only color you will be seeing is red.',
-                        description: err.message || 'This command is server only, admin only AND requires one argument which must be hex or decimal color code or "default".',
-                        color: colors.error
-                    }));
+                    .catch(err => msg(channelID, '', new Embed(
+                        'Only color you will be seeing is red.',
+                        'This command is server only, admin only AND requires one argument which must be hex or decimal color code or "default".',
+                    ).error(err)));
                 break;
             case 'effect':
                 if (!serverID) return msg(channelID, 'I think that is a bad idea...');
@@ -1374,17 +1359,14 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             if (bot.channels[channel] && !pc.userHasPerm(bot.channels[channel].guild_id, bot.id, 'TEXT_EMBED_LINKS', channel))
                 pc.missage(msg, channel, ['Embed Links']);
             else {
-                const me = {
-                    title: `#${bot.channels[channelID].name} (${bot.servers[serverID].name})`,
-                    description: `*Latest messages:*`,
-                    color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp,
-                    thumbnail: {},
-                    image: {},
-                    fields: []
-                };
+                const me = new Embed(
+                    `#${bot.channels[channelID].name} (${bot.servers[serverID].name})`,
+                    `*Latest messages:*`,
+                    { color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp }
+                );
 
                 addLatestMsgToEmbed(me, channelID)
-                    .then(me => msg(channel, 'This channel was mentioned on another channel.', me))
+                    .then(me => msg(channel, 'This channel was mentioned on another channel.', me.errorIfInvalid()))
                     .catch(err => logger.error(err, ''));
             }
         }
@@ -1434,9 +1416,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
 function addLatestMsgToEmbed(me, channelID, limit = 5) {
     return new Promise((resolve, reject) => {
-        if (!me.fields) me.fields = [];
-        if (!me.image) me.image = {};
-
         bot.getMessages({ channelID, limit }, (err, msgList) => {
             if (err) reject(err);
             else for (const m of msgList) {
@@ -1451,10 +1430,10 @@ function addLatestMsgToEmbed(me, channelID, limit = 5) {
                     }
                 }
 
-                me.fields.push({
-                    name: m.author.username + extra,
-                    value: m.content || '`<attachment>`'
-                });
+                me.addField(
+                    m.author.username + extra,
+                    m.content || '`<attachment>`'
+                );
             }
             me.fields.reverse();
             resolve(me);
@@ -1497,12 +1476,11 @@ bot.on('any', evt => {
 
             web.addTemp('bsga-image.png', bsga.update().toBuffer())
                 .then(file => new Promise((resolve, reject) => {
-                    const bse = message.embeds[0];
+                    const bse = new Embed(message.embeds[0]);
 
                     bsga.extra = bsga.extra === 'a' ? 'b' : 'a';
-                    bse.image = {
-                        url: config.web.url + '/temp/bsga-image.png' + `?${bsga.extra}=${Math.random()}`
-                    };
+                    bse.image.url = config.web.url + '/temp/bsga-image.png' +
+                        `?${bsga.extra}=${Math.random()}`;
 
                     bot.editMessage({
                         channelID: evt.d.channel_id,
@@ -1611,15 +1589,12 @@ function startIle() {
                 let id = field.name.substring(field.name.indexOf('.') + 2);
                 field.name = field.name.replace(id, bot.users[id].username);
             } else {
-                embed = {
-                    title: ile.getAcronym(),
-                    description: message
-                };
+                embed = new Embed(ile.getAcronym(), message);
                 message = '';
             }
             embed.color = colors.gerp;
 
-            msg(channel, message, embed);
+            msg(channel, message, embed.errorIfInvalid());
         });
         ile.on('save', data => {
             fs.writeFile('ile.json', JSON.stringify(data, null, 4), err => {
@@ -1652,15 +1627,13 @@ function startReminding() {
  * @arg {String} reminder.message
  */
 function remindTimeout(reminder, i = settings.reminders.indexOf(reminder)) {
-    let re = {
-        title: 'Reminder',
-        description: reminder.message,
+    const re = new Embed('Reminder', reminder.message, {
         color: reminder.color,
         image: reminder.image,
         footer: {
             text: `Created by ${reminder.creator.name}`
         }
-    };
+    });
 
     reminderTimeouts[i] = setTimeout(() => {
         delete settings.reminders[i];
@@ -1816,16 +1789,4 @@ function updateSettings() {
  * @property {number} h
  * @property {number} day
  * @property {number} year
- *
- * @typedef {Object} Embed
- * @property {String} [title]
- * @property {String} [description]
- * @property {String} [url]
- * @property {Number|String} [color]
- * @property {Date} [timestamp]
- * @property {{icon_url?: String, text?: String}} [footer]
- * @property {{url?: String]}} [thumbnail]
- * @property {{url?: String}} [image]
- * @property {{name: String, url?: String, icon_url?: String}} [author]
- * @property {{name: String, value: String, inline?: Boolean}[]} [fields]
  */

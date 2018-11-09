@@ -1,6 +1,7 @@
 const
     Emitter = require('events'),
     snowTime = require('snowtime'),
+    common = require('./common'),
     calculateUptime = snowTime.calculateUptime,
     uptimeToString = snowTime.uptimeToString;
 
@@ -193,18 +194,15 @@ module.exports = class Ile extends Emitter {
      * @return {Embed}
      */
     scoreboardToEmbed(scoreboard) {
-        let embed = {
-            title: 'ILE Round Scoreboard',
-            fields: []
-        }
+        const embed = new common.Embed('ILE Round Scoreboard');
         scoreboard.forEach((v, i) => {
-            embed.fields.push({
-                name: `${i + 1}. ${v.id}`,
-                value: uptimeToString(v.delay),
-                inline: true
-            });
+            embed.addField(
+                `${i + 1}. ${v.id}`,
+                uptimeToString(v.delay),
+                true
+            );
         });
-        return embed;
+        return embed.errorIfInvalid();
     }
 
     /**
@@ -235,16 +233,4 @@ module.exports = class Ile extends Emitter {
  * @property {number} h
  * @property {number} day
  * @property {number} year
- *
- * @typedef {Object} Embed
- * @property {String} [title]
- * @property {String} [description]
- * @property {String} [url]
- * @property {Number|String} [color]
- * @property {Date} [timestamp]
- * @property {{icon_url?: String, text?: String}} [footer]
- * @property {{url?: String]}} [thumbnail]
- * @property {{url?: String}} [image]
- * @property {{name: String, url?: String, icon_url?: String}} [author]
- * @property {{name: String, value: String, inline?: Boolean}[]} [fields]
  */

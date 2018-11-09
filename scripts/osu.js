@@ -35,53 +35,45 @@ function getUser(user) {
             name: 'Failed to get user', message: 'Response is not JSON!'
         })))
         .then(userList => {
-            if (userList.length === 0) resolve(failEmbed('User not found!'));
+            if (userList.length === 0) resolve(new Embed('User not found!').error());
             u = userList[0];
-            oue = {
-                title: u.username + '\'s osu! profile',
-                description: '<about me>\n' +
-                    '**Level ' + Math.round(u.level) + '**\n\n' +
-                    '**Total Play Count:** `' + u.playcount + '`\n' +
-                    '**Total Play Time:** `' + st.uptimeToString(st.calculateUptime(0, u.total_seconds_played * 1000)) + '`\n',
-                url: 'https://osu.ppy.sh/users/' + u.user_id,
-                color: searchColors.user,
-                thumbnail: {},
-                image: { url: `https://osu.ppy.sh/images/flags/${ u.country }.png` },
-                fields: [
-                    {
-                        name: 'Performance',
-                        value: (u.pp_rank ? `#${ u.pp_rank } (<country> #${ u.pp_country_rank })\n` : '') +
-                            '**' + Math.round(u.pp_raw) + 'pp** ~ ' +
-                            'acc: ' + Math.round(u.accuracy * 100) / 100 + '%'
-                    },
-                    {
-                        name: 'Score',
-                        value: `Ranked: \`${ u.ranked_score }\`\nTotal: \`${ u.total_score }\`\n` +
-                            '300 count: \`' + u.count300 + '\`\n' +
-                            '100 count: \`' + u.count100 + '\`\n' +
-                            '50 count: \`' + u.count50 + '\`',
-                        inline: true
-                    },
-                    {
-                        name: 'Rank count',
-                        value:
-                            '**SS+** ' + u.count_rank_ssh + '\n' +
-                            '**S+** ' + u.count_rank_sh + '\n' +
-                            '**SS** ' + u.count_rank_ss + '\n' +
-                            '**S** ' + u.count_rank_s + '\n' +
-                            '**A** ' + u.count_rank_a + '',
-                        inline: true
-                    }
-                ]
-            }
+            oue = new Embed(
+                u.username + '\'s osu! profile',
+                '<about me>\n' +
+                '**Level ' + Math.round(u.level) + '**\n\n' +
+                '**Total Play Count:** `' + u.playcount + '`\n' +
+                '**Total Play Time:** `' + st.uptimeToString(st.calculateUptime(0, u.total_seconds_played * 1000)) + '`\n',
+                {
+                    url: 'https://osu.ppy.sh/users/' + u.user_id,
+                    color: searchColors.user,
+                    image: { url: `https://osu.ppy.sh/images/flags/${ u.country }.png` },
+                }
+            );
+
+            oue.addField('Performance',
+                (u.pp_rank ? `#${ u.pp_rank } (<country> #${ u.pp_country_rank })\n` : '') +
+                '**' + Math.round(u.pp_raw) + 'pp** ~ ' +
+                'acc: ' + Math.round(u.accuracy * 100) / 100 + '%'
+            ).addField('Score',
+                `Ranked: \`${ u.ranked_score }\`\nTotal: \`${ u.total_score }\`\n` +
+                '300 count: \`' + u.count300 + '\`\n' +
+                '100 count: \`' + u.count100 + '\`\n' +
+                '50 count: \`' + u.count50 + '\`',
+                true
+            ).addField('Rank count',
+                '**SS+** ' + u.count_rank_ssh + '\n' +
+                '**S+** ' + u.count_rank_sh + '\n' +
+                '**SS** ' + u.count_rank_ss + '\n' +
+                '**S** ' + u.count_rank_s + '\n' +
+                '**A** ' + u.count_rank_a + '',
+                true
+            );
 
             let eventStr = '';
             for (let i = 0; i < u.events.length && i < 5; i++)
                 eventStr += dEsc(striptags(u.events[i].display_html)) + '\n\n';
 
-            if (eventStr) oue.fields.push({
-                name: '*Recent events*', value: eventStr
-            })
+            if (eventStr) oue.addField('*Recent events*', eventStr)
         })
         .then(() => fetch('https://osu.ppy.sh/users/' + u.user_id))
         .then(res => res.text())
@@ -119,10 +111,7 @@ function getUser(user) {
         .then(user => getUserBest(user, 5))
         .then(playsToString)
         .then(playsListStr => {
-            if (playsListStr) oue.fields.push({
-                name: '*Best performance*',
-                value: playsListStr
-            })
+            if (playsListStr) oue.addField('*Best performance*', playsListStr);
             return u.user_id
         })
         .then(user => getUserRecentPlays(user, 50))
@@ -130,13 +119,10 @@ function getUser(user) {
         .then(removeOlderFromPlays)
         .then(playsToString)
         .then(playsListStr => {
-            if (playsListStr) oue.fields.push({
-                name: '*Recent plays*',
-                value: playsListStr
-            })
+            if (playsListStr) oue.addField('*Recent plays*', playsListStr);
             return u.user_id
         })
-        .then(() => resolve(oue))
+        .then(() => resolve(oue.errorIfInvalid()))
         .catch(reject)
     );
 }
@@ -211,12 +197,4 @@ function res2json(res, action) {
     return res.json().catch(err => Promise.reject({
         name: 'Failed to get ' + action, message: 'Response is not JSON!'
     }))
-}
-
-function failEmbed(name, message = '') {
-    return {
-        title: name,
-        description: message,
-        color: 16711680
-    }
 }
