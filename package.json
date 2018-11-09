@@ -1,6 +1,6 @@
 {
     "name": "gerpbot",
-    "version": "2.4.0-beta",
+    "version": "3.0.0-beta",
     "description": "It is pro GerpBot for Discord!",
     "main": "bot.js",
     "repository": {
