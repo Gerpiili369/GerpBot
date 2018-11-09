@@ -1525,11 +1525,11 @@ bot.on('any', evt => {
  * @arg {String} msg
  * @arg {Embed} [embed]
  */
-function msg(channel, msg, embed) {
+function msg(channel, message, embed) {
     bot.sendMessage({
         to: channel,
-        message: msg,
-        embed: embed
+        message,
+        embed
     }, err => { if (err) logger.error(err, ''); });
 }
 
