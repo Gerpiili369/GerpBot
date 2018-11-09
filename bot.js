@@ -746,13 +746,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 )), missing => pc.missage(msg, channelID, missing)).catch(err => logger.error(err, ''));
                 break;
             case 'kps':
-                let url = 'http://plssave.help/kps';
+                let url = 'https://plssave.help/kps';
 
                 if (!kps[userID]) {
                     kps[userID] = {};
                     kps[userID].gameActive = false;
                     kps[userID].mem = { player: { theme: 'defeault', selection: null, result: null }, opponent: null };
-                    kps[userID].socket = io('http://plssave.help', { path: '/socket2' });
+                    kps[userID].socket = io('https://plssave.help', { path: '/socket2' });
 
                     kps[userID].socket.on('connect', () => {
                         kps[userID].socket.emit('setName', `${bot.users[userID].username}#${bot.users[userID].discriminator}`);
