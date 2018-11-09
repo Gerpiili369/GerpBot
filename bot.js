@@ -605,7 +605,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         .then(result => result.json())
                         .then(data => {
                             if (data.error) return Promise.reject(data.error.errors);
-                            for (const item of data.items) if (item.id.kind === 'youtube#video') return {
+                            for (const item of data.items) if (item.id && item.id.kind === 'youtube#video') return {
                                 id: item.id.videoId,
                                 title: item.snippet.title,
                                 description: item.snippet.description,
