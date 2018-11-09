@@ -10,7 +10,7 @@ module.exports = osu => (username, playNumber = 1) => new Promise((resolve, reje
         .then(data => mapHash = data[0].file_md5)
         .then(() => osu.getReplayData(play.user_id, play.beatmap_id))
         .then(replayData => {
-            if (replayData.error) return reject(replayData.error)
+            if (replayData.error) return reject(new Error(replayData.error));
 
             const
                 cdr = Buffer.from(replayData.content, replayData.encoding),
