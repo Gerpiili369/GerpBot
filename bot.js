@@ -1530,7 +1530,11 @@ function msg(channel, message, embed) {
         to: channel,
         message,
         embed
-    }, err => { if (err) logger.error(err, ''); });
+    }, err => { if (err) {
+        if (err.response && err.response.message === 'You are being rate limited.')
+            setTimeout(msg, err.response.retry_after, channel, message, embed);
+        else logger.error(err, '');
+    }});
 }
 
 function updateObjectLib() {
