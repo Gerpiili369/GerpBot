@@ -592,7 +592,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     }),
                     addUrl2song = song => new Promise((resolve, reject) => ytdl.getInfo(`http://www.youtube.com/watch?v=${song.id}`, (err, info) => {
                         if (err) reject('URL machine broke.');
-                        song.url = info.formats[info.formats.length - 1].url;
+                        info.formats.reverse();
+                        for (format of info.formats) if (typeof format.audioEncoding != 'undefined'){
+                            song.url = format.url;
+                            break;
+                        }
+                        if (!song.url) song.url = info.formats[info.formats.length - 1].url;
+
                         resolve(song);
                     })),
                     searchSong = keywords => fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keywords.join('+')}&key=${config.auth.tubeKey}`)
