@@ -68,10 +68,26 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
-    let serverID, admin = false, cmd, args = message.split(' ');
+    let serverID, admin = false, cmd, args = message.split(' '), chloc, pending;
 
     if (bot.channels[channelID]) serverID = bot.channels[channelID].guild_id;
     else if (!bot.directMessages[channelID]) return;
+
+    chloc = bot[serverID ? 'channels' : 'directMessages'][channelID];
+    if (!chloc.pendingMessages) chloc.pendingMessages = [];
+    pending = chloc.pendingMessages;
+
+    if (userID === bot.id && pending.length > 0) {
+        let pi = pending.splice(0, 1)[0], string, embed;
+
+        if (typeof pi === 'string') string = pi;
+        else if (pi instanceof Embed) embed = pi;
+        else if (pi instanceof Array) {
+            string = pi[0];
+            embed = pi[1];
+        }
+        msg(channelID, string, embed instanceof Embed && embed.errorIfInvalid());
+    }
 
     if ((!serverID || snowmaker(args[0]) == bot.id) && !bot.users[userID].bot) {
         // Messages with commands
@@ -98,7 +114,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 const help = new Embed((args[0] && objectLib.help[args[0]]) || objectLib.help.main);
                 help.color = getColor(serverID, userID);
                 help.image.url = `https://img.shields.io/badge/bot-${bot.username.replace(' ', '_')}-${fillHex(getColor(serverID, userID).toString(16))}.png`;
-                msg(channelID, '', help.errorIfInvalid());
+                help.isValid();
+                msg(channelID, '', help.pushToIfMulti(pending).errorIfInvalid());
                 break;
             case 'server':
                 if (!serverID) return msg(channelID, 'This is a private conversation!');

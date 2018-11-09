@@ -68,6 +68,42 @@ class Embed {
         return this;
     }
 
+    fieldSplit() {
+        const tempFields = [...this.fields];
+
+        this.multiEmbed = [];
+
+        while(tempFields.length > 0)
+            this.multiEmbed.push(new this.constructor({ fields: tempFields.splice(0, 25) }));
+
+        const l = this.multiEmbed.length - 1;
+
+        // first embed
+        this.multiEmbed[0].title = this.title;
+        this.multiEmbed[0].description = this.description;
+        this.multiEmbed[0].url = this.url;
+        this.multiEmbed[0].thumbnail = this.thumbnail;
+        this.multiEmbed[0].author = this.author;
+
+        // last embed
+        if (this.timestamp) this.multiEmbed[l].timestamp = this.timestamp;
+        this.multiEmbed[l].footer = this.footer;
+        this.multiEmbed[l].image = this.image;
+
+        return this.multiEmbed;
+    }
+
+    pushToIfMulti(targetArray) {
+        let item = this;
+        if (this.multiEmbed.length > 0) {
+            item = this.multiEmbed.splice(0, 1)[0];
+            for (const embed of this.multiEmbed) {
+                targetArray.push(embed.errorIfInvalid());
+            }
+        }
+        return item;
+    }
+
     isValid() {
         const
             urls2check = [],
@@ -145,7 +181,7 @@ class Embed {
 
         // check field amount
         if (this.fields.length > 25)
-            fails.push(`Max amount of fields: 25, current amout: ${ this.fields.length }.`);
+            this.fieldSplit();
 
         // check field name, value and inline
         for (const field of this.fields) {
