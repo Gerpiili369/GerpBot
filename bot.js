@@ -1,9 +1,10 @@
 const
+    // common
+    common = require('./scripts/common.js'),
     // config file
-    config = require('./config'),
+    config = common.config,
     // node_modules
     Discord = require('discord.io'),
-    logger = require('winston'),
     fs = require('fs'),
     path = require('path'),
     io = require('socket.io-client'),
@@ -23,6 +24,7 @@ const
         'help', 'compliments', 'defaultRes', 'games', 'answers', 'ileAcronym'
     ], 'objectLib'),
     // constant variables
+    logger = common.logger,
     bot = new Discord.Client({ token: config.auth.token, autorun: true }),
     ile = new Ile(getJSON('ile'), objectLib.ileAcronym),
     bsga = config.canvasEnabled ? new bs.GameArea() : null,
@@ -31,10 +33,7 @@ const
     timeOf = {
         startUp: Date.now()
     },
-    colors = {
-        gerp: 16738816,     // GerpOrange
-        error: 16711680     // ErrorRed
-    },
+    colors = common.colors,
     // funky function stuff
     pc = permCheck(bot);
 
@@ -43,13 +42,6 @@ let
     startedOnce = false,
     online = false,
     settings = getJSON('settings');
-
-logger.remove(logger.transports.Console);
-logger.add(logger.transports.Console, {
-    colorize: true,
-    timestamp: true
-});
-logger.level = 'debug';
 
 for (const func in snowTime) eval(`${func} = snowTime.${func}`);
 

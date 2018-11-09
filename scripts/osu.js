@@ -4,7 +4,8 @@ const
     DomParser = require('dom-parser'),
     parser = new DomParser(),
     st = require('snowtime'),
-    key = require('../config').auth.osu,
+    common = require('./common.js'),
+    key = common.config.auth.osu,
     endpoint = 'https://osu.ppy.sh/api',
     searchColors = {
         user: 5875675,
