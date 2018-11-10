@@ -1,4 +1,5 @@
 const
+    fetch = require('node-fetch'),
     isUrl = require('is-url'),
     logger = require('winston'),
     package = require('../package'),
@@ -10,6 +11,25 @@ logger.add(logger.transports.Console, {
     timestamp: true
 });
 logger.level = 'debug';
+
+class Api {
+    constructor(endpoint, key) {
+        this.endpoint = endpoint;
+        this.key = key;
+    }
+
+    apiCall(url, name) {
+        return new Promise((resolve, reject) => {
+            fetch(this.endpoint + url)
+                .then(res => res.json().catch(err => reject({
+                    name: 'Failed to get' + name || 'data',
+                    message: 'Response is not JSON!'
+                })))
+                .then(resolve)
+                .catch(reject);
+        })
+    }
+}
 
 class Embed {
     constructor(title, description = '', opts = {}) {
@@ -239,6 +259,7 @@ const colors = {
 module.exports = {
     logger,
     package,
+    Api,
     Embed,
     colors,
     config,
