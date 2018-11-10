@@ -115,7 +115,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     return pc.missage(msg, channelID, ['Embed Links']);
                 const help = new Embed((args[0] && objectLib.help[args[0]]) || objectLib.help.main);
                 help.color = getColor(serverID, userID);
-                help.image.url = `https://img.shields.io/badge/bot-${ bot.username.replace(' ', '_') }-${ fillHex(getColor(serverID, userID).toString(16)) }.png`;
+                help.image.url = `https://img.shields.io/badge/bot-${ bot.username.replace(' ', '_') }-${ getColor(serverID, userID).toString(16).padStart(6, '0') }.png`;
                 help.isValid();
                 msg(channelID, '', help.pushToIfMulti(pending).errorIfInvalid());
                 break;
@@ -262,7 +262,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 url: `https://cdn.discordapp.com/avatars/${ ui.id }/${ bot.users[ui.id].avatar }.png`
                             },
                             image: {
-                                url: encodeURI(`https://img.shields.io/badge/${ bot.users[ui.id].bot ? 'bot' : 'user' }-${ bot.users[ui.id].username }-${ fillHex(ui.color.toString(16)) }.png`)
+                                url: encodeURI(`https://img.shields.io/badge/${ bot.users[ui.id].bot ? 'bot' : 'user' }-${ bot.users[ui.id].username }-${ ui.color.toString(16).padStart(6, '0') }.png`)
                             }
                         }
                     );
@@ -1818,11 +1818,6 @@ function getColor(serverID, userID) {
     if (serverID && settings.servers[serverID].color) return settings.servers[serverID].color.value
     if (serverID && bot.servers[serverID].members[userID].color) return bot.servers[serverID].members[userID].color
     return colors.gerp
-}
-
-function fillHex(str, l = 6) {
-    while (`${ str }`.length < l) str = '0' + str;
-    return str;
 }
 
 /**
