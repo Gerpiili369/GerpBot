@@ -58,7 +58,7 @@ class GameArea {
     }
 
     msg(msg, id) {
-        console.log('msg', `[${players[id].username || id}] ${msg}`);
+        console.log('msg', `[${ players[id].username || id }] ${ msg }`);
     }
 }
 
