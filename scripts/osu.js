@@ -5,6 +5,7 @@ const
     parser = new DomParser(),
     st = require('snowtime'),
     common = require('./common.js'),
+    FileCoder = require('./fileCoder.js'),
     key = common.config.auth.osu,
     endpoint = 'https://osu.ppy.sh/api',
     searchColors = {
@@ -20,12 +21,7 @@ const
 
 module.exports = {
     getUser,
-    getBestReplay: require('./osuBestReplay.js')({
-        getUser,
-        getMap,
-        getUserBest,
-        getReplayData
-    })
+    getBestReplay,
 };
 
 function getUser(user) {
@@ -145,6 +141,51 @@ function getUserRecentPlays(user, limit = 10) {
 function getReplayData(user, mapId, mode = 0) {
     return fetch(endpoint + '/get_replay?k=' + key + '&m=' + mode + '&b=' + mapId + '&u=' + user)
         .then(res => res2json(res, 'replay data.'));
+}
+
+function getBestReplay(username, playNumber = 1) {
+    return new Promise((resolve, reject) => {
+        let play, mapHash;
+
+        getUserBest(username, 100)
+            .then(data => {
+                if (data[playNumber - 1]) play = data[playNumber - 1];
+                else reject({ name: 'Not found', message: 'User or top play not found!' });
+            })
+            .then(() => getMap(play.beatmap_id))
+            .then(data => mapHash = data[0].file_md5)
+            .then(() => getReplayData(play.user_id, play.beatmap_id))
+            .then(replayData => {
+                if (replayData.error) return reject(new Error(replayData.error));
+
+                const
+                    cdr = Buffer.from(replayData.content, replayData.encoding),
+                    file = new FileCoder, mode = 0;
+
+                file.addValue(mode, 'byte')
+                    .addValue(3162190593, 'int') // version placeholder
+                    .addString(mapHash)
+                    .addString(username)
+                    .addString('') // replay hash
+                    .addValue(play.count300, 'short')
+                    .addValue(play.count100, 'short')
+                    .addValue(play.count50, 'short')
+                    .addValue(play.countgeki, 'short')
+                    .addValue(play.countkatu, 'short')
+                    .addValue(play.countmiss, 'short')
+                    .addValue(play.score, 'int')
+                    .addValue(play.maxcombo, 'short')
+                    .addValue(play.perfect, 'byte')
+                    .addValue(play.enabled_mods, 'int')
+                    .addString('') // life bar graph
+                    .addValue((new Date(play.date.replace(' ', 'T')).getTime() * 10000) + 621355968000000000, 'long')
+                    .addValue(cdr.length, 'int')
+                    .addFromBuffer(cdr)
+                    .addValue(0, 'long'); // unknown
+                resolve(file);
+            })
+            .catch(reject);
+    });
 }
 
 function removeFailsFromPlays(playList) {
