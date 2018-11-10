@@ -100,7 +100,7 @@ module.exports = class Ile extends Emitter {
      * @returns {String}
      */
     getCheckpoint() {
-        return `Next checkpoint: ${new Date(this.end)}`;
+        return `Next checkpoint: ${ new Date(this.end) }`;
     }
 
     /**
@@ -130,7 +130,7 @@ module.exports = class Ile extends Emitter {
             this.players[user].joined = true;
             this.save();
             if (!this.active) this.newRound();
-            else response += `\n${this.getCheckpoint()}`;
+            else response += `\n${ this.getCheckpoint() }`;
         } else response = 'Already here ya\'know.';
 
         return response;
@@ -158,7 +158,7 @@ module.exports = class Ile extends Emitter {
             this.players[user].delay = calculateUptime(this.end);
             this.players[user].delayMs = calculateUptime(this.end, undefined, true).ms;
             this.save();
-            return `You have checked in with the status: ${this.players[user].status}, and with the delay of ${uptimeToString(this.players[user].delay)}.`;
+            return `You have checked in with the status: ${ this.players[user].status }, and with the delay of ${ uptimeToString(this.players[user].delay) }.`;
         } else {
             return 'That is cheating!';
         }
@@ -197,7 +197,7 @@ module.exports = class Ile extends Emitter {
         const embed = new common.Embed('ILE Round Scoreboard');
         scoreboard.forEach((v, i) => {
             embed.addField(
-                `${i + 1}. ${v.id}`,
+                `${ i + 1 }. ${ v.id }`,
                 uptimeToString(v.delay),
                 true
             );
@@ -210,9 +210,9 @@ module.exports = class Ile extends Emitter {
      */
     getAcronym() {
         let acronym =
-            `${this.acronym['i'][Math.floor(Math.random() * this.acronym['i'].length)]} ` +
-            `${this.acronym['l'][Math.floor(Math.random() * this.acronym['l'].length)]} ` +
-            `${this.acronym['e'][Math.floor(Math.random() * this.acronym['e'].length)]}`;
+            `${ this.acronym['i'][Math.floor(Math.random() * this.acronym['i'].length)] } ` +
+            `${ this.acronym['l'][Math.floor(Math.random() * this.acronym['l'].length)] } ` +
+            `${ this.acronym['e'][Math.floor(Math.random() * this.acronym['e'].length)] }`;
         return acronym;
     }
 }

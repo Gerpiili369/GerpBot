@@ -208,32 +208,32 @@ class Embed {
         for (const field of this.fields) {
             const fn = this.fields.indexOf(field) + 1;
 
-            if (field.name === '') fails.push(`Field #${fn} name cannot be empty string!`);
-            if (field.value === '') fails.push(`Field #${fn} value cannot be empty string!`);
+            if (field.name === '') fails.push(`Field #${ fn } name cannot be empty string!`);
+            if (field.value === '') fails.push(`Field #${ fn } value cannot be empty string!`);
 
             if (field.inline && (typeof field.inline !== 'boolean'))
-                fails.push(`Field #${fn} inline is not a boolean!`);
+                fails.push(`Field #${ fn } inline is not a boolean!`);
 
             countList.push(
-                [field.name, 256, `field #${fn} name`],
-                [field.value, 1024, `field #${fn} value`]
+                [field.name, 256, `field #${ fn } name`],
+                [field.value, 1024, `field #${ fn } value`]
             );
         }
 
         // check url strings
         for (const url of urls2check) {
             if (typeof url[0] === 'string') {
-                if (!isUrl(url[0])) fails.push(`URL "${url[1]}" is not a string!`);
-            } else fails.push(`URL "${url[1]}" is not a string!`);
+                if (!isUrl(url[0])) fails.push(`URL "${ url[1] }" is not a string!`);
+            } else fails.push(`URL "${ url[1] }" is not a string!`);
         }
 
         // check normal (countable) strings
         for (const countable of countList) {
             if (typeof countable[0] === 'string') {
                 if (countable[0].length > countable[1])
-                    fails.push(`Countable "${countable[3]}" is too long! Length: ${countable[0].length}, max length: ${countList[1]}.`);
+                    fails.push(`Countable "${ countable[3] }" is too long! Length: ${ countable[0].length }, max length: ${ countList[1] }.`);
                 total += countable[0].length;
-            } else fails.push(`Countable "${countable[3]}" is not a string!`);
+            } else fails.push(`Countable "${ countable[3] }" is not a string!`);
         }
 
         // check embed size
