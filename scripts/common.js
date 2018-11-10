@@ -1,6 +1,7 @@
 const
     isUrl = require('is-url'),
     logger = require('winston'),
+    package = require('../package'),
     config = require('../config')
 
 logger.remove(logger.transports.Console);
@@ -237,6 +238,7 @@ const colors = {
 
 module.exports = {
     logger,
+    package,
     Embed,
     colors,
     config,
