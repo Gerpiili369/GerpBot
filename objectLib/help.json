@@ -28,6 +28,14 @@
                 "value": "Gives information about the role."
             },
             {
+                "name": "`@GerpBot changes`",
+                "value": "Check bot changelog."
+            },
+            {
+                "name": "`@GerpBot releases`",
+                "value": "Check releases from GitHub."
+            },
+            {
                 "name": "`@GerpBot osu`",
                 "value": "Check osu! user's profile."
             },
@@ -171,6 +179,34 @@
             {
                 "name": "Permission info",
                 "value": "`Embed Links` - required. Role information is delivered inside an embed."
+            }
+        ]
+    },
+    "changes": {
+        "title": "Help for `releases` -command",
+        "description": "Usage: `@GerpBot changes [<number of releases>]`\nShows changelog from bot's GitHub repository's releases. Number of releases can be specified. Listing order is from newest to oldest.",
+        "fields": [
+            {
+                "name": "Permission info",
+                "value": "`Embed Links` - required. Changelog information is delivered inside an embed."
+            }
+        ]
+    },
+    "releases": {
+        "title": "Help for `releases` -command",
+        "description": "Usage: `@GerpBot releases [<repository owner> <repository name>] [<number of releases>]`\nShows releases from GitHub. Listing order is from newest to oldest.",
+        "fields": [
+            {
+                "name": "Repository owner and name",
+                "value": "Enter the owner and name for the GitHub repository which's releases you want to see. Releases from the bot's repository will be displayed if owner and name are not specified."
+            },
+            {
+                "name": "`Number of releases`",
+                "value": "Restrict the amount of releases shown. All available releases will be displayed if no number is specified."
+            },
+            {
+                "name": "Permission info",
+                "value": "`Embed Links` - required. Release information is delivered inside an embed."
             }
         ]
     },
