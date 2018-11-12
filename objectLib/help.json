@@ -123,7 +123,7 @@
                 "name": "Shorter versions of commands are also available:",
                 "value": "`nt` - `nerfThis`\n`ut` - `uptime`\n`tz` - `timezone`\n`aa` - `autoAnswer`\n`ac` - `autoCompliment`"
             },{
-                "name": "Attachment info.",
+                "name": "Attachment info",
                 "value": "Bot can also automatically show information about uploaded attachments. Check currently supported filetypes with `@GerpBot help files`."
             }
         ]
@@ -640,8 +640,8 @@
         ]
     },
     "files": {
-        "title": "Currently supported filetypes:",
-        "description": "",
+        "title": "Currently supported filetypes",
+        "description": "Information will be shown when these files are uploaded as attachments.",
         "fields": [
         ]
     }
