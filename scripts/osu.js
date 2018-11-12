@@ -220,7 +220,7 @@ function playsToString(playList) {
 }
 
 function modulator(input) {
-    activeMods = [];
+    const activeMods = [];
     Number(input).toString(2).split('').reverse().forEach((v, i) => {
         if (v == 1) activeMods.push(mods[i]);
         if (mods[i] === 'NC') activeMods.splice(activeMods.indexOf('DT'), 1);
