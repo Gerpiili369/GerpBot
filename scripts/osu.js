@@ -229,6 +229,19 @@ function modulator(input) {
     return activeMods;
 }
 
+// https://osu.ppy.sh/help/wiki/Game_Modes/osu!#accuracy
+function accCalc(n300, n100, n50, miss) {
+    n300 = Number(n300);
+    n100 = Number(n100);
+    n50 = Number(n50);
+    miss = Number(miss);
+
+    return Math.round(
+        ((n50 * 50) + (n100 * 100) + (n300 * 300)) /
+        ((miss + n50 + n100 + n300) * 300) * 10000
+    ) / 100;
+}
+
 function dEsc(input) {
     return input.replace('_', '\\_').replace('*', '\\*')
         .replace('`', '\\`').replace('~', '\\~');
