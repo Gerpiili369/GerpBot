@@ -81,7 +81,7 @@ class Embed {
             if (err.name) this.author.name = err.name;
             if (err.message) this.title = err.message;
             if (err.stack && stack) this.description = err.stack;
-            if (err.type) this.footer.text = err.code;
+            if (err.code) this.footer.text = err.code;
         }
 
         this.color = colors.error;
