@@ -97,7 +97,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         fileReact = true;
         switch (ext) {
             case '.osr':
-                if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
+                if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
                 osu.readReplay(file.url).then(result => {
                     result.re.description = result.re.description.replace('<date>',
