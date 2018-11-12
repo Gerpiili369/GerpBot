@@ -22,6 +22,7 @@ const
 module.exports = {
     getUser,
     getBestReplay,
+    readReplay,
 };
 
 function getUser(user) {
@@ -191,6 +192,91 @@ function getBestReplay(username, playNumber = 1) {
             })
             .catch(reject);
     });
+}
+
+function readReplay(url) {
+    const pa = [];
+    return fetch(url)
+        .then(res => res.buffer())
+        .then(data => {
+            const play = new FileCoder();
+
+            play.fromBuffer(data)
+                .decodeValue('mode', 'byte')
+                .decodeValue('version', 'int')
+                .decodeString('map')
+                .decodeString('username')
+                .decodeString('replay')
+                .decodeValue('300s', 'short')
+                .decodeValue('100s', 'short')
+                .decodeValue('50s', 'short')
+                .decodeValue('geki', 'short')
+                .decodeValue('katu', 'short')
+                .decodeValue('miss', 'short')
+                .decodeValue('score', 'int')
+                .decodeValue('combo', 'short')
+                .decodeValue('perfect', 'byte')
+                .decodeValue('mods', 'int')
+                .decodeString('lifebar')
+                .decodeValue('date', 'long')
+
+            for (data of play.dataArray) pa.push(data.value);
+            /*
+                2 map hash
+                3 username
+                4 replay hash
+                5 300s
+                6 100s
+                7 50s
+                8 geki
+                9 katu
+                10 miss
+                11 score
+                12 combo
+                13 perfect
+                14 mods
+                15 lifebar
+                16 date
+            */
+            return pa[2];
+        })
+        .then(getMapWithHash)
+        .then(map => {
+            if (map.length === 0) return Promise.reject({
+                name: 'Map not found',
+                message: 'The map specified in the .osr -file could not be found!',
+                code: 404
+            });
+
+            map = map[0]
+
+            const
+                acc = accCalc(pa[5], pa[6], pa[7], pa[10]),
+                rank = rankCalc(acc, pa[5], pa[6], pa[7], pa[10], pa[14]),
+                re = new Embed(`${ dEsc(map.artist) } - ${ dEsc(map.title) } [${ dEsc(map.version) }]`,
+                `Beatmap by ${ map.creator }\n` +
+                `Played by ${ pa[3] } on \`<date>\``, {
+                    thumbnail: { url: `https://osu.ppy.sh/images/badges/score-ranks/Score-${ rank.replace('+', 'Plus').replace('D', 'F') }-Small-60.png` },
+                    image: { url: `https://assets.ppy.sh/beatmaps/${ map.beatmapset_id }/covers/cover.jpg` }
+                }
+            )
+
+            re.addField(`Score **${ pa[11] }**`,
+                '300 `' + pa[5] + 'x`\n' +
+                ' 100 `' + pa[6] + 'x`\n' +
+                '      50 `' + pa[7] + 'x`',
+                true
+            ).addField('**•**',
+                '激 `' + pa[5] + 'x`\n' +
+                '喝 `' + pa[6] + 'x`\n' +
+                '╳ `' + pa[7] + 'x`',
+                true
+            )
+            re.addField('Combo', '\t**' + pa[12] +'x**', true);
+            re.addField('Accuracy', '\t**' + acc + '%**', true);
+
+            return { re, date: (pa[16] - 621355968000000000) / 10000 };
+        })
 }
 
 function removeFailsFromPlays(playList) {

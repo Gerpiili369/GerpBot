@@ -643,6 +643,10 @@
         "title": "Currently supported filetypes",
         "description": "Information will be shown when these files are uploaded as attachments.",
         "fields": [
+            {
+                "name": ".osr",
+                "value": "Replay file for the rhythm game osu!"
+            }
         ]
     }
 }

@@ -96,6 +96,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         const ext = file.url.substring(file.url.length - file.url.split('').reverse().join('').indexOf('.') - 1);
         fileReact = true;
         switch (ext) {
+            case '.osr':
+                if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
+                    return pc.missage(msg, channelID, ['Embed Links']);
+                osu.readReplay(file.url).then(result => {
+                    result.re.description = result.re.description.replace('<date>',
+                        timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(result.date))
+                    );
+                    msg(channelID, userID == bot.id ? '' : 'osu! replay information:', result.re.errorIfInvalid());
+                }).catch(err => msg(channelID, '', new Embed().error(err)));
+                break;
             default: fileReact = true;
         }
     }
