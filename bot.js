@@ -70,7 +70,7 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
-    let serverID, admin = false, cmd, args = message.split(' '), chloc, pending;
+    let serverID, admin = false, cmd, args = message.split(' '), chloc, pending, fileReact = false;
 
     if (bot.channels[channelID]) serverID = bot.channels[channelID].guild_id;
     else if (!bot.directMessages[channelID]) return;
@@ -89,6 +89,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             embed = pi[1];
         }
         msg(channelID, string, embed instanceof Embed && embed.errorIfInvalid());
+    }
+
+    if (evt.d.attachments.length > 0) for (file of evt.d.attachments) {
+        // Messages with attachments
+        const ext = file.url.substring(file.url.length - file.url.split('').reverse().join('').indexOf('.') - 1);
+        fileReact = true;
+        switch (ext) {
+            default: fileReact = true;
+        }
     }
 
     if ((!serverID || snowmaker(args[0]) == bot.id) && !bot.users[userID].bot) {
@@ -1408,6 +1417,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         break;
                 }
                 break;
+            case '':
+                if (fileReact) break;
             default:
                 if (message.indexOf('?') != -1 && (!serverID || !settings.servers[serverID].disableAnswers)) {
                     msg(channelID, objectLib.answers[Math.floor(Math.random() * objectLib.answers.length)]);
