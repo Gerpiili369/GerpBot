@@ -178,7 +178,7 @@ function getBestReplay(username, playNumber = 1) {
                     .addValue(play.perfect, 'byte')
                     .addValue(play.enabled_mods, 'int')
                     .addString('') // life bar graph
-                    .addValue((new Date(play.date.replace(' ', 'T')).getTime() * 10000) + 621355968000000000, 'long')
+                    .addValue((new Date(play.date.replace(' ', 'T') + 'Z').getTime() * 10000) + 621355968000000000, 'long')
                     .addValue(cdr.length, 'int')
                     .addFromBuffer(cdr)
                     .addValue(0, 'long'); // unknown
