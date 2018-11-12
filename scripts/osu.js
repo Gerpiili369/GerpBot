@@ -242,6 +242,32 @@ function accCalc(n300, n100, n50, miss) {
     ) / 100;
 }
 
+// https://osu.ppy.sh/help/wiki/Game_Modes/osu!#grades
+function rankCalc(acc, n300, n100, n50, miss, mods) {
+    acc = Number(acc);
+    n300 = Number(n300);
+    n100 = Number(n100);
+    n50 = Number(n50);
+    miss = Number(miss);
+    mods = modulator(mods);
+
+    const total = n300 + n100 + n50 + miss;
+    let rank;
+
+    if (acc === 100) {
+        if (mods.indexOf('HD') > -1 || mods.indexOf('FL') > -1) rank = 'SS+'
+        else rank = 'SS';
+    } else if (n300 / total > 0.9 && n50 / total < 0.01 && miss === 0) {
+        if (mods.indexOf('HD') > -1 || mods.indexOf('FL') > -1) rank = 'S+'
+        else rank = 'S';
+    } else if ((n300 / total > 0.8 && miss === 0) || n300 / total > 0.9) rank = 'A';
+    else if ((n300 / total > 0.7 && miss === 0) || n300 / total > 0.8) rank = 'B';
+    else if (n300 / total > 0.6) rank = 'C';
+    else rank = 'D';
+
+    return rank;
+}
+
 function dEsc(input) {
     return input.replace('_', '\\_').replace('*', '\\*')
         .replace('`', '\\`').replace('~', '\\~');
