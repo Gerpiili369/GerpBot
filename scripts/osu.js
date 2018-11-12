@@ -128,6 +128,11 @@ function getMap(id) {
         .then(res => res2json(res, 'beatmap information.'))
 }
 
+function getMapWithHash(hash) {
+    return fetch(endpoint + '/get_beatmaps?k=' + key + '&h=' + hash + '&limit=1')
+        .then(res => res2json(res, 'beatmap information.'))
+}
+
 function getUserBest(user, limit = 10) {
     return fetch(endpoint + '/get_user_best?k=' + key + '&u=' + user + '&limit=' + limit)
         .then(res => res2json(res, 'user\'s best performance.'));
