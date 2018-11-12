@@ -82,21 +82,23 @@ module.exports = class ProFileCoder {
                     byteArray = [],
                     utfArray = [],
                     lebArray = []
+                let length = 0;
 
                 for (let i = this.byteIndex; true; i++) {
                     let group = parseInt(this.byteArray[i], 16).toString(2);
                     if (group.length < 8) {
-                        lebArray.push(group);
+                        lebArray.push(group.padStart(7, '0'));
                         break;
                     } else lebArray.push(group.substring(1));
                 }
                 this.byteIndex += lebArray.length;
 
-                for (let i = this.byteIndex; i < this.byteIndex + Number(parseInt(lebArray.reverse().join(), 2).toString(10)); i++) {
+                length = parseInt(lebArray.reverse().join(''), 2)
+                for (let i = this.byteIndex; i < this.byteIndex + length; i++) {
                     utfArray.push(this.byteArray[i])
                 }
 
-                this.byteIndex += utfArray.length;
+                this.byteIndex += length;
                 this.dataArray.push({
                     name,
                     value: Buffer.from(utfArray.join(''), 'hex').toString('utf8'),
