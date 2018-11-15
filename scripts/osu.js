@@ -14,6 +14,14 @@ const
         forum: 6896585,
         wiki: 109667717,
     },
+    rankColors = {
+        ss: 10624871,
+        s: 1268852,
+        a: 7573504,
+        b: 11368192,
+        c: 10685204,
+        d: 14277338,
+    },
     mods = [
         'NF', 'EZ', 'TD', 'HD', 'HR', 'SD', 'DT', 'RL', 'HT', 'NC', 'FL', 'AP',
         'SO', 'R2', 'PF'
@@ -256,6 +264,7 @@ function readReplay(url) {
                 re = new Embed(`${ dEsc(map.artist) } - ${ dEsc(map.title) } [${ dEsc(map.version) }]`,
                 `Beatmap by ${ map.creator }\n` +
                 `Played by ${ pa[3] } on \`<date>\``, {
+                    color: rankColors[rank.toLowerCase().replace('+', '')],
                     thumbnail: { url: `https://osu.ppy.sh/images/badges/score-ranks/Score-${ rank.replace('+', 'Plus').replace('D', 'F') }-Small-60.png` },
                     image: { url: `https://assets.ppy.sh/beatmaps/${ map.beatmapset_id }/covers/cover.jpg` }
                 }
