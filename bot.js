@@ -26,13 +26,13 @@ const
     ], 'objectLib'),
     // constant variables
     Embed = common.Embed,
+    Reminder = getReminderClass(),
     logger = common.logger,
     bot = new Discord.Client({ token: config.auth.token, autorun: true }),
     github = new GitHub(),
     ile = new Ile(getJSON('ile'), objectLib.ileAcronym),
     bsga = config.canvasEnabled ? new bs.GameArea() : null,
     kps = {},
-    reminderTimeouts = [],
     timeOf = {
         startUp: Date.now()
     },
@@ -50,6 +50,7 @@ for (const func in snowTime) eval(`${ func } = snowTime.${ func }`);
 
 if (!settings.servers) settings.servers = {};
 if (!settings.tz) settings.tz = {};
+if (!settings.reminders) settings.reminders = {};
 
 startLoops();
 
@@ -1071,119 +1072,107 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
                             });
 
-                            settings.reminders.forEach((v, i, a) => {
-                                if (typeof v == 'object' && v.creator.id == userID) {
-                                    let target;
-                                    if (bot.channels[v.channel]) {
-                                        target = `<#${ v.channel }> (${ bot.servers[bot.channels[v.channel].guild_id].name })`;
-                                    } else if (bot.directMessages[v.channel]) {
-                                        target = `<@${ bot.directMessages[v.channel].recipient.id }> (DM)`;
-                                    } else if (bot.users[v.channel]) {
-                                        target = `<@${ v.channel }> (DM)`;
-                                    } else {
-                                        target = v.channel;
-                                    }
-
-                                    rle.addField(
-                                        `Reminder #${ i }`,
-                                        `Time: ${ timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(v.time)) } \n` +
-                                        `Channel: ${ target } \n` +
-                                        `${ v.message ? `Message: ${ v.message }` : '' }`
-                                    );
-                                }
-                            });
+                            if (settings.reminders[userID]) for (const rem of settings.reminders[userID]) rle.addField(
+                                `Reminder #${ settings.reminders[userID].indexOf(rem) }`,
+                                `Time: ${ timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(rem.time)) }\n` +
+                                `Channel: ${
+                                    bot.channels[rem.channel] ?
+                                        `<#${ rem.channel }> (${ bot.servers[bot.channels[rem.channel].guild_id].name })`
+                                    : bot.directMessages[rem.channel] ?
+                                        `<@${ bot.directMessages[rem.channel].recipient.id }> (DM)`
+                                    : bot.users[rem.channel] ?
+                                        `<@${ rem.channel }> (DM)`
+                                    : rem.channel
+                                } \n` +
+                                `Message: ${ rem.message || '' }`
+                            );
 
                             msg(channelID, '', rle.errorIfInvalid());
                             break;
                         case 'cancel':
-                            if (typeof settings.reminders[args[1]] == 'object') {
-                                if (settings.reminders[args[1]].creator.id == userID) {
-                                    delete settings.reminders[args[1]];
-                                    clearTimeout(reminderTimeouts[args[1]]);
-                                    updateSettings();
-                                    msg(channelID, 'Cancel successful!');
-                                } else msg(channelID, 'That\'s not yours!');
+                            if (settings.reminders[userID] && settings.reminders[userID][args[1]]) {
+                                settings.reminders[userID].splice(args[1], 1);
+
+                                updateSettings();
+                                msg(channelID, 'Cancel successful!');
                             } else msg(channelID, 'Reminder doesn\'t exist!');
                             break;
                         default:
-                            let reminder = {
-                                mentions: '',
-                                links: [],
-                                creator: {
-                                    name: user,
-                                    id: userID
+                            const rem = new Reminder({
+                                owner: {
+                                    id: userID,
+                                    name: user
                                 },
-                                color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp,
-                                image: {},
-                                time: Date.now()
-                            };
+                                channel: snowmaker(args[0]),
+                                color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
+                            });
 
-                            reminder.channel = snowmaker(args[0]);
-                            if (
-                                bot.users[reminder.channel] ||
-                                bot.channels[reminder.channel]
-                            ) args.shift();
-                            else reminder.channel = channelID;
+                            // reminder to other user or channel?
+                            if (bot.users[rem.channel] || bot.channels[rem.channel]) args.shift();
+                            else rem.channel = channelID;
 
-                            if (bot.channels[reminder.channel] && !pc.userHasPerm(bot.channels[reminder.channel].guild_id, bot.id, 'TEXT_EMBED_LINKS', reminder.channel))
+                            // perms for receiving channel
+                            if (bot.channels[rem.channel] && !pc.userHasPerm(bot.channels[rem.channel].guild_id, bot.id, 'TEXT_EMBED_LINKS', rem.channel))
                                 return pc.missage(msg, channelID, ['Embed Links']);
 
-                            reminder.time += anyTimeToMs(args[0]);
-                            if (isNaN(reminder.time)) {
-                                if (settings.tz[userID]) args[0] += settings.tz[userID];
+                            if (isNaN(anyTimeToMs(args[0]))) {
+                                rem.time = args.shift();
+
+                                if (settings.tz[userID]) rem.time += settings.tz[userID];
                                 else {
                                     if (serverID && settings.tz[serverID]) {
-                                        args[0] += settings.tz[serverID];
+                                        rem.time += settings.tz[serverID];
                                         msg(channelID, `Using the server default UTC${ settings.tz[serverID]} timezone. You can change your timezone with "\`@${ bot.username } timezone\` -command".`);
                                     } else {
-                                        args[0] += 'Z';
+                                        rem.time += 'Z';
                                         msg(channelID, `Using the default UTC+00:00 timezone. You can change your timezone with "\`@${ bot.username } timezone\` -command".`);
                                     }
                                 }
-                                reminder.time = datemaker([args[0]]);
-                                if (reminder.time == 'Invalid Date') {
+                                rem.time = datemaker([rem.time]);
+                                if (rem.time == 'Invalid Date') {
                                     msg(channelID, 'Time syntax: `([<amount>](ms|s|min|h|d|y))...` or `[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]`.');
                                     break;
-                                } else reminder.time = reminder.time.getTime();
+                                } else rem.time = rem.time.getTime();
                             }
 
-                            for (let i = 1; i < args.length; i++) {
-                                if (!isNaN(anyTimeToMs(args[i]))) reminder.time += anyTimeToMs(args[i]);
+                            for (const arg of args) {
+                                if (!isNaN(anyTimeToMs(arg))) rem.time += anyTimeToMs(arg);
                                 else {
-                                    args.splice(0, i);
-
-                                    if (args.length > 0) reminder.message = args.join(' ');
+                                    args.splice(0, args.indexOf(arg));
+                                    rem.message = args.join(' ');
                                     break;
                                 }
                             }
 
                             for (const arg of args) {
-                                if (arg === '@everyone' || arg === '@here') reminder.mentions += arg;
+                                if (arg === '@everyone' || arg === '@here') rem.mentions += arg;
                                 else {
                                     let role = snowmaker(arg);
-                                    if (bot.channels[reminder.channel] && bot.servers[bot.channels[reminder.channel].guild_id].roles[role]) {
-                                        reminder.mentions += `<@&${ role }>`;
+                                    if (bot.channels[rem.channel] && bot.servers[bot.channels[rem.channel].guild_id].roles[role]) {
+                                        rem.mentions += `<@&${ role }>`;
                                     } else if (serverID && bot.servers[serverID].roles[role]) {
-                                        reminder.message = reminder.message.replace(arg, `@${ bot.servers[serverID].roles[role].name }`);
-                                    } else if (isUrl(arg)) reminder.links.push(arg);
+                                        rem.message = rem.message.replace(arg, `@${ bot.servers[serverID].roles[role].name }`);
+                                    } else if (isUrl(arg)) rem.links.push(arg);
                                 }
                             }
 
-                            if (bot.channels[reminder.channel]) for (const mention of evt.d.mentions) {
-                                if (mention.id != bot.id) reminder.mentions += `<@${ mention.id }> `;
-                            } else reminder.mentions = '';
+                            if (bot.channels[rem.channel]) for (const mention of evt.d.mentions) {
+                                if (mention.id != bot.id) rem.mentions += `<@${ mention.id }> `;
+                            } else rem.mentions = '';
 
-                            addLatestMsgToEmbed(new Embed(), channelID)
+                            addLatestMsgToEmbed(rem.toEmbed(), channelID)
                                 .then(embed => {
                                     if (embed.image.url) {
-                                        reminder.image = embed.image;
-                                        const i = reminder.links.indexOf(reminder.image.url);
-                                        if (i > -1) reminder.links.splice(i, 1);
+                                        rem.image = embed.image.url;
+                                        if (rem.links.indexOf(rem.image) > -1) rem.links.shift();
                                     }
 
-                                    settings.reminders.push(reminder);
+                                    rem.activate();
+
+                                    if (!settings.reminders[userID]) settings.reminders[userID] = [];
+                                    settings.reminders[userID].push(rem);
+
                                     updateSettings();
-                                    remindTimeout(reminder);
 
                                     msg(channelID, 'I will remind when the time comes...');
                                 })
@@ -1191,14 +1180,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     }
                 } else if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID)) {
                     pc.missage(msg, channelID, ['Embed Links']);
-                } else remindTimeout({
+                } else new Reminder({
                     mentions: `<@${ userID }>`,
-                    creator: {
+                    owner: {
                         name: bot.username,
                         id: bot.id
                     },
                     color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp,
-                    time: Date.now(),
                     channel: channelID,
                     message: `**How to** \n` +
                         'Do stuff:\n' +
@@ -1207,7 +1195,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         `\`@${ bot.username } remind [<#channel>|<@mention>] [<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>] [<message>]...\`\n` +
                         'Set reminder after set amount of time:\n' +
                         `\`@${ bot.username } remind [<#channel>|<@mention>] ([<amount>]ms|[<amount>]s|[<amount>]min|[<amount>]h|[<amount>]d|[<amount>]y)... [<message>]...\``
-                });
+                }).activate();
                 break;
             case 'timezone':
             case 'tz':
@@ -1676,6 +1664,8 @@ function startLoops() {
             i++;
         }
     }, 2000);
+
+    setInterval(startReminding, 86400000);
 }
 
 function startIle() {
@@ -1708,44 +1698,51 @@ function startIle() {
 }
 
 function startReminding() {
-    if (!startedOnce) if (settings.reminders) {
-        for (let v, i = settings.reminders.length - 1; i >= 0; i--) {
-            v = settings.reminders[i];
-            if (v == null) settings.reminders.splice(i, 1);
-            else remindTimeout(v, i);
-        }
-        updateSettings();
-    } else settings.reminders = [];
+    const test = new Reminder();
+    for (const user in settings.reminders) for (const rem of settings.reminders[user]) {
+        console.log(settings.reminders[user].indexOf(rem));
+        if (test.ready(rem)) settings.reminders[user].splice(settings.reminders[user].indexOf(rem), 1, new Reminder(rem).activate());
+    }
 }
 
-/**
- * @arg {Object} reminder
- * @arg {String} reminder.mentions
- * @arg {Object} reminder.creator
- * @arg {Object} reminder.creator.name
- * @arg {Object} reminder.creator.id
- * @arg {String|Number} reminder.color
- * @arg {Number} reminder.time
- * @arg {Snowflake} reminder.channel
- * @arg {String} reminder.message
- */
-function remindTimeout(reminder, i = settings.reminders.indexOf(reminder)) {
-    const re = new Embed('Reminder', reminder.message, {
-        color: reminder.color,
-        image: reminder.image,
-        footer: {
-            text: `Created by ${ reminder.creator.name }`
+function getReminderClass() {
+    return class {
+        constructor (obj = {}) {
+            this.mentions = obj.mentions || '';
+            this.links = obj.links || [];
+            this.owner = obj.owner || {
+                name: '',
+                id: ''
+            };
+            this.color = obj.color || '';
+            this.image = obj.image || '';
+            this.time = obj.time || Date.now();
+            this.channel = obj.channel || '';
         }
-    });
 
-    reminderTimeouts[i] = setTimeout(() => {
-        delete settings.reminders[i];
-        updateSettings();
+        ready(rem = this) {
+            return !rem.timeout && rem.time - Date.now() < 86400000;
+        }
 
-        msg(reminder.channel, reminder.mentions, re);
+        activate() {
+            if (this.ready()) this.timeout = setTimeout(() => {
+                msg(this.channel, this.mentions, this.toEmbed())
+                if (this.links.length > 0) setTimeout(msg, 500, this.channel, this.links.join('\n'));
+                if (settings.reminders[this.owner.id] && settings.reminders[this.owner.id].indexOf(this) > -1) settings.reminders[this.owner.id].splice(settings.reminders[this.owner.id].indexOf(this), 1);
+                updateSettings();
+            }, this.time - Date.now());
+            return this;
+        }
 
-        if (reminder.links.length > 0) setTimeout(msg, 500, reminder.channel, reminder.links.join('\n'));
-    }, reminder.time - Date.now());
+        toEmbed(rem = this) {
+            return new Embed('Reminder', rem.message, {
+                color: rem.color,
+                image: { url: rem.image },
+                footer: { text: `Created by ${ rem.owner.name }` },
+            });
+        }
+    }
+
 }
 
 /**
@@ -1866,6 +1863,8 @@ function updateSettings() {
     if (!config.saveSettings) return;
     json = JSON.stringify(settings, (key, value) => {
         switch (key) {
+            case 'timeout':
+                return;
         }
         return value;
     }, 4);
