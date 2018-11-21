@@ -93,7 +93,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
     if (evt.d.attachments.length > 0) for (file of evt.d.attachments) {
         // Messages with attachments
-        const ext = file.url.substring(file.url.length - file.url.split('').reverse().join('').indexOf('.') - 1);
+        const ext = file.url.substring(file.url.length - file.url.split('').reverse().join('').indexOf('.') - 1).toLowerCase();
         fileReact = true;
         switch (ext) {
             case '.osr':
