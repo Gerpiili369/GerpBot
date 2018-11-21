@@ -1836,7 +1836,7 @@ function addColorRole(serverID) {
 }
 
 function getColor(serverID, userID) {
-    if (serverID && settings.servers[serverID].color) return settings.servers[serverID].color.value
+    if (serverID && settings.servers[serverID].color && settings.servers[serverID].color.value) return settings.servers[serverID].color.value
     if (serverID && bot.servers[serverID].members[userID].color) return bot.servers[serverID].members[userID].color
     return colors.gerp
 }
