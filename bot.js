@@ -1864,17 +1864,23 @@ function getJSON(file, location = '') {
 
 function updateSettings() {
     if (!config.saveSettings) return;
-    json = JSON.stringify(settings, null, 4);
+    json = JSON.stringify(settings, (key, value) => {
+        switch (key) {
+        }
+        return value;
+    }, 4);
     if (json) fs.writeFile('settings.json', json, err => {
         if (err) logger.error(err, '');
-        else try {
-            require('./settings');
-        }
-        catch (err) {
-            logger.warn(err, '');
-            logger.warn('Updated settings.json was corrupted during update, updating again in 5 seconds.');
-            setTimeout(updateSettings, 5000);
-        }
+        else fs.readFile('settings.json', 'utf8', (err, data) => {
+            if (err) logger.error(err, '');
+            try {
+                JSON.parse(data);
+            }
+            catch (err) {
+                logger.warn('Updated settings.json was corrupted during update, retrying in 5 seconds.');
+                setTimeout(updateSettings, 5000);
+            }
+        });
     });
 }
 
