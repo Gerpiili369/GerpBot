@@ -71,7 +71,7 @@ module.exports = class Osu extends common.Api {
 
                 let eventStr = '';
                 for (let i = 0; i < u.events.length && i < 5; i++)
-                    eventStr += dEsc(striptags(u.events[i].display_html)) + '\n\n';
+                    eventStr += common.dEsc(striptags(u.events[i].display_html)) + '\n\n';
 
                 if (eventStr) oue.addField('*Recent events*', eventStr)
             })
@@ -251,7 +251,7 @@ module.exports = class Osu extends common.Api {
                 const
                     acc = osu.accCalc(pa[5], pa[6], pa[7], pa[10]),
                     rank = osu.rankCalc(acc, pa[5], pa[6], pa[7], pa[10], pa[14]),
-                    re = new common.Embed(`${ dEsc(map.artist) } - ${ dEsc(map.title) } [${ dEsc(map.version) }]`,
+                    re = new common.Embed(`${ common.dEsc(map.artist) } - ${ common.dEsc(map.title) } [${ common.dEsc(map.version) }]`,
                     `Beatmap by ${ map.creator }\n` +
                     `Played by ${ pa[3] } on \`<date>\``, {
                         color: osu.rankColors[rank.toLowerCase().replace('+', '')],
@@ -346,16 +346,11 @@ module.exports = class Osu extends common.Api {
                 for (const perf of playList) {
                     mInfo = mapInfos[perf.beatmap_id],
                     am = osu.modulator(perf.enabled_mods);
-                    result += `**${ perf.rank.replace('X', 'SS').replace('H', '+') }** ${ dEsc(mInfo.artist) } - ${ dEsc(mInfo.title) } [${ dEsc(mInfo.version) }] ` +
+                    result += `**${ perf.rank.replace('X', 'SS').replace('H', '+') }** ${ common.dEsc(mInfo.artist) } - ${ common.dEsc(mInfo.title) } [${ common.dEsc(mInfo.version) }] ` +
                     (am.length > 0 ? `\`[${ am.join(',') }]\` ` : '') +
                     (perf.pp ? `**${ Math.round(perf.pp) }pp**` : '') + '\n';
                 }
                 return result;
             });
     }
-}
-
-function dEsc(input) {
-    return input.replace('_', '\\_').replace('*', '\\*')
-        .replace('`', '\\`').replace('~', '\\~');
 }

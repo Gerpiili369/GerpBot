@@ -256,11 +256,17 @@ const colors = {
     error: 16711680     // ErrorRed
 }
 
+function dEsc(input) {
+    return input.replace('_', '\\_').replace('*', '\\*')
+        .replace('`', '\\`').replace('~', '\\~');
+}
+
 module.exports = {
     logger,
     package,
     Api,
     Embed,
     colors,
+    dEsc,
     config,
 }
