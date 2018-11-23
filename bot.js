@@ -1480,6 +1480,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             reactionList.push('🔼', '▶', '🔽', '◀', '❌');
         }
 
+        // osu! embeds
+        switch (osuEmbedIdentifier(evt.d.embeds[0])) {
+            case 'profile':
+                reactionList.push('📢', '🏆', '🏅', '🎥', '🕒');
+                break;
+        }
+
         for (let i = 0; i < reactionList.length; i++)
             setTimeout(emojiResponse, i * 500, reactionList[i]);
     }
@@ -1500,6 +1507,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         }, err => { if (err) logger.error(err, ''); });
     }
 });
+
+function osuEmbedIdentifier(embed) {
+    if (embed.title && embed.title.indexOf('osu!') > -1) for (const type of [
+        'profile',
+    ]) if (embed.title.indexOf(type) > -1) return type;
+}
 
 function addLatestMsgToEmbed(me, channelID, limit = 5) {
     return new Promise((resolve, reject) => {
@@ -1552,6 +1565,31 @@ bot.on('any', evt => {
 function handleReactions(evt, message) {
     const embed = message.embeds[0];
     new Promise((resolve, reject) => {
+        // osu! embeds
+        // TODO: finish after sleep
+        switch (osuEmbedIdentifier(embed)) {
+            case 'profile':
+                switch (evt.d.emoji.name) {
+                    case '📢':
+                        console.log('activity');
+                        break;
+                    case '🏆':
+                        console.log('best 1');
+                        break;
+                    case '🏅':
+                        console.log('best 2');
+                        break;
+                    case '🎥':
+                        console.log('replays');
+                        break;
+                    case '🕒':
+                        console.log('recent');
+                        break;
+                }
+                resolve();
+                break;
+        }
+
         // Blue Squares game movement
         if (embed.title == 'Blue Squares: The Game') {
             if (!config.canvasEnabled) return msg(channelID, 'Bot owner has not enabled this feature.');
