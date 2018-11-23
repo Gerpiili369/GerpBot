@@ -18,7 +18,7 @@ const
     bs = config.canvasEnabled ? require('./scripts/bs.js') : null,
     GitHub = require('./scripts/github.js'),
     Ile = require('./scripts/ile.js'),
-    osu = require('./scripts/osu.js');
+    Osu = require('./scripts/osu.js'),
     permCheck = require('./scripts/permCheck.js'),
     // load objectLib
     objectLib = getJSON([
@@ -31,6 +31,7 @@ const
     bot = new Discord.Client({ token: config.auth.token, autorun: true }),
     github = new GitHub(),
     ile = new Ile(getJSON('ile'), objectLib.ileAcronym),
+    osu = new Osu(config.auth.osu),
     bsga = config.canvasEnabled ? new bs.GameArea() : null,
     kps = {},
     timeOf = {
