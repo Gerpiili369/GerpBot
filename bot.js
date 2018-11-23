@@ -1543,13 +1543,17 @@ bot.on('any', evt => {
         if (!settings.servers[evt.d.id]) settings.servers[evt.d.id] = {};
     }
 
-    // Blue Squares game movement
     if (evt.t === 'MESSAGE_REACTION_ADD' && evt.d.user_id != bot.id) bot.getMessage({
         channelID: evt.d.channel_id,
         messageID: evt.d.message_id
-    }, (err, message) => {
-        if (err) logger.error(err, '');
-        else if (message.embeds[0] && message.embeds[0].title == 'Blue Squares: The Game') {
+    }, (err, message) => err ? logger.error(err, '') : handleReactions(evt, message));
+});
+
+function handleReactions(evt, message) {
+    const embed = message.embeds[0];
+    new Promise((resolve, reject) => {
+        // Blue Squares game movement
+        if (embed.title == 'Blue Squares: The Game') {
             if (!config.canvasEnabled) return msg(channelID, 'Bot owner has not enabled this feature.');
             if (bsga.players[evt.d.user_id]) bsga.players[evt.d.user_id].online = true;
             else bsga.players[evt.d.user_id] = new bs.Player(evt.d.user_id, bot.users[evt.d.user_id].username);
@@ -1562,8 +1566,8 @@ bot.on('any', evt => {
             }
 
             web.addTemp('bsga-image.png', bsga.update().toBuffer())
-                .then(file => new Promise((resolve, reject) => {
-                    const bse = new Embed(message.embeds[0]);
+                .then(file => {
+                    const bse = new Embed(embed);
 
                     bsga.extra = bsga.extra === 'a' ? 'b' : 'a';
                     bse.image.url = config.web.url + '/temp/bsga-image.png' +
@@ -1574,21 +1578,19 @@ bot.on('any', evt => {
                         messageID: evt.d.message_id,
                         message: '',
                         embed: bse
-                    }, (err, res) => {
-                        if (err) reject(err);
-
-                        bot.removeReaction({
-                            channelID: evt.d.channel_id,
-                            messageID: evt.d.message_id,
-                            userID: evt.d.user_id,
-                            reaction: evt.d.emoji.name
-                        }, (err, res) => err ? reject(err) : resolve(res));
-                    });
-                }))
-                .catch(err => logger.error(err, ''));
+                    }, (err, res) => err ? reject(err) : resolve(res));
+                })
+                .catch(reject);
         }
-    });
-});
+    })
+        .then(() => bot.removeReaction({
+            channelID: evt.d.channel_id,
+            messageID: evt.d.message_id,
+            userID: evt.d.user_id,
+            reaction: evt.d.emoji.name
+        }, (err, res) => err ? Promise.reject(err) : Promise.resolve(res)))
+        .catch(err => logger.error(err, ''));
+}
 
 /**
  * @arg {Snowflake} channel
