@@ -44,7 +44,8 @@ Create `config.json` -file following the example below.
     },
     "auth": {
         "token": "<DISCORD-BOT-TOKEN-HERE>",
-        "tubeKey": "<YOUTUBE-API-KEY-HERE>"
+        "tubeKey": "<YOUTUBE-API-KEY-HERE>",
+        "osu": "OSU-API-KEY-HERE"
     }
 }
 ```
@@ -55,6 +56,7 @@ Create `config.json` -file following the example below.
 - `url`: External address for web server.
 - `token`: Discord bot token.
 - `tubeKey`: YouTube API key. Required for playing music from YouTube.
+- `osu`: osu! API key. Required for checking using osu -command.
 
 ### Install node-canvas (optional)
 For canvas functionality you will need `node-canvas`. It is backed by [Cairo](http://cairographics.org/) which means it probably didn't install correctly when you were running `npm i`. Installation guide for `node-canvas` with Cairo can be found [here](https://www.npmjs.com/package/canvas). Don't forget to set `canvasEnabled` to `true` in your `config.json`!
