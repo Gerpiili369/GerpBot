@@ -5,6 +5,7 @@ const
     parser = new DomParser(),
     st = require('snowtime'),
     common = require('./common.js'),
+    graph = require('../objectLib/osuSignature'),
     FileCoder = require('./fileCoder.js');
 
 module.exports = class Osu extends common.Api {
@@ -181,7 +182,7 @@ module.exports = class Osu extends common.Api {
                         .addValue(play.maxcombo, 'short')
                         .addValue(play.perfect, 'byte')
                         .addValue(play.enabled_mods, 'int')
-                        .addString('') // life bar graph
+                        .addString(graph)
                         .addValue((new Date(play.date.replace(' ', 'T') + 'Z').getTime() * 10000) + 621355968000000000, 'long')
                         .addValue(cdr.length, 'int')
                         .addFromBuffer(cdr)
