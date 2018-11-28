@@ -1510,7 +1510,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 });
 
 function osuEmbedIdentifier(embed) {
-    if (embed.title && embed.title.indexOf('osu!') > -1) for (const type of [
+    if (embed && embed.title && embed.title.indexOf('osu!') > -1) for (const type of [
         'profile',
     ]) if (embed.title.indexOf(type) > -1) return type;
 }
