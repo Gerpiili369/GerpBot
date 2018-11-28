@@ -1728,10 +1728,8 @@ function startIle() {
 
 function startReminding() {
     const test = new Reminder();
-    for (const user in settings.reminders) for (const rem of settings.reminders[user]) {
-        console.log(settings.reminders[user].indexOf(rem));
+    for (const user in settings.reminders) for (const rem of settings.reminders[user])
         if (test.ready(rem)) settings.reminders[user].splice(settings.reminders[user].indexOf(rem), 1, new Reminder(rem).activate());
-    }
 }
 
 function getReminderClass() {
