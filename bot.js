@@ -52,6 +52,7 @@ for (const func in snowTime) eval(`${ func } = snowTime.${ func }`);
 if (!settings.servers) settings.servers = {};
 if (!settings.tz) settings.tz = {};
 if (!settings.reminders) settings.reminders = {};
+bot.pending = {};
 
 startLoops();
 
@@ -72,17 +73,14 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
-    let serverID, admin = false, cmd, args = message.split(' '), chloc, pending, fileReact = false;
+    let serverID, admin = false, cmd, args = message.split(' '), fileReact = false;
 
     if (bot.channels[channelID]) serverID = bot.channels[channelID].guild_id;
     else if (!bot.directMessages[channelID]) return;
 
-    chloc = bot[serverID ? 'channels' : 'directMessages'][channelID];
-    if (!chloc.pendingMessages) chloc.pendingMessages = [];
-    pending = chloc.pendingMessages;
-
-    if (userID === bot.id && pending.length > 0) {
-        let pi = pending.splice(0, 1)[0], string, embed;
+    if (!bot.pending[channelID]) bot.pending[channelID] = [];
+    if (userID === bot.id && bot.pending[channelID].length > 0) {
+        let pi = bot.pending[channelID].splice(0, 1)[0], string, embed;
 
         if (typeof pi === 'string') string = pi;
         else if (pi instanceof Embed) embed = pi;
@@ -138,7 +136,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 help.color = getColor(serverID, userID);
                 help.image.url = `https://img.shields.io/badge/bot-${ bot.username.replace(' ', '_') }-${ getColor(serverID, userID).toString(16).padStart(6, '0') }.png`;
                 help.isValid();
-                msg(channelID, '', help.pushToIfMulti(pending).errorIfInvalid());
+                msg(channelID, '', help.pushToIfMulti(bot.pending[channelID]).errorIfInvalid());
                 break;
             case 'server':
                 if (!serverID) return msg(channelID, 'This is a private conversation!');
@@ -397,10 +395,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (data.length < 1) return msg(channelID, '', new Embed('No releases available.').error())
 
                         const titleEmbed = new Embed(`Releases for ${ data[0].html_url.split('/')[3] }/${ data[0].html_url.split('/')[4] }`)
-                        if (args.length < 2) pending.push(titleEmbed);
+                        if (args.length < 2) bot.pending[channelID].push(titleEmbed);
 
                         for (let i = 0; i < data.length && i < max; i++)
-                            pending.push(new Embed(data[i].name, data[i].body, {
+                            bot.pending[channelID].push(new Embed(data[i].name, data[i].body, {
                                 timestamp: data[i].published_at,
                                 author: {
                                     name: data[i].tag_name,
