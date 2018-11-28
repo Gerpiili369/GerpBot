@@ -1484,6 +1484,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'profile':
                 reactionList.push('🏆', '🕒');
                 break;
+            case 'top':
+                reactionList.push('➕');
+                break;
         }
 
         for (let i = 0; i < reactionList.length; i++)
@@ -1510,6 +1513,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 function osuEmbedIdentifier(embed) {
     if (embed && embed.title && embed.title.indexOf('osu!') > -1) for (const type of [
         'profile',
+        'top',
     ]) if (embed.title.indexOf(type) > -1) return type;
 }
 
@@ -1561,6 +1565,35 @@ bot.on('any', evt => {
     }, (err, message) => err ? logger.error(err, '') : handleReactions(evt, message));
 });
 
+function addOsuPlaysFromReaction(profOwner, evt, offset = 0) {
+    offset = Number(offset)
+    if (isNaN(offset)) return;
+    osu.getUserBest(profOwner, offset + 5)
+        .then(playList => {
+            playList = playList.slice(offset);
+            const promArr = [];
+            for (const play of playList) promArr.push(
+                osu.singlePlayEmbed(play).then(result => {
+                    result.re.description = result.re.description.replace('<date>',
+                        timeAt(findTimeZone(settings.tz, [evt.d.user_id, evt.d.guild_id]), new Date(result.date))
+                    );
+                    return result.re;
+                })
+            )
+            return Promise.all(promArr);
+        })
+        .then(reList => {
+            const reFirst = reList.shift();
+            if (!bot.pending[evt.d.channel_id]) bot.pending[evt.d.channel_id] = [];
+            bot.pending[evt.d.channel_id].push(...reList, new Embed(
+                `Showing top ${ offset + 5 } osu! plays from ${ profOwner }`,
+                { color: osu.searchColors.user }
+            ));
+            msg(evt.d.channel_id, '', reFirst);
+        })
+        .catch(err => msg(evt.d.channel_id, '', new Embed().error(err)));
+}
+
 function handleReactions(evt, message) {
     const embed = message.embeds[0];
     new Promise((resolve, reject) => {
@@ -1570,12 +1603,23 @@ function handleReactions(evt, message) {
             case 'profile':
                 switch (evt.d.emoji.name) {
                     case '🏆':
+                        addOsuPlaysFromReaction(embed.title.replace('\'s osu! profile', ''), evt);
                         break;
                     case '🕒':
                         console.log('recent');
                         break;
                 }
                 resolve();
+                break;
+            case 'top':
+                if (evt.d.emoji.name === '➕') {
+                    args = embed.title.replace('Showing top ', '').replace('osu! plays from ', '').split(' ');
+                    addOsuPlaysFromReaction(args[1], evt, args[0]);
+                    bot.deleteMessage({
+                        channelID: evt.d.channel_id,
+                        messageID: evt.d.message_id
+                    });
+                }
                 break;
         }
 
