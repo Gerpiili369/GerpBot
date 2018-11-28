@@ -251,7 +251,6 @@ module.exports = class Osu extends common.Api {
 
                 const
                     acc = osu.accCalc(pa[5], pa[6], pa[7], pa[10]),
-                    rank = osu.rankCalc(acc, pa[5], pa[6], pa[7], pa[10], pa[14]),
                     re = new common.Embed(`${ common.dEsc(map.artist) } - ${ common.dEsc(map.title) } [${ common.dEsc(map.version) }]`,
                     `Beatmap by ${ map.creator }\n` +
                     `Played by ${ pa[3] } on \`<date>\``, {
@@ -274,6 +273,7 @@ module.exports = class Osu extends common.Api {
                 )
                 re.addField('Combo', '\t**' + pa[12] +'x**', true);
                 re.addField('Accuracy', '\t**' + acc + '%**', true);
+                    rank = osu.rankCalc(pa[5], pa[6], pa[7], pa[10], pa[14]),
 
                 return { re, date: (pa[16] - 621355968000000000) / 10000 };
             })
@@ -303,8 +303,7 @@ module.exports = class Osu extends common.Api {
     }
 
     // https://osu.ppy.sh/help/wiki/Game_Modes/osu!#grades
-    rankCalc(acc, n300, n100, n50, miss, mods) {
-        acc = Number(acc);
+    rankCalc(n300, n100, n50, miss, mods = 0) {
         n300 = Number(n300);
         n100 = Number(n100);
         n50 = Number(n50);
@@ -314,7 +313,7 @@ module.exports = class Osu extends common.Api {
         const total = n300 + n100 + n50 + miss;
         let rank;
 
-        if (acc === 100) {
+        if (total === n300) {
             if (mods.indexOf('HD') > -1 || mods.indexOf('FL') > -1) rank = 'SS+'
             else rank = 'SS';
         } else if (n300 / total > 0.9 && n50 / total < 0.01 && miss === 0) {
