@@ -1596,7 +1596,6 @@ bot.on('any', evt => {
 
 function handleReactions(evt, message) {
     const embed = message.embeds[0];
-    new Promise((resolve, reject) => {
         // osu! embeds
         // TODO: finish after sleep
         switch (osuEmbedIdentifier(embed)) {
