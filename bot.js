@@ -99,7 +99,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case '.osr':
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
-                osu.readReplay(file.url).then(result => {
+                osu.readReplay(file.url).then(perf => osu.singlePlayEmbed(perf)).then(result => {
                     result.re.description = result.re.description.replace('<date>',
                         timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(result.date))
                     );

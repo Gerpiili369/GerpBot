@@ -237,46 +237,67 @@ module.exports = class Osu extends common.Api {
                     15 lifebar
                     16 date
                 */
-                return pa[2];
-            })
-            .then(hash => osu.getMapWithHash(hash))
-            .then(map => {
-                if (map.length === 0) return Promise.reject({
-                    name: 'Map not found',
-                    message: 'The map specified in the .osr -file could not be found!',
-                    code: 404
-                });
 
-                map = map[0]
+                return {
+                    beatmap_id: pa[2],
+                    username: pa[3],
+                    count300: pa[5],
+                    count100: pa[6],
+                    count50: pa[7],
+                    countgeki: pa[8],
+                    countkatu: pa[9],
+                    countmiss: pa[10],
+                    score: pa[11],
+                    maxcombo: pa[12],
+                    perfect: pa[13],
+                    enabled_mods: pa[14],
+                    date: new Date((pa[16] - 621355968000000000) / 10000).toISOString().slice(0, -5).replace('T', ' '),
+                    rank: osu.rankCalc(pa[5], pa[6], pa[7], pa[10], pa[14]),
+                };
+            });
+    }
 
-                const
-                    acc = osu.accCalc(pa[5], pa[6], pa[7], pa[10]),
-                    re = new common.Embed(`${ common.dEsc(map.artist) } - ${ common.dEsc(map.title) } [${ common.dEsc(map.version) }]`,
-                    `Beatmap by ${ map.creator }\n` +
-                    `Played by ${ pa[3] } on \`<date>\``, {
-                        color: osu.rankColors[rank.toLowerCase().replace('+', '')],
-                        thumbnail: { url: `https://osu.ppy.sh/images/badges/score-ranks/Score-${ rank.replace('+', 'Plus').replace('D', 'F') }-Small-60.png` },
-                        image: { url: `https://assets.ppy.sh/beatmaps/${ map.beatmapset_id }/covers/cover.jpg` }
-                    }
-                )
+    singlePlayEmbed(perf) {
+        const osu = this;
+        return new Promise(resolve => {
+            if (perf.beatmap_id.length === 32) resolve(osu.getMapWithHash(perf.beatmap_id));
+            else resolve(osu.getMap(perf.beatmap_id));
+        }).then(map => {
+            if (map.length === 0) return Promise.reject({
+                name: 'Map not found',
+                message: 'The map could not be found!',
+                code: 404
+            });
 
-                re.addField(`Score **${ pa[11] }**`,
-                    '300 `' + pa[5] + 'x`\n' +
-                    ' 100 `' + pa[6] + 'x`\n' +
-                    '      50 `' + pa[7] + 'x`',
-                    true
-                ).addField('**•**',
-                    '激 `' + pa[5] + 'x`\n' +
-                    '喝 `' + pa[6] + 'x`\n' +
-                    '╳ `' + pa[7] + 'x`',
-                    true
-                )
-                re.addField('Combo', '\t**' + pa[12] +'x**', true);
-                re.addField('Accuracy', '\t**' + acc + '%**', true);
-                    rank = osu.rankCalc(pa[5], pa[6], pa[7], pa[10], pa[14]),
+            map = map[0];
+            perf.rank = perf.rank.replace('X', 'SS').replace('H', '+');
+            perf.accuracy = osu.accCalc(perf.count300, perf.count100, perf.count50, perf.enabled_mods);
 
-                return { re, date: (pa[16] - 621355968000000000) / 10000 };
-            })
+            const re = new common.Embed(`${ common.dEsc(map.artist) } - ${ common.dEsc(map.title) } [${ common.dEsc(map.version) }]`,
+                `Beatmap by ${ map.creator }\n` +
+                `Played${ perf.username ? ' by ' + perf.username : ''} on \`<date>\``, {
+                    color: osu.rankColors[perf.rank.toLowerCase().replace('+', '')],
+                    thumbnail: { url: `https://osu.ppy.sh/images/badges/score-ranks/Score-${ perf.rank.replace('+', 'Plus').replace('D', 'F') }-Small-60.png` },
+                    image: { url: `https://assets.ppy.sh/beatmaps/${ map.beatmapset_id }/covers/cover.jpg` }
+                }
+            );
+
+            re.addField(`Score **${ perf.score }**`,
+                '300 `' + perf.count300 + 'x`\n' +
+                ' 100 `' + perf.count100 + 'x`\n' +
+                '      50 `' + perf.count50 + 'x`',
+                true
+            ).addField(`**${ perf.pp ? `${ Math.round(perf.pp) }pp` : '•'}**`,
+                '激 `' + perf.countgeki + 'x`\n' +
+                '喝 `' + perf.countkatu + 'x`\n' +
+                '╳ `' + perf.countmiss + 'x`',
+                true
+            )
+            re.addField('Combo', '\t**' + perf.maxcombo +'x**', true);
+            re.addField('Accuracy', '\t**' + perf.accuracy + '%**', true);
+
+            return { re, date: new Date(perf.date.replace(' ', 'T') + 'Z').getTime() };
+        })
     }
 
     modulator(input) {
