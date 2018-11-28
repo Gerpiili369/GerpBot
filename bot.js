@@ -1482,7 +1482,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         // osu! embeds
         switch (osuEmbedIdentifier(evt.d.embeds[0])) {
             case 'profile':
-                reactionList.push('📢', '🏆', '🏅', '🎥', '🕒');
+                reactionList.push('🏆', '🕒');
                 break;
         }
 
@@ -1569,17 +1569,7 @@ function handleReactions(evt, message) {
         switch (osuEmbedIdentifier(embed)) {
             case 'profile':
                 switch (evt.d.emoji.name) {
-                    case '📢':
-                        console.log('activity');
-                        break;
                     case '🏆':
-                        console.log('best 1');
-                        break;
-                    case '🏅':
-                        console.log('best 2');
-                        break;
-                    case '🎥':
-                        console.log('replays');
                         break;
                     case '🕒':
                         console.log('recent');
