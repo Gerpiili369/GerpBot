@@ -1517,6 +1517,35 @@ function osuEmbedIdentifier(embed) {
     ]) if (embed.title.indexOf(type) > -1) return type;
 }
 
+function addOsuPlaysFromReaction(profOwner, evt, offset = 0) {
+    offset = Number(offset)
+    if (isNaN(offset)) return;
+    osu.getUserBest(profOwner, offset + 5)
+        .then(playList => {
+            playList = playList.slice(offset);
+            const promArr = [];
+            for (const play of playList) promArr.push(
+                osu.singlePlayEmbed(play).then(result => {
+                    result.re.description = result.re.description.replace('<date>',
+                        timeAt(findTimeZone(settings.tz, [evt.d.user_id, evt.d.guild_id]), new Date(result.date))
+                    );
+                    return result.re;
+                }).catch(err => logger.error(err, ''))
+            )
+            return Promise.all(promArr);
+        })
+        .then(reList => {
+            const reFirst = reList.shift();
+            if (!bot.pending[evt.d.channel_id]) bot.pending[evt.d.channel_id] = [];
+            bot.pending[evt.d.channel_id].push(...reList, new Embed(
+                `Showing top ${ offset + 5 } osu! plays from ${ profOwner }`,
+                { color: osu.searchColors.user }
+            ));
+            msg(evt.d.channel_id, '', reFirst);
+        })
+        .catch(err => msg(evt.d.channel_id, '', new Embed().error(err)));
+}
+
 function addLatestMsgToEmbed(me, channelID, limit = 5) {
     return new Promise((resolve, reject) => {
         bot.getMessages({ channelID, limit }, (err, msgList) => {
@@ -1564,35 +1593,6 @@ bot.on('any', evt => {
         messageID: evt.d.message_id
     }, (err, message) => err ? logger.error(err, '') : handleReactions(evt, message));
 });
-
-function addOsuPlaysFromReaction(profOwner, evt, offset = 0) {
-    offset = Number(offset)
-    if (isNaN(offset)) return;
-    osu.getUserBest(profOwner, offset + 5)
-        .then(playList => {
-            playList = playList.slice(offset);
-            const promArr = [];
-            for (const play of playList) promArr.push(
-                osu.singlePlayEmbed(play).then(result => {
-                    result.re.description = result.re.description.replace('<date>',
-                        timeAt(findTimeZone(settings.tz, [evt.d.user_id, evt.d.guild_id]), new Date(result.date))
-                    );
-                    return result.re;
-                })
-            )
-            return Promise.all(promArr);
-        })
-        .then(reList => {
-            const reFirst = reList.shift();
-            if (!bot.pending[evt.d.channel_id]) bot.pending[evt.d.channel_id] = [];
-            bot.pending[evt.d.channel_id].push(...reList, new Embed(
-                `Showing top ${ offset + 5 } osu! plays from ${ profOwner }`,
-                { color: osu.searchColors.user }
-            ));
-            msg(evt.d.channel_id, '', reFirst);
-        })
-        .catch(err => msg(evt.d.channel_id, '', new Embed().error(err)));
-}
 
 function handleReactions(evt, message) {
     const embed = message.embeds[0];
