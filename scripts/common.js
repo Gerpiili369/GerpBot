@@ -2,7 +2,7 @@ const
     fetch = require('node-fetch'),
     isUrl = require('is-url'),
     logger = require('winston'),
-    package = require('../package'),
+    pkg = require('../package'),
     config = require('../config')
 
 logger.remove(logger.transports.Console);
@@ -263,7 +263,7 @@ function dEsc(input) {
 
 module.exports = {
     logger,
-    package,
+    pkg,
     Api,
     Embed,
     colors,

@@ -369,8 +369,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     case 1:
                         max = args[0];
                     case 0:
-                        if (common.package.repository && common.package.repository.url) {
-                            const urlray = common.package.repository.url.split('/')
+                        if (common.pkg.repository && common.pkg.repository.url) {
+                            const urlray = common.pkg.repository.url.split('/')
                             repo.host = urlray[2];
                             if (repo.host === 'github.com') {
                                 repo.owner = urlray[3]
@@ -411,7 +411,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 }
                             }));
 
-                        if (args.length < 2) msg(channelID, '', new Embed('Current version: ' + common.package.version));
+                        if (args.length < 2) msg(channelID, '', new Embed('Current version: ' + common.pkg.version));
                         else msg(channelID, '', titleEmbed);
                     })
                     .catch(err => msg(channelID, '', new Embed().error(err)));
