@@ -1928,11 +1928,13 @@ function getColor(serverID, targetID, fallBack = true) {
 
     // If target (user/role) color is not available, check fallBack option
     if (!color || color == 0) {
-        // If fallBack is enabled: use bot's color (from server or default Gerp orange).
+        // If fallBack is enabled: use bot's color (from server, settings or default Gerp orange).
         // Otherwise use Discord's default gray.
         if (fallBack) {
             if (bot.servers[serverID] && bot.servers[serverID].members[bot.id] && bot.servers[serverID].members[bot.id].color)
                 color = bot.servers[serverID].members[bot.id].color;
+            else if (settings.servers[serverID] && settings.servers[serverID].color && settings.servers[serverID].color.value)
+                color = settings.servers[serverID].color.value;
             else color = colors.gerp;
         } else color = colors.default;
     }
