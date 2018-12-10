@@ -1,5 +1,5 @@
 const
-    config = require('../config').web,
+    config = require('../config').web || {},
     path = require('path'),
     express = require('express'),
     app = express(),

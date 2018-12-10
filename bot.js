@@ -57,7 +57,7 @@ bot.pending = {};
 startLoops();
 updateColors();
 
-web.activate.then(logger.info);
+if (config.web) web.activate.then(logger.info);
 
 bot.on('ready', evt => {
     timeOf.connection = Date.now();
