@@ -182,7 +182,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         color: getColor(serverID, userID),
                         timestamp: bot.servers[serverID].joined_at,
                         footer: {
-                            icon_url: `https://cdn.discordapp.com/avatars/${ bot.id }/${ bot.users[bot.id].avatar }.png`,
+                            icon_url: avatarUrl(bot),
                             text: `${ settings.servers[serverID].nick != null ? settings.servers[serverID].nick : bot.username } joined this server on`
                         },
                         thumbnail: {
@@ -279,7 +279,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         {
                             color: ui.color,
                             thumbnail: {
-                                url: `https://cdn.discordapp.com/avatars/${ ui.id }/${ bot.users[ui.id].avatar }.png`
+                                url: avatarUrl(bot.users[ui.id])
                             },
                             image: {
                                 url: encodeURI(`https://img.shields.io/badge/${ bot.users[ui.id].bot ? 'bot' : 'user' }-${ bot.users[ui.id].username }-${ ui.color.toString(16).padStart(6, '0') }.png`)
@@ -505,7 +505,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (winners.length === 1) {
                     re.title = 'Winner';
                     re.color = getColor(bot.channels[target] ? bot.channels[target].guild_id : channelID, winners[0], false);
-                    re.thumbnail.url = `https://cdn.discordapp.com/avatars/${ winners[0] }/${ bot.users[winners[0]].avatar }.png`;
+                    re.thumbnail.url = avatarUrl(bot.users[winners[0]])
                 }
 
                 msg(channelID, '', re);
@@ -593,7 +593,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             ve.description = `**Let's vote for ${ args[1] }'s next golden gun!**`;
                             ve.color = getColor(serverID, goldUser);
                             if (bot.users[goldUser]) ve.thumbnail.url =
-                                `https://cdn.discordapp.com/avatars/${ goldUser }/${ bot.users[goldUser].avatar }.png`;
+                                avatarUrl(bot.users[goldUser]);
 
                             options.push(...args.splice(2));
 
@@ -791,7 +791,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                     id: evt.d.attachments[0].id,
                                     title: evt.d.attachments[0].filename,
                                     description: 'File uploaded by ' + user,
-                                    thumbnail: `https://cdn.discordapp.com/avatars/${ userID }/${ bot.users[userID].avatar }.png`,
+                                    thumbnail: avatarUrl(bot.users[userID]),
                                     published: sfToDate(evt.d.attachments[0].id),
                                     channel: {
                                         id: channelID,
@@ -1024,7 +1024,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                     function addFooter() {
                         embed.footer = {
-                            icon_url: `https://cdn.discordapp.com/avatars/${ userID }/${ bot.users[userID].avatar }.png`,
+                            icon_url: avatarUrl(bot.users[userID]),
                             text: `Wins: (${ player.total.wins }), Draws: (${ player.total.draws }), Losses: (${ player.total.losses })`
                         };
                     }
@@ -1680,7 +1680,7 @@ function updateObjectLib() {
     // help
     for (const page in objectLib.help) {
         if (!objectLib.help[page].thumbnail) objectLib.help[page].thumbnail = {
-            url: `https://cdn.discordapp.com/avatars/${ bot.id }/${ bot.users[bot.id].avatar }.png`
+            url: avatarUrl(bot.users[bot.id])
         };
         for (const field of objectLib.help[page].fields) {
             field.name = field.name.split('GerpBot').join(bot.username);
@@ -1831,6 +1831,14 @@ function getReminderClass() {
         }
     }
 
+}
+
+function avatarUrl(user = {}) {
+    return user.id && user.avatar ?
+        `https://cdn.discordapp.com/avatars/${ user.id }/${ user.avatar }.png` :
+        `https://cdn.discordapp.com/embed/avatars/${
+            user.discriminator ? user.discriminator % 5 : Math.floor(Math.random() * 5)
+        }.png`;
 }
 
 /**
