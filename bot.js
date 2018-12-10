@@ -1782,6 +1782,7 @@ function getReminderClass() {
                 name: '',
                 id: ''
             };
+            this.message = obj.message || '';
             this.color = obj.color || '';
             this.image = obj.image || '';
             this.time = obj.time || Date.now();
