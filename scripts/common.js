@@ -95,7 +95,10 @@ class Embed {
         this.multiEmbed = [];
 
         while(tempFields.length > 0)
-            this.multiEmbed.push(new this.constructor({ fields: tempFields.splice(0, 25) }));
+            this.multiEmbed.push(new this.constructor({
+                color: this.color,
+                fields: tempFields.splice(0, 25)
+            }));
 
         const l = this.multiEmbed.length - 1;
 
