@@ -1380,7 +1380,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                         if (settings.servers[serverID].effects.shuffle) setTimeout(() => {
                             settings.servers[serverID].effects.shuffle = false;
-                            editNick(serverID, settings.servers[serverID].nick)
+                            editNick(serverID, settings.servers[serverID].nick);
                             msg(channelID, 'Shuffle effect deactivated!');
                             updateSettings();
                         }, 1000);
