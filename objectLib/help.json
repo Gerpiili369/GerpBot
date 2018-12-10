@@ -604,8 +604,12 @@
                 "value": "Set bot's color with decimal color code. Example: `16738816`."
             },
             {
-                "name": "`@GerpBot color default`",
-                "value": "Set bot's color to default."
+                "name": "`@GerpBot color <name>`",
+                "value": "Set bot's color by color's name."
+            },
+            {
+                "name": "Color name list",
+                "value": "*<list of colors>*"
             },
             {
                 "name": "Permission info",

@@ -55,6 +55,7 @@ if (!settings.reminders) settings.reminders = {};
 bot.pending = {};
 
 startLoops();
+updateColors();
 
 web.activate.then(logger.info);
 
@@ -178,7 +179,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     `**Creation date:** \`${ timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(serverID)) }\`\n` +
                     `**Age:** \`${ uptimeToString(si.age) }\``,
                     {
-                        color: bot.servers[serverID].members[userID].color,
+                        color: getColor(serverID, userID),
                         timestamp: bot.servers[serverID].joined_at,
                         footer: {
                             icon_url: `https://cdn.discordapp.com/avatars/${ bot.id }/${ bot.users[bot.id].avatar }.png`,
@@ -230,7 +231,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     (bot.channels[ci.id].parent_id ? `**Channel group:** \`${ bot.channels[bot.channels[ci.id].parent_id].name.toUpperCase() }\`\n` : '') +
                     `**Channel created:** \`${ timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ci.id)) }\`\n` +
                     `**Age:** \`${ uptimeToString(ci.age) }\``,
-                    { color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp }
+                    { color: getColor(serverID, userID) }
                 );
 
                 if (bot.channels[ci.id].nsfw) ce.addDesc(`\n*Speaking of age, this channel is marked as NSFW, you have been warned.*`);
@@ -268,7 +269,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         age: calculateUptime(sfToDate(args[0]))
                     };
 
-                    ui.color = serverID ? bot.servers[serverID].members[ui.id].color || colors.gerp : colors.gerp;
+                    ui.color = getColor(serverID, ui.id, false);
 
                     const ue = new Embed(
                         `Information about "${ bot.users[ui.id].username }#${ bot.users[ui.id].discriminator }"`,
@@ -363,7 +364,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
 
-                let max = Infinity, repo = {};
+                const repo = {},
+                    color = getColor(serverID, cmd === 'changes' ? '' : userID);
+                let max = Infinity;
 
                 switch (args.length) {
                     case 1:
@@ -394,11 +397,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (data.message === 'Not Found') return msg(channelID, '', new Embed('Repository not found!').error());
                         if (data.length < 1) return msg(channelID, '', new Embed('No releases available.').error())
 
-                        const titleEmbed = new Embed(`Releases for ${ data[0].html_url.split('/')[3] }/${ data[0].html_url.split('/')[4] }`)
+                        const titleEmbed = new Embed(`Releases for ${ data[0].html_url.split('/')[3] }/${ data[0].html_url.split('/')[4] }`, { color })
                         if (args.length < 2) bot.pending[channelID].push(titleEmbed);
 
                         for (let i = 0; i < data.length && i < max; i++)
                             bot.pending[channelID].push(new Embed(data[i].name, data[i].body, {
+                                color,
                                 timestamp: data[i].published_at,
                                 author: {
                                     name: data[i].tag_name,
@@ -411,7 +415,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 }
                             }));
 
-                        if (args.length < 2) msg(channelID, '', new Embed('Current version: ' + common.pkg.version));
+                        if (args.length < 2) msg(channelID, '', new Embed('Current version: ' + common.pkg.version, { color }));
                         else msg(channelID, '', titleEmbed);
                     })
                     .catch(err => msg(channelID, '', new Embed().error(err)));
@@ -491,9 +495,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 for (let i = 0; i < winnerAmt; i++)
                     winners = winners.concat(raffleList.splice(Math.floor(Math.random() * raffleList.length), 1));
 
-                const re = new Embed('Winners', '', {
-                    color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
-                });
+                const re = new Embed('Winners', { color: getColor(serverID, userID) });
 
                 if (bot.channels[target] && (!serverID || bot.channels[target].guild_id != serverID))
                     for (const winner of winners) re.addDesc(`\n${ bot.users[winner].username }`);
@@ -502,11 +504,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 if (winners.length === 1) {
                     re.title = 'Winner';
-                    if (bot.channels[target]) {
-                        re.color = bot.servers[bot.channels[target].guild_id].members[winners[0]].color;
-                    } else {
-                        re.color = bot.servers[serverID].members[winners[0]].color;
-                    }
+                    re.color = getColor(bot.channels[target] ? bot.channels[target].guild_id : channelID, winners[0], false);
                     re.thumbnail.url = `https://cdn.discordapp.com/avatars/${ winners[0] }/${ bot.users[winners[0]].avatar }.png`;
                 }
 
@@ -585,7 +583,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     'TEXT_ADD_REACTIONS'
                 ], channelID) : '').then(() => {
                     const options = [], ve = new Embed({
-                        color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp,
+                        color: getColor(serverID, userID),
                         footer: { text: 'Vote generated by your\'s truly.' }
                     });
 
@@ -593,6 +591,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         case 'gold':
                             const goldUser = snowmaker(args[1]);
                             ve.description = `**Let's vote for ${ args[1] }'s next golden gun!**`;
+                            ve.color = getColor(serverID, goldUser);
                             if (bot.users[goldUser]) ve.thumbnail.url =
                                 `https://cdn.discordapp.com/avatars/${ goldUser }/${ bot.users[goldUser].avatar }.png`;
 
@@ -641,7 +640,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 `Published at: ${ timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published)) }`,
                                 {
                                     thumbnail: { url: song.thumbnail },
-                                    color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
+                                    color: getColor(serverID, userID)
                                 }
                             ).errorIfInvalid());
 
@@ -671,7 +670,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             description: song.description + '\nPublished at: ' +
                                 timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published)),
                             thumbnail: { url: song.thumbnail },
-                            color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
+                            color: getColor(serverID, userID)
                         });
                         resolve(song);
                     }),
@@ -831,7 +830,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     'TEXT_ADD_REACTIONS'
                 ], channelID) : '').then(() => msg(channelID, '', new Embed(
                     'Blue Squares: The Game',
-                    { color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp }
+                    { color: 255 }
                 )), missing => pc.missage(msg, channelID, missing)).catch(err => logger.error(err, ''));
                 break;
             case 'kps':
@@ -1059,9 +1058,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                                 return pc.missage(msg, channelID, ['Embed Links']);
 
-                            const rle = new Embed('List of your reminders', {
-                                color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
-                            });
+                            const rle = new Embed('List of your reminders', { color: getColor(serverID, userID) });
 
                             if (settings.reminders[userID]) for (const rem of settings.reminders[userID]) rle.addField(
                                 `Reminder #${ settings.reminders[userID].indexOf(rem) }`,
@@ -1095,7 +1092,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                     name: user
                                 },
                                 channel: snowmaker(args[0]),
-                                color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
+                                color: getColor(serverID, userID)
                             });
 
                             // reminder to other user or channel?
@@ -1149,7 +1146,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                             if (bot.channels[rem.channel]) for (const mention of evt.d.mentions) {
                                 if (mention.id != bot.id) rem.mentions += `<@${ mention.id }> `;
-                            } else rem.mentions = '';
+                            } else {
+                                // Target Test Color
+                                const ttc = getColor(serverID, rem.channel, false);
+                                if (ttc != colors.default) rem.color = ttc;
+                                rem.mentions = '';
+                            }
 
                             addLatestMsgToEmbed(rem.toEmbed(), channelID)
                                 .then(embed => {
@@ -1177,7 +1179,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         name: bot.username,
                         id: bot.id
                     },
-                    color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp,
+                    color: colors.error,
                     channel: channelID,
                     message: `**How to** \n` +
                         'Do stuff:\n' +
@@ -1330,12 +1332,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     return pc.missage(msg, channelID, ['Embed Links']);
 
                 new Promise((resolve, reject) => {
-                    if (serverID && admin && args[0]) {
-                        if (args[0][0] === '#') resolve(parseInt(args[0].substring(1), 16));
-                        else if (!isNaN(args[0])) resolve(Number(args[0]));
-                        else if (args[0] === 'default') resolve(null);
-                        else reject({});
-                    } else reject({});
+                    const color = colorInput(args.join(' '));
+                    if (color && serverID && admin) resolve(color);
+                    else reject();
                 })
                     .then(color => {
                         if (!settings.servers[serverID].color) settings.servers[serverID].color = {};
@@ -1354,7 +1353,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     })
                     .catch(err => msg(channelID, '', new Embed(
                         'Only color you will be seeing is red.',
-                        'This command is server only, admin only AND requires one argument which must be hex or decimal color code or "default".',
+                        'This command is server only, admin only AND requires one argument which must be hex or decimal color code or a color I know by name.',
                     ).error(err)));
                 break;
             case 'effect':
@@ -1440,7 +1439,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 const me = new Embed(
                     `#${ bot.channels[channelID].name } (${ bot.servers[serverID].name })`,
                     `*Latest messages:*`,
-                    { color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp }
+                    { color: getColor(serverID, userID) }
                 );
 
                 addLatestMsgToEmbed(me, channelID)
@@ -1690,6 +1689,13 @@ function updateObjectLib() {
         objectLib.help[page].description = objectLib.help[page].description.split('GerpBot').join(bot.username);
     }
 
+    // help color
+    for (const field of objectLib.help.color.fields) {
+        const listOfColors = [];
+        for (const color in colors) listOfColors.push(color);
+        field.value = field.value.replace('<list of colors>', listOfColors.join('* • *'))
+    }
+
     // games
     for (const game in objectLib.games) {
         objectLib.games[game] = objectLib.games[game].split('@GerpBot').join('@' + bot.username);
@@ -1698,6 +1704,19 @@ function updateObjectLib() {
     // defaultRes
     for (const res in objectLib.defaultRes) {
         objectLib.defaultRes[res] = objectLib.defaultRes[res].split('GerpBot').join(bot.username);
+    }
+}
+
+function updateColors() {
+    let color, colorD;
+    for (colorD in Discord.Colors) {
+        color = colorD.toLowerCase().replace('_', ' ');
+        if (!colors[color]) colors[color] = Discord.Colors[colorD];
+    }
+
+    if (osu) {
+        for (color in osu.rankColors) colors['osu ' + color] = osu.rankColors[color];
+        for (color in osu.searchColors) colors['osu ' + color] = osu.searchColors[color];
     }
 }
 
@@ -1901,10 +1920,41 @@ function addColorRole(serverID) {
     .then(roleID => settings.servers[serverID].color.role = roleID);
 }
 
-function getColor(serverID, userID) {
-    if (serverID && settings.servers[serverID].color && settings.servers[serverID].color.value) return settings.servers[serverID].color.value
-    if (serverID && bot.servers[serverID].members[userID].color) return bot.servers[serverID].members[userID].color
-    return colors.gerp
+function getColor(serverID, targetID, fallBack = true) {
+    let color;
+    // Check target color
+    if (bot.servers[serverID] && targetID) {
+        // Check if targetID belongs to a member
+        if (bot.servers[serverID].members[targetID]) color = bot.servers[serverID].members[targetID].color;
+        // Check if targetID belongs to a role
+        else if (bot.servers[serverID].roles[targetID]) color = bot.servers[serverID].roles[targetID].color;
+    }
+
+    // If target (user/role) color is not available, check fallBack option
+    if (!color || color == 0) {
+        // If fallBack is enabled: use bot's color (from server or default Gerp orange).
+        // Otherwise use Discord's default gray.
+        if (fallBack) {
+            if (bot.servers[serverID] && bot.servers[serverID].members[bot.id] && bot.servers[serverID].members[bot.id].color)
+                color = bot.servers[serverID].members[bot.id].color;
+            else color = colors.gerp;
+        } else color = colors.default;
+    }
+
+    return color
+}
+
+function colorInput(input) {
+    let color;
+    // Decimal color input
+    if (!isNaN(input)) color = Number(input);
+    else if (typeof input === 'string') {
+        // Hex color input
+        if (input[0] === '#') color = parseInt(input.substring(1), 16);
+        // Check if input is a color found in common.colors
+        else if (colors[input]) color = colors[input];
+    }
+    return color;
 }
 
 /**

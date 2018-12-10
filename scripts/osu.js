@@ -14,9 +14,9 @@ module.exports = class Osu extends common.Api {
 
         this.searchColors = {
             user: 5875675,
-            map: 92755573,
+            map: 12865159,
             forum: 6896585,
-            wiki: 109667717,
+            wiki: 15182369,
         };
         this.rankColors = {
             ss: 10624871,

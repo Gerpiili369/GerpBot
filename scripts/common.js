@@ -47,7 +47,7 @@ class Embed {
         this.title = title || '';
         this.description = description || '';
         this.url = this.title && opts.url || '';
-        this.color = opts.color || colors.gerp;
+        if (opts.color) this.color = opts.color;
         if (opts.timestamp) this.timestamp =  opts.timestamp instanceof Date ? opts.timestamp : new Date(opts.timestamp);
         this.footer = opts.footer || { icon_url: '', text: '' };
         this.thumbnail = opts.thumbnail || { url: '' };
@@ -252,6 +252,7 @@ class Embed {
 }
 
 const colors = {
+    default: 13290446,  // EmbedDefault
     gerp: 16738816,     // GerpOrange
     error: 16711680     // ErrorRed
 }
