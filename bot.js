@@ -74,7 +74,7 @@ bot.on('ready', evt => {
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
-    let serverID, admin = false, cmd, args = message.split(' '), fileReact = false;
+    let serverID, args = message.split(' '), fileReact = false;
 
     if (bot.channels[channelID]) serverID = bot.channels[channelID].guild_id;
     else if (!bot.directMessages[channelID]) return;
@@ -114,20 +114,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     if ((!serverID || snowmaker(args[0]) == bot.id) && !bot.users[userID].bot) {
         // Messages with commands
 
-        if (serverID) {
-            if (userID == bot.servers[serverID].owner_id) admin = true;
-            else for (const role of bot.servers[serverID].members[userID].roles) {
-                if (bot.servers[serverID].roles[role]._permissions.toString(2).split('').reverse()[3] == 1) admin = true;
-            }
-        }
-
-        if (snowmaker(args[0]) == bot.id) {
-            cmd = args[1];
-            args = args.splice(2);
-        } else {
-            cmd = args[0];
-            args = args.splice(1);
-        }
+        if (snowmaker(args[0]) == bot.id) args.shift();
+        const
+            cmd = args.shift(),
+            admin = serverID && pc.userHasPerm(serverID, userID, 'GENERAL_ADMINISTRATOR');
 
         switch (cmd) {
             case 'help':
