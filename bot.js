@@ -125,7 +125,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     return pc.missage(msg, channelID, ['Embed Links']);
                 const help = new Embed((args[0] && objectLib.help[args[0]]) || objectLib.help.main);
                 help.color = getColor(serverID, userID);
-                help.image.url = `https://img.shields.io/badge/bot-${ bot.username.replace(' ', '_') }-${ getColor(serverID, userID).toString(16).padStart(6, '0') }.png`;
+                if (!help.thumbnail.url) help.thumbnail.url = avatarUrl(bot);
+                if (!help.image.url) help.image.url = `https://img.shields.io/badge/bot-${ bot.username.replace(' ', '_') }-${ help.color.toString(16).padStart(6, '0') }.png`;
                 help.isValid();
                 msg(channelID, '', help.pushToIfMulti(bot.pending[channelID]).errorIfInvalid());
                 break;
@@ -1669,9 +1670,6 @@ function msg(channel, message, embed) {
 function updateObjectLib() {
     // help
     for (const page in objectLib.help) {
-        if (!objectLib.help[page].thumbnail) objectLib.help[page].thumbnail = {
-            url: avatarUrl(bot.users[bot.id])
-        };
         for (const field of objectLib.help[page].fields) {
             field.name = field.name.split('GerpBot').join(bot.username);
             field.value = field.value.split('GerpBot').join(bot.username);
