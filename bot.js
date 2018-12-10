@@ -1684,20 +1684,20 @@ function updateObjectLib() {
             url: `https://cdn.discordapp.com/avatars/${ bot.id }/${ bot.users[bot.id].avatar }.png`
         };
         for (const field of objectLib.help[page].fields) {
-            field.name = field.name.replace('GerpBot', bot.username);
-            field.value = field.value.replace('GerpBot', bot.username);
+            field.name = field.name.split('GerpBot').join(bot.username);
+            field.value = field.value.split('GerpBot').join(bot.username);
         }
-        objectLib.help[page].description = objectLib.help[page].description.replace('GerpBot', bot.username);
+        objectLib.help[page].description = objectLib.help[page].description.split('GerpBot').join(bot.username);
     }
 
     // games
     for (const game in objectLib.games) {
-        objectLib.games[game] = objectLib.games[game].replace('@GerpBot', '@' + bot.username);
+        objectLib.games[game] = objectLib.games[game].split('@GerpBot').join('@' + bot.username);
     }
 
     // defaultRes
     for (const res in objectLib.defaultRes) {
-        objectLib.defaultRes[res] = objectLib.defaultRes[res].replace('GerpBot', bot.username);
+        objectLib.defaultRes[res] = objectLib.defaultRes[res].split('GerpBot').join(bot.username);
     }
 }
 
