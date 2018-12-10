@@ -737,7 +737,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                             return pc.missage(msg, channelID, ['Embed Links']);
                         const ale = new Embed('No songs queued right now.', {
-                            color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp,
+                            color: getColor(serverID, userID),
                         });
 
                         for (const song of settings.servers[serverID].audio.que) ale.addField(
@@ -1252,7 +1252,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             return msg(channelID, list.join('\n'));
 
                         msg(channelID, '', new Embed('List of cool people:', list.join('\n'), {
-                            color: bot.servers[serverID].members[userID].color
+                            color: getColor(serverID, userID),
                         }).errorIfInvalid());
                         break;
                     case 'add':
