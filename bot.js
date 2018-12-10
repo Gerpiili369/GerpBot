@@ -488,19 +488,17 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 else winnerAmt = 1;
 
                 let winners = [];
-                for (let i = 0; i < winnerAmt; i++) {
+                for (let i = 0; i < winnerAmt; i++)
                     winners = winners.concat(raffleList.splice(Math.floor(Math.random() * raffleList.length), 1));
-                }
 
                 const re = new Embed('Winners', '', {
                     color: serverID ? bot.servers[serverID].members[userID].color : colors.gerp
                 });
 
-                if (bot.channels[target] && (!serverID || bot.channels[target].guild_id != serverID)) {
+                if (bot.channels[target] && (!serverID || bot.channels[target].guild_id != serverID))
                     for (const winner of winners) re.addDesc(`\n${ bot.users[winner].username }`);
-                } else {
+                else
                     for (const winner of winners) re.addDesc(`\n<@${ winner }>`);
-                }
 
                 if (winners.length === 1) {
                     re.title = 'Winner';
@@ -509,9 +507,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     } else {
                         re.color = bot.servers[serverID].members[winners[0]].color;
                     }
-                    re.thumbnail = {
-                        url: `https://cdn.discordapp.com/avatars/${ winners[0] }/${ bot.users[winners[0]].avatar }.png`
-                    }
+                    re.thumbnail.url = `https://cdn.discordapp.com/avatars/${ winners[0] }/${ bot.users[winners[0]].avatar }.png`;
                 }
 
                 msg(channelID, '', re);
