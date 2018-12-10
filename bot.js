@@ -1986,7 +1986,7 @@ function getJSON(file, location = '') {
     return tempObj;
 }
 
-function updateSettings() {
+function updateSettings(retry = false) {
     if (!config.saveSettings) return;
     json = JSON.stringify(settings, (key, value) => {
         switch (key) {
@@ -2001,10 +2001,11 @@ function updateSettings() {
             if (err) logger.error(err, '');
             try {
                 JSON.parse(data);
+                if (retry) logger.info('setting.json is no longer corrupted.');
             }
             catch (err) {
-                logger.warn('Updated settings.json was corrupted during update, retrying in 5 seconds.');
-                setTimeout(updateSettings, 5000);
+                logger.warn('setting.json was corrupted during update, retrying in 5 seconds.');
+                setTimeout(updateSettings, 5000, true);
             }
         });
     });
