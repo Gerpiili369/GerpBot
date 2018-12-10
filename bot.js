@@ -1443,7 +1443,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     // All messages''
     if (serverID && typeof settings.servers[serverID].autoShit == 'string' &&
         bot.servers[serverID].members[userID] &&
-        bot.servers[serverID].members[userID].roles.indexOf(settings.servers[serverID].autoShit) != -1
+        bot.servers[serverID].members[userID].roles.indexOf(settings.servers[serverID].autoShit) != -1 &&
+        pc.userHasPerm(serverID, bot.id, 'TEXT_ADD_REACTIONS')
     ) emojiResponse('💩');
 
     if (userID == bot.id && evt.d.embeds[0]) {
@@ -1578,7 +1579,7 @@ bot.on('any', evt => {
     if (evt.t === 'MESSAGE_REACTION_ADD' && evt.d.user_id != bot.id) bot.getMessage({
         channelID: evt.d.channel_id,
         messageID: evt.d.message_id
-    }, (err, message) => err ? logger.error(err, '') : handleReactions(evt, message));
+    }, (err, message) => { if (!err) handleReactions(evt, message); });
 });
 
 function handleReactions(evt, message) {
@@ -1646,7 +1647,7 @@ function handleReactions(evt, message) {
             messageID: evt.d.message_id,
             userID: evt.d.user_id,
             reaction: evt.d.emoji.name
-        }, (err, res) => err ? Promise.reject(err) : Promise.resolve(res)))
+        }))
         .catch(err => logger.error(err, ''));
 }
 
@@ -1846,7 +1847,7 @@ function membersInChannel(channel) {
  * @arg {Number|String} color
  */
 function editColor(serverID, color) {
-    bot.editRole({
+    if (pc.userHasPerm(serverID, bot.id, 'GENERAL_MANAGE_ROLES')) bot.editRole({
         serverID,
         roleID: settings.servers[serverID].color.role,
         color
@@ -1858,7 +1859,7 @@ function editColor(serverID, color) {
  * @arg {String} newName
  */
 function editNick(serverID, newName) {
-    bot.editNickname({
+    if (pc.userHasPerm(serverID, bot.id, 'GENERAL_CHANGE_NICKNAME')) bot.editNickname({
         serverID,
         userID: bot.id,
         nick: newName
