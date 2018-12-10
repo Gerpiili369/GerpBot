@@ -25,6 +25,10 @@ class Api {
                     name: 'Failed to get' + name || 'data',
                     message: 'Response is not JSON!'
                 })))
+                .then(data => {
+                    if (data.error) reject(data.error);
+                    return data;
+                })
                 .then(resolve)
                 .catch(reject);
         })
