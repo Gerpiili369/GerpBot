@@ -10,8 +10,6 @@ const
     io = require('socket.io-client'),
     isUrl = require('is-url'),
     fetch = require('node-fetch'),
-    ytdl = require('ytdl-core'),
-    cp = require('child_process'),
     snowTime = require('snowtime'),
     // scripts
     web = require('./scripts/web.js'),
@@ -19,6 +17,7 @@ const
     GitHub = require('./scripts/github.js'),
     Ile = require('./scripts/ile.js'),
     Osu = require('./scripts/osu.js'),
+    MusicHandler = require('./scripts/music.js'),
     permCheck = require('./scripts/permCheck.js'),
     // load objectLib
     objectLib = getJSON([
@@ -32,6 +31,7 @@ const
     github = new GitHub(),
     ile = new Ile(getJSON('ile'), objectLib.ileAcronym),
     osu = new Osu(config.auth.osu),
+    mh = new MusicHandler(bot, config.auth.tubeKey);
     bsga = config.canvasEnabled ? new bs.GameArea() : null,
     kps = {},
     timeOf = {
@@ -52,6 +52,11 @@ for (const func in snowTime) eval(`${ func } = snowTime.${ func }`);
 if (!settings.servers) settings.servers = {};
 if (!settings.tz) settings.tz = {};
 if (!settings.reminders) settings.reminders = {};
+
+settings.update = updateSettings;
+common.settings = settings;
+
+bot.getColor = getColor;
 bot.pending = {};
 
 startLoops();
@@ -620,153 +625,45 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'music':
             case 'play':
-                const
-                    playNext = stream => {
-                        if (settings.servers[serverID].audio.que.length > 0 && !bot.servers[serverID].stopped) {
-                            const song = settings.servers[serverID].audio.que.shift();
-
-                            settings.servers[serverID].audio.channel && msg(settings.servers[serverID].audio.channel, 'Now playing:', new Embed(
-                                song.title,
-                                song.description + '\n' +
-                                `Published at: ${ timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published)) }`,
-                                {
-                                    thumbnail: { url: song.thumbnail },
-                                    color: getColor(serverID, userID)
-                                }
-                            ).errorIfInvalid());
-
-                            bot.servers[serverID].ccp = cp.spawn('ffmpeg', [
-                                '-loglevel', '0',
-                                '-i', song.url,
-                                '-f', 's16le',
-                                '-ar', '48000',
-                                '-ac', '2',
-                                'pipe:1'
-                            ], { stdio: ['pipe', 'pipe', 'ignore'] });
-                            bot.servers[serverID].ccp.stdout.once('readable', () => stream.send(bot.servers[serverID].ccp.stdout));
-                            bot.servers[serverID].ccp.stdout.once('end', () => {
-                                bot.servers[serverID].playing = false;
-                                playNext(stream);
-                                bot.servers[serverID].stopped = false;
-                            });
-                            bot.servers[serverID].playing = song;
-                            updateSettings();
-                        } else bot.leaveVoiceChannel(bot.servers[serverID].members[bot.id].voice_channel_id);
-                    },
-                    queueSong = song => new Promise((resolve, reject) => {
-                        settings.servers[serverID].audio.que.push(song);
-                        updateSettings();
-                        msg(channelID, 'Added to queue:', {
-                            title: song.title,
-                            description: song.description + '\nPublished at: ' +
-                                timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.published)),
-                            thumbnail: { url: song.thumbnail },
-                            color: getColor(serverID, userID)
-                        });
-                        resolve(song);
-                    }),
-                    addUrl2song = song => new Promise((resolve, reject) => ytdl.getInfo(`http://www.youtube.com/watch?v=${ song.id }`, (err, info) => {
-                        if (err) reject('URL machine broke.');
-                        info.formats.reverse();
-                        for (format of info.formats) if (typeof format.audioEncoding != 'undefined'){
-                            song.url = format.url;
-                            break;
-                        }
-                        if (!song.url) song.url = info.formats[info.formats.length - 1].url;
-
-                        resolve(song);
-                    })),
-                    searchSong = keywords => fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${ keywords.join('+') }&key=${ config.auth.tubeKey }`)
-                        .then(result => result.json())
-                        .then(data => {
-                            if (data.error) return Promise.reject(data.error.errors);
-                            for (const item of data.items) if (item.id && item.id.kind === 'youtube#video') return {
-                                id: item.id.videoId,
-                                title: item.snippet.title,
-                                description: item.snippet.description,
-                                thumbnail: item.snippet.thumbnails.high.url,
-                                published: item.snippet.publishedAt,
-                                channel: {
-                                    id: item.snippet.channelID,
-                                    Title: item.snippet.channelTitle
-                                },
-                                request: {
-                                    id: userID,
-                                    time: Date.now()
-                                }
-                            };
-                            return Promise.reject('Song not found!');
-                        })
-                        .then(addUrl2song)
-                        .catch(err => {
-                            if (typeof err !== 'string') logger.error(err, '');
-                            return Promise.reject({ type: 'msg', name: 'Search failed!', message: typeof err === 'string' ? err : 'Code bad' })
-                        }),
-                    joinVoice = (voiceChannelID = bot.servers[serverID].members[userID].voice_channel_id) => new Promise((resolve, reject) => voiceChannelID ?
-                        bot.joinVoiceChannel(voiceChannelID, err => err && err.toString().indexOf('Voice channel already active') == -1 ? reject(err) : resolve(voiceChannelID)) :
-                        reject({ type: 'msg', name: 'Could not join!', message: 'You are not in a voice channel!' })
-                    ),
-                    getStream = voiceChannelID => new Promise((resolve, reject) => bot.getAudioContext(voiceChannelID, (err, stream) => err ? reject(err) : resolve(stream)));
-
                 if (!serverID) return msg(channelID, '`<sassy message about this command being server only>`');
-                else if (!settings.servers[serverID].audio) settings.servers[serverID].audio = { que: [] };
+                mh.addServer(serverID);
+                mh.servers[serverID].temp = channelID;
 
                 if (cmd === 'music') switch (args[0]) {
                     case 'cancel':
                         if (args[1]) {
-                            args[1] = Number(args[1]) - 1;
-                            if (typeof settings.servers[serverID].audio.que[args[1]] === 'object') {
-                                if (settings.servers[serverID].audio.que[args[1]].request.id == userID) {
-                                    settings.servers[serverID].audio.que.splice(args[1], 1);
+                            const index = Number(args[1]) - 1;
+                            if (mh.servers[serverID].queue[index]) {
+                                if (mh.servers[serverID].queue[index].request.id == userID) {
+                                    mh.servers[serverID].queue.splice(index, 1);
                                     updateSettings();
                                     msg(channelID, 'Cancel successful!');
                                 } else msg(channelID, 'That\'s not yours!');
                             } else msg(channelID, 'Song doesn\'t exist!');
                         } else msg(channelID, 'Nothing could be cancelled!');
                         break;
-                    case 'skip': case 'stop':
-                        if (bot.servers[serverID].ccp) {
-                            if (args[0] === 'stop') bot.servers[serverID].stopped = true;
-                            bot.servers[serverID].ccp.kill();
-                            msg(settings.servers[serverID].audio.channel || channelID, args[0] === 'skip' ? 'Skipped!' : 'Stopped!');
-                        } else {
-                            msg(settings.servers[serverID].audio.channel || channelID, `Failed to ${ args[0] }.`);
-                        }
+                    case 'skip':
+                    case 'stop':
+                        mh.servers[serverID].controls(args[0]).then(res => {
+                            if (res) msg(channelID, res);
+                        });
                         break;
                     case 'list':
                         if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                             return pc.missage(msg, channelID, ['Embed Links']);
-                        const ale = new Embed('No songs queued right now.', {
-                            color: getColor(serverID, userID),
-                        });
-
-                        for (const song of settings.servers[serverID].audio.que) ale.addField(
-                            ale.fields.length + 1 + ': ' + song.title,
-                            `Requested by: <@${ song.request.id }>\n${ timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(song.request.time)) }.`
-                        );
-
-                        if (ale.fields.length > 0) ale.title = 'Queued songs:';
-                        if (bot.servers[serverID].playing) {
-                            ale.title = 'Current song: ' + bot.servers[serverID].playing.title;
-                            ale.description = `Requested by: <@${ bot.servers[serverID].playing.request.id }>\n${ timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(bot.servers[serverID].playing.request.time)) }.`;
-                            ale.thumbnail.url = bot.servers[serverID].playing.thumbnail;
-
-                            if (ale.fields.length > 0) ale.addDesc('\n\n**Queued songs:**');
-                        }
-
-                        msg(channelID, '', ale.errorIfInvalid());
+                        const qe = mh.servers[serverID].queueEmbed(userID);
+                        qe.isValid();
+                        msg(channelID, '', qe.pushToIfMulti(bot.pending[channelID]).errorIfInvalid());
                         break;
                     case 'channel':
-                        if (admin) {
-                            args[1] = snowmaker(args[1]);
-                            if (bot.channels[args[1]] && bot.channels[args[1]].type == 0 && bot.channels[args[1]].guild_id == serverID) {
-                                if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', args[1]))
-                                    return pc.missage(msg, channelID, ['Embed Links']);
-                                settings.servers[serverID].audio.channel = args[1];
-                                updateSettings();
-                                msg(channelID, 'Channel set!');
-                            } else msg(channelID, 'Invalid channel!');
-                        } else msg(channelID, 'Admin only command!');
+                        const acID = snowmaker(args[1]);
+                        if (admin && bot.channels[acID] && bot.channels[acID].type == 0 && bot.channels[acID].guild_id == serverID) {
+                            if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', acID))
+                                return pc.missage(msg, channelID, ['Embed Links']);
+                            settings.servers[serverID].audio.channel = mh.servers[serverID].acID = acID;
+                            updateSettings();
+                            msg(channelID, 'Channel set!');
+                        } else msg(channelID, 'Invalid channel or not admin.');
                         break;
                     default:
                 } else pc.multiPerm(serverID, bot.id, [
@@ -774,43 +671,32 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     'VOICE_CONNECT',
                     'VOICE_SPEAK',
                 ], bot.servers[serverID].members[userID].voice_channel_id)
-                    .then(() => joinVoice()
-                        .then(getStream)
-                        .then(stream => new Promise((resolve, reject) => {
-                            new Promise(resolveWithSong => {
-                                if (evt.d.attachments.length === 1) resolveWithSong({
-                                    id: evt.d.attachments[0].id,
-                                    title: evt.d.attachments[0].filename,
-                                    description: 'File uploaded by ' + user,
-                                    thumbnail: avatarUrl(bot.users[userID]),
-                                    published: sfToDate(evt.d.attachments[0].id),
-                                    channel: {
-                                        id: channelID,
-                                        Title: bot.channels[channelID].name
-                                    },
-                                    request: {
-                                        id: userID,
-                                        time: Date.now()
-                                    },
-                                    url: evt.d.attachments[0].url
-                                })
-                                else if (!config.auth.tubeKey) msg(channelID, 'YouTube API key not found!');
-                                else if (args[0]) resolveWithSong(searchSong(args));
-                                else resolve({ stream, action: 'next in queue' })
-
-                            })
-                                .then(queueSong)
-                                .then(() => resolve({ stream, action: 'requested' }))
-                                .catch(reject);
-                        }))
-                        .then(result => {
-                            bot.servers[serverID].playing ? result.action = 'current' : playNext(result.stream);
-                            if (settings.servers[serverID].audio.que.length > 0) msg(channelID, `Playing ${ result.action }`);
-                            else msg(channelID, 'No songs queued right now.');
+                    .then(() => mh.servers[serverID]
+                        .joinUser(userID)
+                        .then(server => server.getStream())
+                        .then(server => {
+                            let result;
+                            if (evt.d.attachments.length === 1) result = new mh.Song(evt.d.attachments[0].url, userID).update({
+                                title: evt.d.attachments[0].filename,
+                                description: 'File uploaded by ' + user,
+                                thumbnail: avatarUrl(bot.users[userID]),
+                                published: sfToDate(evt.d.attachments[0].id)
+                            });
+                            else if (args[0]) result = mh.searchSong(args, userID)
+                            return result
+                        })
+                        .then(song => {
+                            if (song instanceof mh.Song) return mh.servers[serverID].queueSong(song);
+                        })
+                        .then(() => {
+                            if (!mh.servers[serverID].playing) mh.servers[serverID].playNext(channelID, getColor(channelID, userID));
                         }),
                     missing => pc.missage(msg, channelID, missing)
                 )
-                .catch(err => err.type === 'msg' ? msg(channelID, '', new Embed().error(err)) : logger.error(err, ''));
+                .catch(err => {
+                    if (err instanceof Error) logger.error(err, '');
+                    msg(channelID, '', new Embed().error(err));
+                })
                 break;
             case 'bs':
                 if (!config.canvasEnabled) return msg(channelID, 'Bot owner has not enabled this feature.');
