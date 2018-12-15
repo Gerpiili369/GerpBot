@@ -1,6 +1,4 @@
-const
-    fetch = require('node-fetch'),
-    Api = require('./common.js').Api;
+const Api = require('./common.js').Api;
 
 module.exports = class GitHub extends Api {
     constructor() {

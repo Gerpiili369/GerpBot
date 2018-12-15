@@ -1,7 +1,5 @@
 const
-    fetch = require('node-fetch'),
     Canvas = require('canvas'),
-    fs = require('fs'),
     map = {
         width: 300,
         height: 300

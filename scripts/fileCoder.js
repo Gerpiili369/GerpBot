@@ -79,7 +79,6 @@ module.exports = class ProFileCoder {
                 this.byteIndex++
 
                 const
-                    byteArray = [],
                     utfArray = [],
                     lebArray = []
                 let length = 0;

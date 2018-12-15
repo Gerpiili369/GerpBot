@@ -9,7 +9,6 @@ const
     path = require('path'),
     io = require('socket.io-client'),
     isUrl = require('is-url'),
-    fetch = require('node-fetch'),
     snowTime = require('snowtime'),
     // scripts
     web = require('./scripts/web.js'),
@@ -1511,7 +1510,7 @@ function handleReactions(evt, message) {
             }
 
             web.addTemp('bsga-image.png', bsga.update().toBuffer())
-                .then(file => {
+                .then(() => {
                     const bse = new Embed(embed);
 
                     bsga.extra = bsga.extra === 'a' ? 'b' : 'a';
