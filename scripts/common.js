@@ -1,16 +1,21 @@
 const
     fetch = require('node-fetch'),
     isUrl = require('is-url'),
-    logger = require('winston'),
+    { format, createLogger, transports } = require('winston'),
+    logger = createLogger({
+        format: format.combine(
+            format.timestamp(),
+            format.colorize(),
+            format.printf(info =>
+                `${ info.timestamp } ${ info.level }: ${ info instanceof Error ? info.stack : info.message }`
+            ),
+        ),
+        transports: [
+            new transports.Console(),
+        ]
+    })
     pkg = require('../package'),
     config = require('../config')
-
-logger.remove(logger.transports.Console);
-logger.add(logger.transports.Console, {
-    colorize: true,
-    timestamp: true
-});
-logger.level = 'debug';
 
 class Api {
     constructor(endpoint, key) {

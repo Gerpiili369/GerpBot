@@ -1,5 +1,5 @@
 const
-    Canvas = require('canvas'),
+    Canvas = require('canvas').Canvas,
     map = {
         width: 300,
         height: 300
