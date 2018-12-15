@@ -951,7 +951,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 `Message: ${ rem.message || '' }`
                             );
 
-                            msg(channelID, '', rle.errorIfInvalid());
+                            rle.isValid();
+                            msg(channelID, '', rle.pushToIfMulti(bot.pending[channelID]).errorIfInvalid());
                             break;
                         case 'cancel':
                             if (settings.reminders[userID] && settings.reminders[userID][args[1]]) {
