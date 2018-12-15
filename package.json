@@ -24,6 +24,13 @@
     "devDependencies": {
         "nodemon": "^1.12.5"
     },
+    "nodemonConfig": {
+        "ignore": [
+            "settings.json",
+            "ile.json",
+            "temp/*"
+        ]
+    },
     "bugs": {
         "url": "https://github.com/Gerpiili369/GerpBot/issues"
     },
