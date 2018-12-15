@@ -993,7 +993,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                         msg(channelID, `Using the default UTC+00:00 timezone. You can change your timezone with "\`@${ bot.username } timezone\` -command".`);
                                     }
                                 }
-                                rem.time = datemaker([rem.time]);
+                                rem.time = datemaker(rem.time);
                                 if (rem.time == 'Invalid Date') {
                                     msg(channelID, 'Time syntax: `([<amount>](ms|s|min|h|d|y))...` or `[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]`.');
                                     break;
