@@ -1,8 +1,11 @@
 const
     // common
-    common = require('./scripts/common.js'),
-    // config file
-    config = common.config,
+    {
+        config,
+        logger,
+        Embed,
+        colors,
+    } = common = require('./scripts/common.js'),
     // node_modules
     Discord = require('discord.io'),
     fs = require('fs'),
@@ -23,9 +26,7 @@ const
         'help', 'compliments', 'defaultRes', 'games', 'answers', 'ileAcronym'
     ], 'objectLib'),
     // constant variables
-    Embed = common.Embed,
     Reminder = getReminderClass(),
-    logger = common.logger,
     bot = new Discord.Client({ token: config.auth.token, autorun: true }),
     github = new GitHub(),
     ile = new Ile(getJSON('ile'), objectLib.ileAcronym),
@@ -36,7 +37,6 @@ const
     timeOf = {
         startUp: Date.now()
     },
-    colors = common.colors,
     // funky function stuff
     pc = permCheck(bot);
 
