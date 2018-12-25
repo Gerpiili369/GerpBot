@@ -1722,9 +1722,18 @@ function avatarUrl(user = {}) {
  */
 function membersInChannel(channel) {
     channel = snowmaker(channel);
-    if (!bot.channels[channel]) return 'Channel not found!';
-    let members = [], serverID = bot.channels[channel].guild_id;
-    for (const user in bot.servers[serverID].members) if (pc.userHasPerm(serverID, user, 'TEXT_READ_MESSAGES', channel)) members.push(user);
+    const members = [];
+    let serverID;
+
+    if (bot.channels[channel]) {
+        serverID = bot.channels[channel].guild_id;
+        for (const user in bot.servers[serverID].members) if (pc.userHasPerm(serverID, user, 'TEXT_READ_MESSAGES', channel)) members.push(user);
+    }
+    if (bot.directMessages[channel]) {
+        members.push(bot.id);
+        for (const user of bot.directMessages[channel].recipients) members.push(user.id);
+    }
+
     return members;
 }
 
