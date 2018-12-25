@@ -151,8 +151,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         0: 0,
                         2: 0,
                         4: 0
-                    },
-                    age: calculateUptime(sfToDate(serverID))
+                    }
                 };
 
                 for (const member in bot.servers[serverID].members) {
@@ -172,7 +171,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     `Information about "${ bot.servers[serverID].name }"`,
                     `**Created by:** <@${ bot.servers[serverID].owner_id }>\n` +
                     `**Creation date:** \`${ timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(serverID)) }\`\n` +
-                    `**Age:** \`${ uptimeToString(si.age) }\``,
+                    `**Age:** \`${ uptimeToString(calculateUptime(sfToDate(serverID))) }\``,
                     {
                         color: getColor(serverID, userID),
                         timestamp: bot.servers[serverID].joined_at,
@@ -265,8 +264,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                     const ui = {
                         id: args[0],
-                        roles: [],
-                        age: calculateUptime(sfToDate(args[0]))
+                        roles: []
                     };
 
                     ui.color = getColor(serverID, ui.id, false);
@@ -275,7 +273,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         `Information about "${ bot.users[ui.id].username }#${ bot.users[ui.id].discriminator }"`,
                         `**Also known as:** "<@${ ui.id }>"\n` +
                         `**User created:** \`${ timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ui.id)) }\`\n` +
-                        `**Age:** \`${ uptimeToString(ui.age) }\``,
+                        `**Age:** \`${ uptimeToString(calculateUptime(sfToDate(ui.id))) }\``,
                         {
                             color: ui.color,
                             thumbnail: {
