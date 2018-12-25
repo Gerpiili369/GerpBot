@@ -152,10 +152,6 @@
         "description": "Usage: `@GerpBot channel [<#channel>]`\nGives information about the channel.",
         "fields": [
             {
-                "name": "Server only",
-                "value": "Channels only exist in servers."
-            },
-            {
                 "name": "Permission info",
                 "value": "`Embed Links` - required. Channel information is delivered inside an embed."
             }
