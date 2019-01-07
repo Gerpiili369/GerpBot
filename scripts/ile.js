@@ -1,9 +1,7 @@
 const
     Emitter = require('events'),
-    snowTime = require('snowtime'),
-    common = require('./common'),
-    calculateUptime = snowTime.calculateUptime,
-    uptimeToString = snowTime.uptimeToString;
+    { Uptime } = require('snowTime'),
+    common = require('./common');
 
 module.exports = class Ile extends Emitter {
     /**
@@ -155,10 +153,10 @@ module.exports = class Ile extends Emitter {
     attend(user) {
         if (this.players[user] && this.players[user].joined && Date.now() > this.end && this.players[user].status != 'missed') {
             this.players[user].checkIn = true;
-            this.players[user].delay = calculateUptime(this.end);
-            this.players[user].delayMs = calculateUptime(this.end, undefined, true).ms;
+            this.players[user].delay = new Uptime(this.end);
+            this.players[user].delayMs = this.players[user].delay.toMs;
             this.save();
-            return `You have checked in with the status: ${ this.players[user].status }, and with the delay of ${ uptimeToString(this.players[user].delay) }.`;
+            return `You have checked in with the status: ${ this.players[user].status }, and with the delay of ${ this.players[user].delay.toString() }.`;
         } else {
             return 'That is cheating!';
         }
@@ -198,7 +196,7 @@ module.exports = class Ile extends Emitter {
         scoreboard.forEach((v, i) => {
             embed.addField(
                 `${ i + 1 }. ${ v.id }`,
-                uptimeToString(v.delay),
+                v.delay.toString(),
                 true
             );
         });

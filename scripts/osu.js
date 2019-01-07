@@ -3,7 +3,7 @@ const
     striptags = require('striptags'),
     DomParser = require('dom-parser'),
     parser = new DomParser(),
-    st = require('snowtime'),
+    { Uptime } = require('snowTime'),
     common = require('./common.js'),
     graph = require('../objectLib/osuSignature'),
     FileCoder = require('./fileCoder.js');
@@ -46,7 +46,7 @@ module.exports = class Osu extends common.Api {
                 oue.description = '<about me>\n' +
                     '**Level ' + Math.round(u.level) + '**\n\n' +
                     '**Total Play Count:** `' + u.playcount + '`\n' +
-                    '**Total Play Time:** `' + st.uptimeToString(st.calculateUptime(0, u.total_seconds_played * 1000)) + '`\n';
+                    '**Total Play Time:** `' + new Uptime(0, u.total_seconds_played * 1000).toString() + '`\n';
                 oue.url = 'https://osu.ppy.sh/users/' + u.user_id;
                 oue.color = osu.searchColors.user;
                 oue.image.url = `https://osu.ppy.sh/images/flags/${ u.country }.png`;
@@ -84,7 +84,7 @@ module.exports = class Osu extends common.Api {
                 );
 
                 scrapeData = JSON.parse(userJson.slice(0, userJson.indexOf('turbolinks')));
-                lastSeen = st.uptimeToString(st.calculateUptime(new Date(scrapeData.lastvisit)));
+                lastSeen = new Uptime(scrapeData.lastvisit).toString();
 
                 if (scrapeData.playstyle) for (let i = 0; i < scrapeData.playstyle.length; i++)
                     scrapeData.playstyle[i] =

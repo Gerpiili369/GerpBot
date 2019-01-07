@@ -12,7 +12,7 @@ const
     path = require('path'),
     io = require('socket.io-client'),
     isUrl = require('is-url'),
-    snowTime = require('snowtime'),
+    { Uptime } = st = require('snowTime'),
     // scripts
     web = require('./scripts/web.js'),
     bs = config.canvasEnabled ? require('./scripts/bs.js') : null,
@@ -45,8 +45,6 @@ let
     startedOnce = false,
     online = false,
     settings = getJSON('settings');
-
-for (const func in snowTime) eval(`${ func } = snowTime.${ func }`);
 
 if (!settings.servers) settings.servers = {};
 if (!settings.tz) settings.tz = {};
@@ -106,7 +104,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     return pc.missage(msg, channelID, ['Embed Links']);
                 osu.readReplay(file.url).then(perf => osu.singlePlayEmbed(perf)).then(result => {
                     result.re.description = result.re.description.replace('<date>',
-                        timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(result.date))
+                        st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), new Date(result.date))
                     );
                     msg(channelID, userID == bot.id ? '' : 'osu! replay information:', result.re.errorIfInvalid());
                 }).catch(err => msg(channelID, '', new Embed().error(err)));
@@ -115,10 +113,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         }
     }
 
-    if ((!serverID || snowmaker(args[0]) == bot.id) && !bot.users[userID].bot) {
+    if ((!serverID || st.stripNaNs(args[0]) == bot.id) && !bot.users[userID].bot) {
         // Messages with commands
 
-        if (snowmaker(args[0]) == bot.id) args.shift();
+        if (st.stripNaNs(args[0]) == bot.id) args.shift();
         const
             cmd = args.shift(),
             admin = serverID && pc.userHasPerm(serverID, userID, 'GENERAL_ADMINISTRATOR');
@@ -170,8 +168,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 const ie = new Embed(
                     `Information about "${ bot.servers[serverID].name }"`,
                     `**Created by:** <@${ bot.servers[serverID].owner_id }>\n` +
-                    `**Creation date:** \`${ timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(serverID)) }\`\n` +
-                    `**Age:** \`${ uptimeToString(calculateUptime(sfToDate(serverID))) }\``,
+                    `**Creation date:** \`${ st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), st.sfToDate(serverID)) }\`\n` +
+                    `**Age:** \`${ new Uptime(st.sfToDate(serverID)).toString() }\``,
                     {
                         color: getColor(serverID, userID),
                         timestamp: bot.servers[serverID].joined_at,
@@ -199,7 +197,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     true
                 )
 
-                if (settings.tz[serverID]) ie.addDesc(`\n**Server time:** \`${ timeAt(settings.tz[serverID]) }\``);
+                if (settings.tz[serverID]) ie.addDesc(`\n**Server time:** \`${ st.timeAt(settings.tz[serverID]) }\``);
 
                 msg(channelID, 'Here you go:', ie.errorIfInvalid());
                 break;
@@ -208,7 +206,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     return pc.missage(msg, channelID, ['Embed Links']);
 
                 if (args[0]) {
-                    args[0] = snowmaker(args[0]);
+                    args[0] = st.stripNaNs(args[0]);
                     if (!bot.channels[args[0]]) return msg(channelID, 'Channel not found!');
                 }
 
@@ -229,8 +227,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     if (bot.channels[ci.id].parent_id) ce.addDesc(`**Channel group:** ${ bot.channels[bot.channels[ci.id].parent_id].name.toUpperCase() }\n`);
                 } else ce.thumbnail.url = avatarUrl(bot);
 
-                ce.addDesc(`**Channel created:** \`${ timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ci.id)) }\`\n`);
-                ce.addDesc(`**Age:** \`${ uptimeToString(calculateUptime(sfToDate(ci.id))) }\`\n`);
+                ce.addDesc(`**Channel created:** \`${ st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), st.sfToDate(ci.id)) }\`\n`);
+                ce.addDesc(`**Age:** \`${ new Uptime(st.sfToDate(ci.id)).toString() }\`\n`);
 
                 if (ci.serverID && bot.channels[ci.id].nsfw) ce.addDesc(`*Speaking of age, this channel is marked as NSFW, you have been warned.*\n`);
 
@@ -255,7 +253,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
                 if (args[0]) {
-                    args[0] = snowmaker(args[0]);
+                    args[0] = st.stripNaNs(args[0]);
 
                     if (!bot.users[args[0]]) {
                         msg(channelID, 'User not found!');
@@ -272,8 +270,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     const ue = new Embed(
                         `Information about "${ bot.users[ui.id].username }#${ bot.users[ui.id].discriminator }"`,
                         `**Also known as:** "<@${ ui.id }>"\n` +
-                        `**User created:** \`${ timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(ui.id)) }\`\n` +
-                        `**Age:** \`${ uptimeToString(calculateUptime(sfToDate(ui.id))) }\``,
+                        `**User created:** \`${ st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), st.sfToDate(ui.id)) }\`\n` +
+                        `**Age:** \`${ new Uptime(st.sfToDate(ui.id)).toString() }\``,
                         {
                             color: ui.color,
                             thumbnail: {
@@ -285,7 +283,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         }
                     );
 
-                    if (settings.tz[ui.id]) ue.addDesc(`\n**Local time:** \`${ timeAt(settings.tz[ui.id]) }\``);
+                    if (settings.tz[ui.id]) ue.addDesc(`\n**Local time:** \`${ st.timeAt(settings.tz[ui.id]) }\``);
 
                     let cleanRoll = [], status = '';
                     if (serverID) {
@@ -331,7 +329,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     return pc.missage(msg, channelID, ['Embed Links']);
 
                 if (args[0]) {
-                    args[0] = snowmaker(args[0]);
+                    args[0] = st.stripNaNs(args[0]);
                     let role = bot.servers[serverID].roles[args[0]];
 
                     if (!role) {
@@ -342,8 +340,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     const re = new Embed(
                         `Information about "${ role.name }"`,
                         `<@&${ role.id }>\n` +
-                        `**Role created:** \`${ timeAt(findTimeZone(settings.tz, [userID, serverID]), sfToDate(role.id)) }\`\n` +
-                        `**Age:** ${ uptimeToString(calculateUptime(sfToDate(role.id))) }\``,
+                        `**Role created:** \`${ st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), st.sfToDate(role.id)) }\`\n` +
+                        `**Age:** ${ new Uptime(st.sfToDate(role.id)) }\``,
                         { color: role.color }
                     );
 
@@ -450,7 +448,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 }
                 break;
             case 'raffle':
-                if (!serverID && !bot.channels[snowmaker(args[0])]) {
+                if (!serverID && !bot.channels[st.stripNaNs(args[0])]) {
                     msg(channelID, 'When you really think about it, how would that even work?');
                     break;
                 }
@@ -472,7 +470,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         }
                         break;
                     default:
-                        target = snowmaker(target);
+                        target = st.stripNaNs(target);
 
                         if (serverID && bot.servers[serverID].roles[target]) {
                             for (const member in bot.servers[serverID].members) {
@@ -562,8 +560,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'uptime':
             case 'ut':
                 if (timeOf[args[0]]) {
-                    let uptime = calculateUptime(timeOf[args[0]]);
-                    msg(channelID, `Time since '${ args[0] }': ${ uptimeToString(uptime) }\``
+                    const uptime = new Uptime(timeOf[args[0]]);
+                    msg(channelID, `Time since '${ args[0] }': ${ uptime.toString() }\``
                     );
                 } else {
                     msg(channelID, `Missing arguments. Usage: \`@${ bot.username } uptime startUp | connection | lastCommand\`.`);
@@ -587,7 +585,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                     switch (args[0]) {
                         case 'gold':
-                            const goldUser = snowmaker(args[1]);
+                            const goldUser = st.stripNaNs(args[1]);
                             ve.description = `**Let's vote for ${ args[1] }'s next golden gun!**`;
                             ve.color = getColor(serverID, goldUser);
                             if (bot.users[goldUser]) ve.thumbnail.url =
@@ -658,7 +656,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         msg(channelID, '', qe.pushToIfMulti(bot.pending[channelID]).errorIfInvalid());
                         break;
                     case 'channel':
-                        const acID = snowmaker(args[1]);
+                        const acID = st.stripNaNs(args[1]);
                         if (admin && bot.channels[acID] && bot.channels[acID].type == 0 && bot.channels[acID].guild_id == serverID) {
                             if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', acID))
                                 return pc.missage(msg, channelID, ['Embed Links']);
@@ -682,7 +680,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 title: evt.d.attachments[0].filename,
                                 description: 'File uploaded by ' + user,
                                 thumbnail: avatarUrl(bot.users[userID]),
-                                published: sfToDate(evt.d.attachments[0].id)
+                                published: st.sfToDate(evt.d.attachments[0].id)
                             });
                             else if (args[0]) result = mh.searchSong(args, userID)
                             return result
@@ -922,7 +920,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         break;
                     case 'time':
                         let tzConv = ile.getCheckpoint().split(': ');
-                        tzConv[1] = timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(tzConv[1]));
+                        tzConv[1] = st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), new Date(tzConv[1]));
                         msg(channelID, tzConv.join(': '));
                         break;
                     default:
@@ -941,7 +939,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                             if (settings.reminders[userID]) for (const rem of settings.reminders[userID]) rle.addField(
                                 `Reminder #${ settings.reminders[userID].indexOf(rem) }`,
-                                `Time: ${ timeAt(findTimeZone(settings.tz, [userID, serverID]), new Date(rem.time)) }\n` +
+                                `Time: ${ st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), new Date(rem.time)) }\n` +
                                 `Channel: ${
                                     bot.channels[rem.channel] ?
                                         `<#${ rem.channel }> (${ bot.servers[bot.channels[rem.channel].guild_id].name })`
@@ -971,7 +969,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                     id: userID,
                                     name: user
                                 },
-                                channel: snowmaker(args[0]),
+                                channel: st.stripNaNs(args[0]),
                                 color: getColor(serverID, userID)
                             });
 
@@ -983,7 +981,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (bot.channels[rem.channel] && !pc.userHasPerm(bot.channels[rem.channel].guild_id, bot.id, 'TEXT_EMBED_LINKS', rem.channel))
                                 return pc.missage(msg, channelID, ['Embed Links']);
 
-                            if (isNaN(anyTimeToMs(args[0]))) {
+                            if (isNaN(st.anyTimeToMs(args[0]))) {
                                 rem.time = args.shift();
 
                                 if (settings.tz[userID]) rem.time += settings.tz[userID];
@@ -996,7 +994,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                         msg(channelID, `Using the default UTC+00:00 timezone. You can change your timezone with "\`@${ bot.username } timezone\` -command".`);
                                     }
                                 }
-                                rem.time = datemaker(rem.time);
+                                rem.time = st.stripNaNs(rem.time);
                                 if (rem.time == 'Invalid Date') {
                                     msg(channelID, 'Time syntax: `([<amount>](ms|s|min|h|d|y))...` or `[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]`.');
                                     break;
@@ -1004,7 +1002,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             }
 
                             for (const arg of args) {
-                                if (!isNaN(anyTimeToMs(arg))) rem.time += anyTimeToMs(arg);
+                                if (!isNaN(st.anyTimeToMs(arg))) rem.time += st.anyTimeToMs(arg);
                                 else {
                                     args.splice(0, args.indexOf(arg));
                                     rem.message = args.join(' ');
@@ -1015,7 +1013,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             for (const arg of args) {
                                 if (arg === '@everyone' || arg === '@here') rem.mentions += arg;
                                 else {
-                                    let role = snowmaker(arg);
+                                    let role = st.stripNaNs(arg);
                                     if (bot.channels[rem.channel] && bot.servers[bot.channels[rem.channel].guild_id].roles[role]) {
                                         rem.mentions += `<@&${ role }>`;
                                     } else if (serverID && bot.servers[serverID].roles[role]) {
@@ -1072,7 +1070,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'timezone':
             case 'tz':
-                if (isValidTimezone(args[0])) {
+                if (st.isValidTimezone(args[0])) {
                     switch (args[1]) {
                         case 'server':
                             if (serverID && admin) {
@@ -1115,7 +1113,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     }
                 }
 
-                if (args[1]) args[1] = snowmaker(args[1]);
+                if (args[1]) args[1] = st.stripNaNs(args[1]);
 
                 switch (args[0]) {
                     case 'sample':
@@ -1188,7 +1186,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     switch (args[0]) {
                         case 'set':
                             if (args[1]) {
-                                args[1] = snowmaker(args[1]);
+                                args[1] = st.stripNaNs(args[1]);
                                 settings.servers[serverID].autoShit = args[1];
                                 msg(channelID, `<@&${ args[1] }> has been chosen to be shit.`);
                             } else {
@@ -1304,7 +1302,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         const mentionedChannels = [];
         for (const word of message.split(' ')) {
-            const mChannel = snowmaker(word);
+            const mChannel = st.stripNaNs(word);
             if (
                 bot.channels[mChannel] &&
                 channelID != mChannel &&
@@ -1404,7 +1402,7 @@ function addOsuPlaysFromReaction(profOwner, evt, offset = 0) {
             for (const play of playList) promArr.push(
                 osu.singlePlayEmbed(play).then(result => {
                     result.re.description = result.re.description.replace('<date>',
-                        timeAt(findTimeZone(settings.tz, [evt.d.user_id, evt.d.guild_id]), new Date(result.date))
+                        st.timeAt(st.findTimeZone(settings.tz, [evt.d.user_id, evt.d.guild_id]), new Date(result.date))
                     );
                     return result.re;
                 }).catch(err => logger.error(err, ''))
@@ -1452,7 +1450,7 @@ function addLatestMsgToEmbed(me, channelID, limit = 5) {
 
 bot.on('disconnect', (err, code) => {
     online = false;
-    logger.warn(`Disconnected! error: ${ err }, code: ${ code } (uptime: ${ uptimeToString(calculateUptime(timeOf.connection)) }).`);
+    logger.warn(`Disconnected! error: ${ err }, code: ${ code } (uptime: ${ new Uptime(timeOf.connection).toString() }).`);
     setTimeout(() => {
         logger.info('Trying to reconnect...');
         bot.connect();
@@ -1548,7 +1546,7 @@ function handleReactions(evt, message) {
 function msg(channel, message, embed) {
     bot.sendMessage({
         to: channel,
-        message,
+        message: '{local}' + message,
         embed
     }, err => { if (err) {
         if (err.response && err.response.message === 'You are being rate limited.')
@@ -1641,7 +1639,7 @@ function startIle() {
         ile.on('msg', (channel, message, embed) => {
             let tzConv = message.split(': ');
             if (tzConv[0] === 'Next checkpoint') {
-                tzConv[1] = timeAt(findTimeZone(settings.tz, [channel]), new Date(tzConv[1]));
+                tzConv[1] = st.timeAt(st.findTimeZone(settings.tz, [channel]), new Date(tzConv[1]));
                 message = tzConv.join(': ');
             }
 
@@ -1724,7 +1722,7 @@ function avatarUrl(user = {}) {
  * @return {Snowflake[] | String}
  */
 function membersInChannel(channel) {
-    channel = snowmaker(channel);
+    channel = st.stripNaNs(channel);
     const members = [];
     let serverID;
 
