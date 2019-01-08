@@ -1546,7 +1546,7 @@ function handleReactions(evt, message) {
 function msg(channel, message, embed) {
     bot.sendMessage({
         to: channel,
-        message: '{local}' + message,
+        message,
         embed
     }, err => { if (err) {
         if (err.response && err.response.message === 'You are being rate limited.')
