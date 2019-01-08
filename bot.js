@@ -12,7 +12,7 @@ const
     path = require('path'),
     io = require('socket.io-client'),
     isUrl = require('is-url'),
-    { Uptime } = st = require('snowTime'),
+    { Uptime } = st = require('snowtime'),
     // scripts
     web = require('./scripts/web.js'),
     bs = config.canvasEnabled ? require('./scripts/bs.js') : null,

@@ -3,7 +3,7 @@ const
     striptags = require('striptags'),
     DomParser = require('dom-parser'),
     parser = new DomParser(),
-    { Uptime } = require('snowTime'),
+    { Uptime } = require('snowtime'),
     common = require('./common.js'),
     graph = require('../objectLib/osuSignature'),
     FileCoder = require('./fileCoder.js');

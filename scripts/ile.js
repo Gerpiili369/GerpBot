@@ -1,6 +1,6 @@
 const
     Emitter = require('events'),
-    { Uptime } = require('snowTime'),
+    { Uptime } = require('snowtime'),
     common = require('./common');
 
 module.exports = class Ile extends Emitter {
