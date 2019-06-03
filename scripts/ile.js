@@ -1,7 +1,7 @@
 const
     Emitter = require('events'),
     { Uptime } = require('snowtime'),
-    common = require('./common');
+    Embed = require('./embed');
 
 module.exports = class Ile extends Emitter {
 
@@ -192,7 +192,7 @@ module.exports = class Ile extends Emitter {
      * @return {Embed}
      */
     scoreboardToEmbed(scoreboard) {
-        const embed = new common.Embed('ILE Round Scoreboard');
+        const embed = new Embed('ILE Round Scoreboard');
         scoreboard.forEach((value, i) => {
             embed.addField(
                 `${ i + 1 }. ${ value.id }`,

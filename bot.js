@@ -4,7 +4,6 @@ const
     {
         config,
         logger,
-        Embed,
         colors,
     } = common,
     // Node modules
@@ -20,6 +19,7 @@ const
     GitHub = require('./scripts/github.js'),
     Ile = require('./scripts/ile.js'),
     Osu = require('./scripts/osu.js'),
+    Embed = require('./scripts/embed'),
     MusicHandler = require('./scripts/music.js'),
     permCheck = require('./scripts/permCheck.js'),
     // Load objectLib

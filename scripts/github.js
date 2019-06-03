@@ -1,4 +1,4 @@
-const Api = require('./common.js').Api;
+const Api = require('./api');
 
 module.exports = class GitHub extends Api {
     constructor() {

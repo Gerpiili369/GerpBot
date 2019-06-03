@@ -4,11 +4,13 @@ const
     DomParser = require('dom-parser'),
     parser = new DomParser(),
     { Uptime } = require('snowtime'),
+    Api = require('./api'),
+    Embed = require('./embed'),
     common = require('./common.js'),
     graph = require('../objectLib/osuSignature'),
     FileCoder = require('./fileCoder.js');
 
-module.exports = class Osu extends common.Api {
+module.exports = class Osu extends Api {
     constructor(key) {
         super('https://osu.ppy.sh/api', key);
 
@@ -35,7 +37,7 @@ module.exports = class Osu extends common.Api {
     getUser(userName) {
         const
             osu = this,
-            oue = new common.Embed();
+            oue = new Embed();
         let user = null;
         return new Promise((resolve, reject) => osu.apiCall(`/get_user?k=${ osu.key }&u=${ userName }`)
             .then(userList => {
@@ -291,7 +293,7 @@ module.exports = class Osu extends common.Api {
 
             const
                 map = maps[0],
-                re = new common.Embed(`${ common.dEsc(map.artist) } - ${ common.dEsc(map.title) } [${ common.dEsc(map.version) }]`,
+                re = new Embed(`${ common.dEsc(map.artist) } - ${ common.dEsc(map.title) } [${ common.dEsc(map.version) }]`,
                     `Beatmap by ${ map.creator }\n` +
                     `Played${ perf.username ? ` by ${ perf.username }` : '' } on \`<date>\``, {
                         color: osu.rankColors[perf.rank.toLowerCase().replace('+', '')],

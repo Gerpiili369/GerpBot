@@ -1,5 +1,5 @@
 const permDic = require('discord.io').Permissions,
-    common = require('./common.js');
+    Embed = require('./embed');
 
 module.exports = bot => ({
     roleHasPerm(serverID, role, perm = 'GENERAL_ADMINISTRATOR', channelID = '') {
@@ -86,7 +86,7 @@ module.exports = bot => ({
     },
     missage(msg, channelID, perms = []) {
         if (this.userHasPerm(bot.channels[channelID].guild_id, bot.id, 'TEXT_EMBED_LINKS', channelID)) {
-            msg(channelID, '', new common.Embed(
+            msg(channelID, '', new Embed(
                 'Following permissions required:',
                 `\`${ perms.join('\n') }\``
             ).error()

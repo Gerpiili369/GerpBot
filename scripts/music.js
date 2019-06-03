@@ -1,10 +1,12 @@
 const
+    Api = require('./api'),
+    Embed = require('./embed'),
     common = require('./common'),
     ytdl = require('ytdl-core'),
     cp = require('child_process'),
     st = require('snowtime');
 
-class MusicHandler extends common.Api {
+class MusicHandler extends Api {
     constructor(bot, key) {
         super('https://www.googleapis.com/youtube/v3', key);
         this.bot = bot;
@@ -37,7 +39,7 @@ class MusicHandler extends common.Api {
             }
 
             toEmbed(serverID) {
-                const se = new common.Embed(this);
+                const se = new Embed(this);
                 se.thumbnail = { url: this.thumbnail };
                 se.color = bot.getColor(serverID, this.request.id);
                 if (this.published) se.addDesc(`\nPublished at: ${
@@ -154,7 +156,7 @@ class MusicHandler extends common.Api {
             }
 
             queueEmbed(userID) {
-                const ale = new common.Embed('No songs queued right now.', {
+                const ale = new Embed('No songs queued right now.', {
                     color: bot.getColor(this.id, userID)
                 });
 
