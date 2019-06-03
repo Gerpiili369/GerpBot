@@ -5,6 +5,7 @@ const
         config,
         logger,
         colors,
+        avatarUrl,
     } = common,
     // Node modules
     Discord = require('discord.io'),
@@ -1745,14 +1746,6 @@ function getReminderClass() {
         }
     };
 
-}
-
-function avatarUrl(user = {}) {
-    return user.id && user.avatar ?
-        `https://cdn.discordapp.com/avatars/${ user.id }/${ user.avatar }.png` :
-        `https://cdn.discordapp.com/embed/avatars/${
-            user.discriminator ? user.discriminator % 5 : Math.floor(Math.random() * 5)
-        }.png`;
 }
 
 /**

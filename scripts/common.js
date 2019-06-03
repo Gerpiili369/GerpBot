@@ -27,10 +27,19 @@ function dEsc(input) {
         .replace('~', '\\~');
 }
 
+function avatarUrl(user = {}) {
+    return user.id && user.avatar ?
+        `https://cdn.discordapp.com/avatars/${ user.id }/${ user.avatar }.png` :
+        `https://cdn.discordapp.com/embed/avatars/${
+            user.discriminator ? user.discriminator % 5 : Math.floor(Math.random() * 5)
+        }.png`;
+}
+
 module.exports = {
     logger,
     pkg,
     colors,
     dEsc,
     config,
+    avatarUrl,
 };
