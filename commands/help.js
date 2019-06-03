@@ -7,12 +7,10 @@ class Help extends Command {
     constructor(bot, params) {
         super(bot, params);
 
-        this.requiredPerms = [
-            {
-                key: 'TEXT_EMBED_LINKS',
-                name: 'Embed Links',
-            },
-        ];
+        this.requiredPerms.push({
+            key: 'TEXT_EMBED_LINKS',
+            name: 'Embed Links',
+        });
     }
 
     command() {
