@@ -111,6 +111,29 @@ class Command extends Emitter {
     serverOnlyNotice() {
         this.msg(this.channelID, '', new Embed('Server only', 'This command is only available in servers.').error());
     }
+
+    /**
+     * @arg {Snowflake} channel
+     * @return {Snowflake[] | String}
+     */
+    membersInChannel(channel) {
+        const
+            channelID = st.stripNaNs(channel),
+            members = [];
+        let serverID = null;
+
+        if (this.bot.channels[channelID]) {
+            serverID = this.bot.channels[channelID].guild_id;
+            for (const user in this.bot.servers[serverID].members)
+                if (this.pc.userHasPerm(serverID, user, 'TEXT_READ_MESSAGES', channelID)) members.push(user);
+        }
+        if (this.bot.directMessages[channelID]) {
+            members.push(this.bot.id);
+            for (const user of this.bot.directMessages[channelID].recipients) members.push(user.id);
+        }
+
+        return members;
+    }
 }
 
 module.exports = Command;
