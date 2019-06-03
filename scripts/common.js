@@ -4,7 +4,8 @@ const
         format: format.combine(
             format.timestamp(),
             format.colorize(),
-            format.printf(info => `${ info.timestamp } ${ info.level }: ${ info instanceof Error ? info.stack : info.message }`
+            format.metadata({ fillExcept: ['timestamp', 'level', 'stack', 'message'] }),
+            format.printf(info => `${ info.timestamp } ${ info.level } [${ info.metadata.label || 'bot' }]: ${ info instanceof Error ? info.stack : info.message }`
             ),
         ),
         transports: [new transports.Console()]
