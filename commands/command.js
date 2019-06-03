@@ -1,6 +1,7 @@
 const
     Emitter = require('events'),
     st = require('snowtime'),
+    Embed = require('../scripts/embed'),
     permCheck = require('../scripts/permCheck'),
     common = require('../scripts/common');
 
@@ -34,6 +35,8 @@ class Command extends Emitter {
         this.pc = permCheck(bot);
         this.requiredPerms = [];
 
+        this.otherRequirements = [];
+
         // Bindings.
         this.msg = this.msg.bind(this);
     }
@@ -43,6 +46,9 @@ class Command extends Emitter {
 
         // Check permissions before executing.
         if (await !this.botHasPerms()) canExecute = false;
+
+        // Check other requirements before executing.
+        if (await !this.meetsRequirements()) canExecute = false;
 
         // Execute command if none of the checks fail.
         if (canExecute) this.command();
@@ -77,6 +83,17 @@ class Command extends Emitter {
         return hasPerms;
     }
 
+    meetsRequirements() {
+        let meets = true;
+
+        if (this.otherRequirements.indexOf('serverOnly') > -1 && !this.serverID) {
+            meets = false;
+            this.serverOnlyNotice();
+        }
+
+        return meets;
+    }
+
     msg(channel, message, embed) {
         this.bot.sendMessage({
             to: channel,
@@ -89,6 +106,10 @@ class Command extends Emitter {
                 else common.logger.error(err, '');
             }
         });
+    }
+
+    serverOnlyNotice() {
+        this.msg(this.channelID, '', new Embed('This command is only available in servers.').error());
     }
 }
 
