@@ -3,6 +3,11 @@
     "version": "3.0.0-beta",
     "description": "It is pro GerpBot for Discord!",
     "main": "bot.js",
+    "scripts": {
+        "linter": "eslint .",
+        "fixer": "eslint . --fix",
+        "start": "nodemon"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/Gerpiili369/GerpBot.git"
@@ -22,6 +27,7 @@
         "ytdl-core": "^0.28.2"
     },
     "devDependencies": {
+        "eslint": "^5.16.0",
         "nodemon": "^1.18.8"
     },
     "nodemonConfig": {

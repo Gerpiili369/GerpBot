@@ -3,7 +3,7 @@ const
     map = {
         width: 300,
         height: 300
-    }
+    };
 
 class GameArea {
     constructor() {
@@ -17,9 +17,9 @@ class GameArea {
     }
 
     disconnect(id) {
-        players[id].online = false;
-        msg('disconnected', id);
-        update();
+        this.players[id].online = false;
+        this.msg('disconnected', id);
+        this.update();
     }
 
     update() {
@@ -56,7 +56,7 @@ class GameArea {
     }
 
     msg(msg, id) {
-        console.log('msg', `[${ players[id].username || id }] ${ msg }`);
+        console.log('msg', `[${ this.players[id].username || id }] ${ msg }`);
     }
 }
 
@@ -84,6 +84,7 @@ class Player {
             case 'down':
                 if (this.y + this.speed < map.height) this.y += this.speed;
                 break;
+            default:
         }
     }
 }

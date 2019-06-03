@@ -1,9 +1,10 @@
 const
     Emitter = require('events'),
     { Uptime } = require('snowtime'),
-    common = require('./common');
+    Embed = require('./embed');
 
 module.exports = class Ile extends Emitter {
+
     /**
      * @arg {IleSaveData} saveData
      * @arg {{i:[], l:[], e:[]}} acronym
@@ -15,7 +16,7 @@ module.exports = class Ile extends Emitter {
 
         if (Object.keys(saveData).length === 0) {
             this.active = false;
-            this.end;
+            this.end = null;
             this.time = {
                 between: {
                     min: 3600000,
@@ -26,7 +27,7 @@ module.exports = class Ile extends Emitter {
                     missed: 360000,
                     newRound: 15000
                 }
-            }
+            };
             this.players = {};
         } else for (const variable in saveData) {
             this[variable] = saveData[variable];
@@ -108,6 +109,7 @@ module.exports = class Ile extends Emitter {
         for (const player in this.players) {
             if (this.players[player].joined) return true;
         }
+        return false;
     }
 
     /**
@@ -122,14 +124,14 @@ module.exports = class Ile extends Emitter {
             delay: {}
         };
 
-        let response;
+        let response = 'Already here ya\'know.';
         if (!this.players[user].joined) {
-            response = 'Welcome TO THE GAME!'
+            response = 'Welcome TO THE GAME!';
             this.players[user].joined = true;
             this.save();
-            if (!this.active) this.newRound();
-            else response += `\n${ this.getCheckpoint() }`;
-        } else response = 'Already here ya\'know.';
+            if (this.active) response += `\n${ this.getCheckpoint() }`;
+            else this.newRound();
+        }
 
         return response;
     }
@@ -142,9 +144,8 @@ module.exports = class Ile extends Emitter {
             this.players[user].joined = false;
             this.save();
             return 'Freedom, I guess.';
-        } else {
-            return 'Nothing to leave!';
         }
+        return 'Nothing to leave!';
     }
 
     /**
@@ -157,9 +158,8 @@ module.exports = class Ile extends Emitter {
             this.players[user].delayMs = this.players[user].delay.toMs;
             this.save();
             return `You have checked in with the status: ${ this.players[user].status }, and with the delay of ${ this.players[user].delay.toString() }.`;
-        } else {
-            return 'That is cheating!';
         }
+        return 'That is cheating!';
     }
 
     save() {
@@ -175,14 +175,14 @@ module.exports = class Ile extends Emitter {
      * @return {Scoreboard}
      */
     getScoreboard() {
-        let scoreboard = [];
+        const scoreboard = [];
         for (const player in this.players) {
             if (this.players[player].checkIn) scoreboard.push({
                 id: player,
                 delay: this.players[player].delay
             });
         }
-        scoreboard.sort((a, b) => this.players[a.id].delayMs - this.players[b.id].delayMs);
+        scoreboard.sort((first, second) => this.players[first.id].delayMs - this.players[second.id].delayMs);
 
         return scoreboard;
     }
@@ -192,11 +192,11 @@ module.exports = class Ile extends Emitter {
      * @return {Embed}
      */
     scoreboardToEmbed(scoreboard) {
-        const embed = new common.Embed('ILE Round Scoreboard');
-        scoreboard.forEach((v, i) => {
+        const embed = new Embed('ILE Round Scoreboard');
+        scoreboard.forEach((value, i) => {
             embed.addField(
-                `${ i + 1 }. ${ v.id }`,
-                v.delay.toString(),
+                `${ i + 1 }. ${ value.id }`,
+                value.delay.toString(),
                 true
             );
         });
@@ -207,13 +207,14 @@ module.exports = class Ile extends Emitter {
      * @returns {String}
      */
     getAcronym() {
-        let acronym =
-            `${ this.acronym['i'][Math.floor(Math.random() * this.acronym['i'].length)] } ` +
-            `${ this.acronym['l'][Math.floor(Math.random() * this.acronym['l'].length)] } ` +
-            `${ this.acronym['e'][Math.floor(Math.random() * this.acronym['e'].length)] }`;
-        return acronym;
+        return (
+            `${ this.acronym.i[Math.floor(Math.random() * this.acronym.i.length)] } ` +
+            `${ this.acronym.l[Math.floor(Math.random() * this.acronym.l.length)] } ` +
+            `${ this.acronym.e[Math.floor(Math.random() * this.acronym.e.length)] }`
+        );
     }
-}
+};
+
 /**
  * @typedef {Object} IleSaveData
  * @property {Boolean} active

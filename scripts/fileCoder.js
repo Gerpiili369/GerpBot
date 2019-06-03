@@ -8,17 +8,16 @@ module.exports = class ProFileCoder {
             short: 2,
             int: 4,
             long: 8
-        }
+        };
     }
 
     fromBuffer(buffer) {
-        if (buffer instanceof Buffer)
-            this.byteArray = this.hexStringToArray(buffer.toString('hex'));
+        if (buffer instanceof Buffer) this.byteArray = this.hexStringToArray(buffer.toString('hex'));
         return this;
     }
 
     toBuffer() {
-        return new Buffer(this.byteArray.join(''), 'hex');
+        return Buffer.from(this.byteArray.join(''), 'hex');
     }
 
     addFromBuffer(buffer) {
@@ -39,10 +38,11 @@ module.exports = class ProFileCoder {
             for (let i = bitData.length; i > 0; i -= 7) lebArray.push(
                 parseInt(
                     (i - 7 > 0 ? '1' : '0') + bitData.substring(i - 7, i), 2
-                ).toString(16).padStart(2, '0')
-            )
+                ).toString(16)
+                    .padStart(2, '0')
+            );
 
-            this.byteArray.push('0b', ...lebArray, ...utfArray)
+            this.byteArray.push('0b', ...lebArray, ...utfArray);
         } else this.byteArray.push('00');
         return this;
     }
@@ -54,9 +54,9 @@ module.exports = class ProFileCoder {
             byteArray = [];
 
         for (let i = bitData.length; i > 0; i -= 8) {
-            let hexByte = parseInt(bitData.substring(i - 8, i), 2).toString(16)
+            const hexByte = parseInt(bitData.substring(i - 8, i), 2).toString(16);
             if (i - 8 > 0);
-            byteArray.push(hexByte.padStart(2, '0'))
+            byteArray.push(hexByte.padStart(2, '0'));
         }
 
         while(byteArray.length < size) byteArray.push('00');
@@ -66,9 +66,14 @@ module.exports = class ProFileCoder {
     }
 
     decodeString(name = '') {
+        const
+            utfArray = [],
+            lebArray = [];
+        let length = 0;
+
         switch(this.byteArray[this.byteIndex]) {
             case '00':
-                this.byteIndex++
+                this.byteIndex++;
                 this.dataArray.push({
                     name,
                     value: '',
@@ -76,25 +81,20 @@ module.exports = class ProFileCoder {
                 });
                 break;
             case '0b':
-                this.byteIndex++
+                this.byteIndex++;
 
-                const
-                    utfArray = [],
-                    lebArray = []
-                let length = 0;
-
-                for (let i = this.byteIndex; true; i++) {
-                    let group = parseInt(this.byteArray[i], 16).toString(2);
+                for (let i = this.byteIndex, wip = true; wip; i++) {
+                    const group = parseInt(this.byteArray[i], 16).toString(2);
                     if (group.length < 8) {
                         lebArray.push(group.padStart(7, '0'));
-                        break;
+                        wip = false;
                     } else lebArray.push(group.substring(1));
                 }
                 this.byteIndex += lebArray.length;
 
-                length = parseInt(lebArray.reverse().join(''), 2)
+                length = parseInt(lebArray.reverse().join(''), 2);
                 for (let i = this.byteIndex; i < this.byteIndex + length; i++) {
-                    utfArray.push(this.byteArray[i])
+                    utfArray.push(this.byteArray[i]);
                 }
 
                 this.byteIndex += length;
@@ -104,6 +104,7 @@ module.exports = class ProFileCoder {
                     type: 'string',
                 });
                 break;
+            default:
         }
 
         return this;
@@ -115,7 +116,7 @@ module.exports = class ProFileCoder {
             byteArray = [];
 
         for (let i = this.byteIndex; i < this.byteIndex + size; i++) {
-            byteArray.push(this.byteArray[i])
+            byteArray.push(this.byteArray[i]);
         }
 
         this.byteIndex += size;
@@ -129,8 +130,7 @@ module.exports = class ProFileCoder {
 
     hexStringToArray(string) {
         const array = [];
-        for (let i = string.length; i > 0; i -= 2)
-            array.push(string.substring(i - 2, i).padStart(2, '0'));
+        for (let i = string.length; i > 0; i -= 2) array.push(string.substring(i - 2, i).padStart(2, '0'));
         return array.reverse();
     }
-}
+};

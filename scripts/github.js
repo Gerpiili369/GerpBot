@@ -1,4 +1,4 @@
-const Api = require('./common.js').Api;
+const Api = require('./api');
 
 module.exports = class GitHub extends Api {
     constructor() {
@@ -8,4 +8,4 @@ module.exports = class GitHub extends Api {
     getReleases(user, repo) {
         return this.apiCall(`/repos/${ user }/${ repo }/releases`, 'releases');
     }
-}
+};
