@@ -1,19 +1,20 @@
 const
-    // common
+    // Common
+    common = require('./scripts/common.js'),
     {
         config,
         logger,
         Embed,
         colors,
-    } = common = require('./scripts/common.js'),
-    // node_modules
+    } = common,
+    // Node modules
     Discord = require('discord.io'),
     fs = require('fs'),
     path = require('path'),
     io = require('socket.io-client'),
     isUrl = require('is-url'),
-    { Uptime } = st = require('snowtime'),
-    // scripts
+    st = require('snowtime'),
+    // Scripts
     web = require('./scripts/web.js'),
     bs = config.canvasEnabled ? require('./scripts/bs.js') : null,
     GitHub = require('./scripts/github.js'),
@@ -21,30 +22,35 @@ const
     Osu = require('./scripts/osu.js'),
     MusicHandler = require('./scripts/music.js'),
     permCheck = require('./scripts/permCheck.js'),
-    // load objectLib
+    // Load objectLib
     objectLib = getJSON([
-        'help', 'compliments', 'defaultRes', 'games', 'answers', 'ileAcronym'
+        'help',
+        'compliments',
+        'defaultRes',
+        'games',
+        'answers',
+        'ileAcronym'
     ], 'objectLib'),
-    // constant variables
+    // Constant variables
+    settings = getJSON('settings'),
     Reminder = getReminderClass(),
     bot = new Discord.Client({ token: config.auth.token, autorun: true }),
     github = new GitHub(),
     ile = new Ile(getJSON('ile'), objectLib.ileAcronym),
     osu = new Osu(config.auth.osu),
-    mh = new MusicHandler(bot, config.auth.tubeKey);
+    mh = new MusicHandler(bot, config.auth.tubeKey),
     bsga = config.canvasEnabled ? new bs.GameArea() : null,
     kps = {},
     timeOf = {
         startUp: Date.now()
     },
-    // funky function stuff
+    // Funky function stuff
     pc = permCheck(bot);
 
 let
-    // other variables
+    // Other variables
     startedOnce = false,
-    online = false,
-    settings = getJSON('settings');
+    online = false;
 
 if (!settings.servers) settings.servers = {};
 if (!settings.tz) settings.tz = {};
@@ -69,45 +75,54 @@ bot.on('ready', evt => {
     startReminding();
     updateSettings();
 
-    logger.info(startedOnce ? 'Reconnection successful!' : `${ bot.username } (user ${ bot.id }) ready for world domination!`);
+    logger.info(startedOnce ? 'Reconnection successful!' : `${ evt.d.user.username } (user ${ evt.d.user.id }) ready for world domination!`);
 
     online = true;
     startedOnce = true;
 });
 
 bot.on('message', (user, userID, channelID, message, evt) => {
-    let serverID, args = message.split(' '), fileReact = false;
+    const args = message.split(' ');
+    let
+        serverID = null,
+        fileReact = false;
 
     if (bot.channels[channelID]) serverID = bot.channels[channelID].guild_id;
     else if (!bot.directMessages[channelID]) return;
 
     if (!bot.pending[channelID]) bot.pending[channelID] = [];
     if (userID === bot.id && bot.pending[channelID].length > 0) {
-        let pi = bot.pending[channelID].splice(0, 1)[0], string, embed;
+        const pi = bot.pending[channelID].splice(0, 1)[0];
+        let
+            str = '',
+            embed = null;
 
-        if (typeof pi === 'string') string = pi;
+        if (typeof pi === 'string') str = pi;
         else if (pi instanceof Embed) embed = pi;
         else if (pi instanceof Array) {
-            string = pi[0];
+            str = pi[0];
             embed = pi[1];
         }
-        msg(channelID, string, embed instanceof Embed && embed.errorIfInvalid());
+        msg(channelID, str, embed instanceof Embed && embed.errorIfInvalid());
     }
 
-    if (evt.d.attachments.length > 0) for (file of evt.d.attachments) {
+    if (evt.d.attachments.length > 0) for (const file of evt.d.attachments) {
         // Messages with attachments
-        const ext = file.url.substring(file.url.length - file.url.split('').reverse().join('').indexOf('.') - 1).toLowerCase();
+        const ext = file.url.substring(file.url.length - file.url.split('').reverse()
+            .join('')
+            .indexOf('.') - 1).toLowerCase();
         fileReact = true;
         switch (ext) {
             case '.osr':
-                if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
-                    return pc.missage(msg, channelID, ['Embed Links']);
-                osu.readReplay(file.url).then(perf => osu.singlePlayEmbed(perf)).then(result => {
-                    result.re.description = result.re.description.replace('<date>',
-                        st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), new Date(result.date))
-                    );
-                    msg(channelID, userID == bot.id ? '' : 'osu! replay information:', result.re.errorIfInvalid());
-                }).catch(err => msg(channelID, '', new Embed().error(err)));
+                if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID)) return pc.missage(msg, channelID, ['Embed Links']);
+                osu.readReplay(file.url).then(perf => osu.singlePlayEmbed(perf))
+                    .then(result => {
+                        result.re.description = result.re.description.replace('<date>',
+                            st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), new Date(result.date))
+                        );
+                        msg(channelID, userID == bot.id ? '' : 'osu! replay information:', result.re.errorIfInvalid());
+                    })
+                    .catch(err => msg(channelID, '', new Embed().error(err)));
                 break;
             default: fileReact = true;
         }
@@ -153,15 +168,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 };
 
                 for (const member in bot.servers[serverID].members) {
-                    if (!bot.users[member].bot) {
+                    if (bot.users[member].bot) si.members.bots++;
+                    else {
                         let status = bot.servers[serverID].members[member].status;
-                        if (!status) status = 'offline'
+                        if (!status) status = 'offline';
                         si.members[status]++;
-                    } else si.members.bots++;
+                    }
                 }
 
                 for (const channel in bot.servers[serverID].channels) {
-                    let type = bot.servers[serverID].channels[channel].type;
+                    const type = bot.servers[serverID].channels[channel].type;
                     if (type == 0 || type == 2 || type == 4) si.channels[type]++;
                 }
 
@@ -169,13 +185,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     `Information about "${ bot.servers[serverID].name }"`,
                     `**Created by:** <@${ bot.servers[serverID].owner_id }>\n` +
                     `**Creation date:** \`${ st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), st.sfToDate(serverID)) }\`\n` +
-                    `**Age:** \`${ new Uptime(st.sfToDate(serverID)).toString() }\``,
+                    `**Age:** \`${ new st.Uptime(st.sfToDate(serverID)).toString() }\``,
                     {
                         color: getColor(serverID, userID),
                         timestamp: bot.servers[serverID].joined_at,
                         footer: {
                             icon_url: avatarUrl(bot),
-                            text: `${ settings.servers[serverID].nick != null ? settings.servers[serverID].nick : bot.username } joined this server on`
+                            text: `${ settings.servers[serverID].nick ? settings.servers[serverID].nick : bot.username } joined this server on`
                         },
                         thumbnail: {
                             url: `https://cdn.discordapp.com/icons/${ serverID }/${ bot.servers[serverID].icon }.png`
@@ -183,19 +199,22 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     }
                 );
 
-                ie.addField(
-                    'Members:',
-                    `✅ Online: ${ si.members.online }\n💤 Idle: ${ si.members.idle }\n⛔ Do not disturb: ${ si.members.dnd }\n⚫ Offline: ${ si.members.offline }`,
-                    true
-                ).addField(
-                    'Channels:',
-                    `💬 Text: ${ si.channels[0] }\n🎙️ Voice: ${ si.channels[2] }\n📁 Category: ${ si.channels[4] }`,
-                    true
-                ).addField(
-                    'More stuff:',
-                    `Roles: ${ Object.keys(bot.servers[serverID].roles).length }, Emojis: ${ Object.keys(bot.servers[serverID].emojis).length }/50, Bots: ${ si.members.bots }`,
-                    true
-                )
+                ie
+                    .addField(
+                        'Members:',
+                        `✅ Online: ${ si.members.online }\n💤 Idle: ${ si.members.idle }\n⛔ Do not disturb: ${ si.members.dnd }\n⚫ Offline: ${ si.members.offline }`,
+                        true
+                    )
+                    .addField(
+                        'Channels:',
+                        `💬 Text: ${ si.channels[0] }\n🎙️ Voice: ${ si.channels[2] }\n📁 Category: ${ si.channels[4] }`,
+                        true
+                    )
+                    .addField(
+                        'More stuff:',
+                        `Roles: ${ Object.keys(bot.servers[serverID].roles).length }, Emojis: ${ Object.keys(bot.servers[serverID].emojis).length }/50, Bots: ${ si.members.bots }`,
+                        true
+                    );
 
                 if (settings.tz[serverID]) ie.addDesc(`\n**Server time:** \`${ st.timeAt(settings.tz[serverID]) }\``);
 
@@ -217,7 +236,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (bot.channels[ci.id]) ci.serverID = bot.channels[ci.id].guild_id;
 
                 const ce = new Embed(
-                    `Information about "${ ci.serverID ? '#' + bot.channels[ci.id].name : `@${ bot.username }" (DM channel)` }`,
+                    `Information about "${ ci.serverID ? `#${ bot.channels[ci.id].name }` : `@${ bot.username }" (DM channel)` }`,
                     { color: getColor(serverID, userID) }
                 );
 
@@ -228,7 +247,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 } else ce.thumbnail.url = avatarUrl(bot);
 
                 ce.addDesc(`**Channel created:** \`${ st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), st.sfToDate(ci.id)) }\`\n`);
-                ce.addDesc(`**Age:** \`${ new Uptime(st.sfToDate(ci.id)).toString() }\`\n`);
+                ce.addDesc(`**Age:** \`${ new st.Uptime(st.sfToDate(ci.id)).toString() }\`\n`);
 
                 if (ci.serverID && bot.channels[ci.id].nsfw) ce.addDesc(`*Speaking of age, this channel is marked as NSFW, you have been warned.*\n`);
 
@@ -271,7 +290,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         `Information about "${ bot.users[ui.id].username }#${ bot.users[ui.id].discriminator }"`,
                         `**Also known as:** "<@${ ui.id }>"\n` +
                         `**User created:** \`${ st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), st.sfToDate(ui.id)) }\`\n` +
-                        `**Age:** \`${ new Uptime(st.sfToDate(ui.id)).toString() }\``,
+                        `**Age:** \`${ new st.Uptime(st.sfToDate(ui.id)).toString() }\``,
                         {
                             color: ui.color,
                             thumbnail: {
@@ -285,7 +304,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                     if (settings.tz[ui.id]) ue.addDesc(`\n**Local time:** \`${ st.timeAt(settings.tz[ui.id]) }\``);
 
-                    let cleanRoll = [], status = '';
+                    const cleanRoll = [];
+                    let status = '';
                     if (serverID) {
                         ue.timestamp = new Date(bot.servers[serverID].members[ui.id].joined_at);
                         ue.footer = {
@@ -295,7 +315,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                         for (const role in bot.servers[serverID].roles)
                             if (bot.servers[serverID].members[ui.id].roles.indexOf(role) != -1)
-                                ui.roles[bot.servers[serverID].roles[role].position] = '<@&' + role + '>';
+                                ui.roles[bot.servers[serverID].roles[role].position] = `<@&${ role }>`;
 
                         for (const role of ui.roles) if (role) cleanRoll.push(role);
                         ui.roles = cleanRoll.reverse();
@@ -318,7 +338,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                         if (ui.roles.length > 0) ue.addDesc('\n**Roles:** ');
                         for (const role of ui.roles) ue.addDesc(` ${ role }`);
-                    };
+                    }
 
                     msg(channelID, 'High quality spying:', ue.errorIfInvalid());
                 } else msg(channelID, 'I would give you the info you seek, but it is clear you don\'t even know what you want');
@@ -330,7 +350,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 if (args[0]) {
                     args[0] = st.stripNaNs(args[0]);
-                    let role = bot.servers[serverID].roles[args[0]];
+                    const role = bot.servers[serverID].roles[args[0]];
 
                     if (!role) {
                         msg(channelID, 'Role not found!');
@@ -341,11 +361,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         `Information about "${ role.name }"`,
                         `<@&${ role.id }>\n` +
                         `**Role created:** \`${ st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), st.sfToDate(role.id)) }\`\n` +
-                        `**Age:** ${ new Uptime(st.sfToDate(role.id)) }\``,
+                        `**Age:** ${ new st.Uptime(st.sfToDate(role.id)) }\``,
                         { color: role.color }
                     );
 
-                    let rollMembers = [];
+                    const rollMembers = [];
                     for (const user in bot.servers[serverID].members)
                         if (bot.servers[serverID].members[user].roles.indexOf(role.id) != -1) rollMembers.push(user);
 
@@ -369,11 +389,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         max = args[0];
                     case 0:
                         if (common.pkg.repository && common.pkg.repository.url) {
-                            const urlray = common.pkg.repository.url.split('/')
+                            const urlray = common.pkg.repository.url.split('/');
                             repo.host = urlray[2];
                             if (repo.host === 'github.com') {
-                                repo.owner = urlray[3]
-                                repo.name = urlray[4].slice(0, urlray[4].indexOf('.git'))
+                                repo.owner = urlray[3];
+                                repo.name = urlray[4].slice(0, urlray[4].indexOf('.git'));
                             }
                         }
                         break;
@@ -391,9 +411,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 github.getReleases(repo.owner, repo.name)
                     .then(data => {
                         if (data.message === 'Not Found') return msg(channelID, '', new Embed('Repository not found!').error());
-                        if (data.length < 1) return msg(channelID, '', new Embed('No releases available.').error())
+                        if (data.length < 1) return msg(channelID, '', new Embed('No releases available.').error());
 
-                        const titleEmbed = new Embed(`Releases for ${ data[0].html_url.split('/')[3] }/${ data[0].html_url.split('/')[4] }`, { color })
+                        const titleEmbed = new Embed(`Releases for ${ data[0].html_url.split('/')[3] }/${ data[0].html_url.split('/')[4] }`, { color });
                         if (args.length < 2) bot.pending[channelID].push(titleEmbed);
 
                         for (let i = 0; i < data.length && i < max; i++)
@@ -406,12 +426,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                                 },
                                 footer: {
-                                    text: 'Published by ' + data[i].author.login,
+                                    text: `Published by ${ data[i].author.login }`,
                                     icon_url: data[i].author.avatar_url
                                 }
                             }));
 
-                        if (args.length < 2) msg(channelID, '', new Embed('Current version: ' + common.pkg.version, { color }));
+                        if (args.length < 2) msg(channelID, '', new Embed(`Current version: ${ common.pkg.version }`, { color }));
                         else msg(channelID, '', titleEmbed);
                     })
                     .catch(err => msg(channelID, '', new Embed().error(err)));
@@ -441,6 +461,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 message: 'Here is some top play action!'
                             }, (err, res) => {
                                 if (err) return Promise.reject(err);
+                                return Promise.resolve(res);
                             }))
                             .catch(err => msg(channelID, '', new Embed().error(err)));
                     default:
@@ -454,18 +475,21 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 }
                 if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
-                let target = args[0], raffleList = [], winnerAmt = args[1];
+                let
+                    target = args[0],
+                    raffleList = [],
+                    winnerAmt = args[1];
                 if (!target) target = 'everyone';
 
                 switch (target) {
                     case 'everyone':
                     case '@everyone':
-                        raffleList = Object.keys(bot.servers[serverID].members)
+                        raffleList = Object.keys(bot.servers[serverID].members);
                         break;
                     case 'here':
                     case '@here':
                         for (const member in bot.servers[serverID].members) {
-                            let status = bot.servers[serverID].members[member].status;
+                            const status = bot.servers[serverID].members[member].status;
                             if (status && status != 'offline') raffleList.push(member);
                         }
                         break;
@@ -493,15 +517,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 const re = new Embed('Winners', { color: getColor(serverID, userID) });
 
-                if (bot.channels[target] && (!serverID || bot.channels[target].guild_id != serverID))
+                if (bot.channels[target] && (!serverID || bot.channels[target].guild_id != serverID)) {
                     for (const winner of winners) re.addDesc(`\n${ bot.users[winner].username }`);
-                else
+                } else {
                     for (const winner of winners) re.addDesc(`\n<@${ winner }>`);
+                }
 
                 if (winners.length === 1) {
                     re.title = 'Winner';
                     re.color = getColor(bot.channels[target] ? bot.channels[target].guild_id : channelID, winners[0], false);
-                    re.thumbnail.url = avatarUrl(bot.users[winners[0]])
+                    re.thumbnail.url = avatarUrl(bot.users[winners[0]]);
                 }
 
                 msg(channelID, '', re);
@@ -514,13 +539,13 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'rng':
                 if (args[0]) {
+                    const result = [];
                     let
                         max = Number(args[0].split('..')[1]),
                         min = Number(args[0].split('..')[0]),
-                        result = [],
                         amount = 1;
 
-                    if (args[0].indexOf('..') != -1) {
+                    if (args[0].indexOf('..') > -1) {
                         if (isNaN(max) || isNaN(min)) {
                             msg(channelID, 'Not a number!');
                             break;
@@ -535,11 +560,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     }
 
                     if (max < min) {
-                        let mem = min;
+                        const mem = min;
                         min = max;
                         max = mem;
                     }
-                    max++
+                    max++;
 
                     if (!isNaN(Number(args[1]))) amount = args[1];
 
@@ -548,7 +573,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     }
 
                     msg(channelID, result.join(', '));
-                } else msg(channelID, 'Syntax: `rng <number>[..<number>] [<amount>]`')
+                } else msg(channelID, 'Syntax: `rng <number>[..<number>] [<amount>]`');
                 break;
             case 'nerfThis':
             case 'nt':
@@ -560,7 +585,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'uptime':
             case 'ut':
                 if (timeOf[args[0]]) {
-                    const uptime = new Uptime(timeOf[args[0]]);
+                    const uptime = new st.Uptime(timeOf[args[0]]);
                     msg(channelID, `Time since '${ args[0] }': ${ uptime.toString() }\``
                     );
                 } else {
@@ -578,10 +603,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     'TEXT_READ_MESSAGE_HISTORY',
                     'TEXT_ADD_REACTIONS'
                 ], channelID) : '').then(() => {
-                    const options = [], ve = new Embed({
-                        color: getColor(serverID, userID),
-                        footer: { text: 'Vote generated by your\'s truly.' }
-                    });
+                    const
+                        options = [],
+                        ve = new Embed({
+                            color: getColor(serverID, userID),
+                            footer: { text: 'Vote generated by your\'s truly.' }
+                        });
 
                     switch (args[0]) {
                         case 'gold':
@@ -604,24 +631,27 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     if (options.length < 1) return msg(channelID, `Options were not included! Example: \`@${ bot.username } vote :thinking:=genius\`.`);
 
                     for (const option of options) {
-                        const p = option.split('=');
+                        const
+                            emoji = option.split('=')[0],
+                            name = option.split('=')[1];
 
-                        if (p[0] != '') {
-                            if (p[1]) ve.addField(
-                                `Vote for ${ p[1] } with:`,
-                                `${ p[0] }`,
+                        if (emoji) {
+                            if (name) ve.addField(
+                                `Vote for ${ name } with:`,
+                                `${ emoji }`,
                                 true
                             );
                             else ve.addField(
                                 `Vote with:`,
-                                `${ p[0] }`,
+                                `${ emoji }`,
                                 true
                             );
                         } else return msg(channelID, `Some options not defined! Example: \`@${ bot.username } vote :thinking:=genius\`.`);
                     }
 
                     msg(channelID, '@everyone', ve.errorIfInvalid());
-                }, missing => pc.missage(msg, channelID, missing)).catch(err => logger.error(err, ''));
+                }, missing => pc.missage(msg, channelID, missing))
+                    .catch(err => logger.error(err, ''));
                 break;
             case 'music':
             case 'play':
@@ -674,16 +704,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     .then(() => mh.servers[serverID]
                         .joinUser(userID)
                         .then(server => server.getStream())
-                        .then(server => {
-                            let result;
+                        .then(() => {
+                            let result = null;
                             if (evt.d.attachments.length === 1) result = new mh.Song(evt.d.attachments[0].url, userID).update({
                                 title: evt.d.attachments[0].filename,
-                                description: 'File uploaded by ' + user,
+                                description: `File uploaded by ${ user }`,
                                 thumbnail: avatarUrl(bot.users[userID]),
                                 published: st.sfToDate(evt.d.attachments[0].id)
                             });
-                            else if (args[0]) result = mh.searchSong(args, userID)
-                            return result
+                            else if (args[0]) result = mh.searchSong(args, userID);
+                            return result;
                         })
                         .then(song => {
                             if (song instanceof mh.Song) return mh.servers[serverID].queueSong(song);
@@ -692,11 +722,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             if (!mh.servers[serverID].playing) mh.servers[serverID].playNext(channelID, getColor(channelID, userID));
                         }),
                     missing => pc.missage(msg, channelID, missing)
-                )
-                .catch(err => {
-                    if (err instanceof Error) logger.error(err, '');
-                    msg(channelID, '', new Embed().error(err));
-                })
+                    )
+                    .catch(err => {
+                        if (err instanceof Error) logger.error(err, '');
+                        msg(channelID, '', new Embed().error(err));
+                    });
                 break;
             case 'bs':
                 if (!config.canvasEnabled) return msg(channelID, 'Bot owner has not enabled this feature.');
@@ -705,13 +735,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     'TEXT_EMBED_LINKS',
                     'TEXT_READ_MESSAGE_HISTORY',
                     'TEXT_ADD_REACTIONS'
-                ], channelID) : '').then(() => msg(channelID, '', new Embed(
-                    'Blue Squares: The Game',
-                    { color: 255 }
-                )), missing => pc.missage(msg, channelID, missing)).catch(err => logger.error(err, ''));
+                ], channelID) : '')
+                    .then(() => msg(channelID, '', new Embed(
+                        'Blue Squares: The Game',
+                        { color: 255 }
+                    )), missing => pc.missage(msg, channelID, missing))
+                    .catch(err => logger.error(err, ''));
                 break;
             case 'kps':
-                let url = 'https://plssave.help/kps';
+                const url = 'https://plssave.help/kps';
 
                 if (!kps[userID]) {
                     kps[userID] = {};
@@ -769,10 +801,10 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             data = 'other';
                         case 'ai':
                         case 'friend':
-                            if (!kps[userID].gameActive) {
-                                kps[userID].socket.emit('setMode', data, args[1]);
-                            } else {
+                            if (kps[userID].gameActive) {
                                 msg(userID, 'This command is not available while in a game. Use `kps quit` to quit.');
+                            } else {
+                                kps[userID].socket.emit('setMode', data, args[1]);
                             }
                             break;
                         case 'rock':
@@ -817,19 +849,14 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                  * @return {Embed}
                  */
                 function kpsEmbed(msg, type) {
-                    let player = kps[userID].mem.player;
-                    const embed = new Embed(msg, {
-                        author: {
+                    const
+                        player = kps[userID].mem.player,
+                        embed = new Embed(msg, { author: {
                             name: 'KPS',
                             url: 'https://plssave.help/PlayKPS'
-                        }
-                    });
+                        } });
 
                     switch (player.theme) {
-                        case 'defeault':
-                            embed.author.icon_url = `${ url }/img/icon.png`;
-                            embed.color = 3569575;
-                            break;
                         case 'horror':
                             embed.author.icon_url = `${ url }/img/icon4.png`;
                             embed.color = 7667712;
@@ -842,6 +869,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             embed.author.icon_url = `${ url }/img/icon2.png`;
                             embed.color = 13027014;
                             break;
+                        default:
+                            embed.author.icon_url = `${ url }/img/icon.png`;
+                            embed.color = 3569575;
                     }
 
                     switch (type) {
@@ -854,7 +884,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         case 4:
                             addThumb('vs');
                             addImage(true);
-                            addFooter()
+                            addFooter();
                             break;
                         case 3:
                             addThumb('vs');
@@ -862,11 +892,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                             break;
                         case 2:
                             addThumb('vs');
-                            addFooter()
+                            addFooter();
                             break;
                         case 1:
                             addFooter();
                             break;
+                        default:
                     }
 
                     return embed.errorIfInvalid();
@@ -885,12 +916,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (background) {
                             embed.image.url = `${ url }/img/${ player.theme }/background${ player.theme === 'defeault' ? '' : 'new' }.${ player.theme === 'horror' ? 'png' : 'jpg' }`;
                         } else {
-                            embed.image.url = `${ url }/img/${ player.theme }/${ player.result}.png`;
+                            embed.image.url = `${ url }/img/${ player.theme }/${ player.result }.png`;
                         }
                     }
 
                     function addScore() {
-                        let emojis = ['✅', '⚠️', '💢']
+                        const emojis = ['✅', '⚠️', '💢'];
 
                         emojis[0] = emojis[0].repeat(Math.round(player.points.wins / player.games * 15));
                         emojis[1] = emojis[1].repeat(Math.round(player.points.draws / player.games * 15));
@@ -919,7 +950,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         msg(channelID, ile.attend(userID));
                         break;
                     case 'time':
-                        let tzConv = ile.getCheckpoint().split(': ');
+                        const tzConv = ile.getCheckpoint().split(': ');
                         tzConv[1] = st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), new Date(tzConv[1]));
                         msg(channelID, tzConv.join(': '));
                         break;
@@ -936,19 +967,20 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 return pc.missage(msg, channelID, ['Embed Links']);
 
                             const rle = new Embed('List of your reminders', { color: getColor(serverID, userID) });
+                            let channel = rem.channel;
+
+                            if (bot.channels[rem.channel])
+                                channel = `<#${ rem.channel }> (${ bot.servers[bot.channels[rem.channel].guild_id].name })`;
+                            else if (bot.directMessages[rem.channel])
+                                channel = `<@${ bot.directMessages[rem.channel].recipient.id }> (DM)`;
+                            else if (bot.users[rem.channel])
+                                channel = `<@${ rem.channel }> (DM)`;
+
 
                             if (settings.reminders[userID]) for (const rem of settings.reminders[userID]) rle.addField(
                                 `Reminder #${ settings.reminders[userID].indexOf(rem) }`,
                                 `Time: ${ st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), new Date(rem.time)) }\n` +
-                                `Channel: ${
-                                    bot.channels[rem.channel] ?
-                                        `<#${ rem.channel }> (${ bot.servers[bot.channels[rem.channel].guild_id].name })`
-                                    : bot.directMessages[rem.channel] ?
-                                        `<@${ bot.directMessages[rem.channel].recipient.id }> (DM)`
-                                    : bot.users[rem.channel] ?
-                                        `<@${ rem.channel }> (DM)`
-                                    : rem.channel
-                                } \n` +
+                                `Channel: ${ channel }\n` +
                                 `Message: ${ rem.message || '' }`
                             );
 
@@ -973,26 +1005,23 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 color: getColor(serverID, userID)
                             });
 
-                            // reminder to other user or channel?
+                            // Reminder to other user or channel?
                             if (bot.users[rem.channel] || bot.channels[rem.channel]) args.shift();
                             else rem.channel = channelID;
 
-                            // perms for receiving channel
-                            if (bot.channels[rem.channel] && !pc.userHasPerm(bot.channels[rem.channel].guild_id, bot.id, 'TEXT_EMBED_LINKS', rem.channel))
-                                return pc.missage(msg, channelID, ['Embed Links']);
+                            // Perms for receiving channel
+                            if (bot.channels[rem.channel] && !pc.userHasPerm(bot.channels[rem.channel].guild_id, bot.id, 'TEXT_EMBED_LINKS', rem.channel)) return pc.missage(msg, channelID, ['Embed Links']);
 
                             if (isNaN(st.anyTimeToMs(args[0]))) {
                                 rem.time = args.shift();
 
                                 if (settings.tz[userID]) rem.time += settings.tz[userID];
-                                else {
-                                    if (serverID && settings.tz[serverID]) {
-                                        rem.time += settings.tz[serverID];
-                                        msg(channelID, `Using the server default UTC${ settings.tz[serverID]} timezone. You can change your timezone with "\`@${ bot.username } timezone\` -command".`);
-                                    } else {
-                                        rem.time += 'Z';
-                                        msg(channelID, `Using the default UTC+00:00 timezone. You can change your timezone with "\`@${ bot.username } timezone\` -command".`);
-                                    }
+                                else if (serverID && settings.tz[serverID]) {
+                                    rem.time += settings.tz[serverID];
+                                    msg(channelID, `Using the server default UTC${ settings.tz[serverID] } timezone. You can change your timezone with "\`@${ bot.username } timezone\` -command".`);
+                                } else {
+                                    rem.time += 'Z';
+                                    msg(channelID, `Using the default UTC+00:00 timezone. You can change your timezone with "\`@${ bot.username } timezone\` -command".`);
                                 }
                                 rem.time = st.stripNaNs(rem.time);
                                 if (rem.time == 'Invalid Date') {
@@ -1001,19 +1030,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                                 } else rem.time = rem.time.getTime();
                             }
 
-                            for (const arg of args) {
-                                if (!isNaN(st.anyTimeToMs(arg))) rem.time += st.anyTimeToMs(arg);
-                                else {
-                                    args.splice(0, args.indexOf(arg));
-                                    rem.message = args.join(' ');
-                                    break;
-                                }
-                            }
+                            for (const arg of args) if (isNaN(st.anyTimeToMs(arg))) {
+                                args.splice(0, args.indexOf(arg));
+                                rem.message = args.join(' ');
+                                break;
+                            } else rem.time += st.anyTimeToMs(arg);
 
                             for (const arg of args) {
                                 if (arg === '@everyone' || arg === '@here') rem.mentions += arg;
                                 else {
-                                    let role = st.stripNaNs(arg);
+                                    const role = st.stripNaNs(arg);
                                     if (bot.channels[rem.channel] && bot.servers[bot.channels[rem.channel].guild_id].roles[role]) {
                                         rem.mentions += `<@&${ role }>`;
                                     } else if (serverID && bot.servers[serverID].roles[role]) {
@@ -1098,19 +1124,19 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         settings.servers[serverID].disableAnswers = true;
                         msg(channelID, 'You weren\'t asking me? Well, ok then.');
                     }
-                    updateSettings()
-                } else msg(channelID, 'You can\'t escape me here!')
+                    updateSettings();
+                } else msg(channelID, 'You can\'t escape me here!');
                 break;
             case 'autoCompliment':
             case 'ac':
                 if (!serverID) {
                     msg(channelID, '**Feature not intended to be used in DM. Sending sample:**');
-                    args[0] = 'sample'
+                    args[0] = 'sample';
                 } else if (!settings.servers[serverID].autoCompliment) {
                     settings.servers[serverID].autoCompliment = {
                         enabled: true,
                         targets: []
-                    }
+                    };
                 }
 
                 if (args[1]) args[1] = st.stripNaNs(args[1]);
@@ -1132,8 +1158,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         } else msg(channelID, 'Request denied, not admin!');
                         break;
                     case 'list':
-                        let list = []
-                        settings.servers[serverID].autoCompliment.targets.forEach((v, i) => list[i] = `<@${ v }>`)
+                        const list = settings.servers[serverID].autoCompliment.targets.map(value => `<@${ value }>`);
 
                         if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                             return msg(channelID, list.join('\n'));
@@ -1157,11 +1182,11 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     case 'remove':
                         if (args[1]) {
                             if (admin) {
-                                if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) != -1) {
+                                if (settings.servers[serverID].autoCompliment.targets.indexOf(args[1]) > -1) {
+                                    msg(channelID, `User <@${ args[1] }> was never cool to begin with!`);
+                                } else {
                                     settings.servers[serverID].autoCompliment.targets.splice(settings.servers[serverID].autoCompliment.targets.indexOf(args[1]), 1);
                                     msg(channelID, `User <@${ args[1] }> ain't cool no more!`);
-                                } else {
-                                    msg(channelID, `User <@${ args[1] }> was never cool to begin with!`);
                                 }
                             } else { msg(channelID, 'Request denied, not admin!'); }
                             break;
@@ -1182,27 +1207,29 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (admin) pc.multiPerm(serverID, bot.id, [
                     'TEXT_READ_MESSAGE_HISTORY',
                     'TEXT_ADD_REACTIONS'
-                ], channelID).then(() => {
-                    switch (args[0]) {
-                        case 'set':
-                            if (args[1]) {
-                                args[1] = st.stripNaNs(args[1]);
-                                settings.servers[serverID].autoShit = args[1];
-                                msg(channelID, `<@&${ args[1] }> has been chosen to be shit.`);
-                            } else {
-                                msg(channelID, `*Set hit the fan.*`);
-                            }
-                            break;
-                        case 'clean':
-                            settings.servers[serverID].autoShit = null;
-                            msg(channelID, `Shit has been cleaned up...`);
-                            break;
-                        default:
-                            msg(channelID, `Missing arguments. Usage: \`@${ bot.username } shit set <@role> | clean\`.`);
-                            break;
-                    }
-                    updateSettings();
-                }, missing => pc.missage(msg, channelID, missing)).catch(err => logger.error(err, ''));
+                ], channelID)
+                    .then(() => {
+                        switch (args[0]) {
+                            case 'set':
+                                if (args[1]) {
+                                    args[1] = st.stripNaNs(args[1]);
+                                    settings.servers[serverID].autoShit = args[1];
+                                    msg(channelID, `<@&${ args[1] }> has been chosen to be shit.`);
+                                } else {
+                                    msg(channelID, `*Set hit the fan.*`);
+                                }
+                                break;
+                            case 'clean':
+                                settings.servers[serverID].autoShit = null;
+                                msg(channelID, `Shit has been cleaned up...`);
+                                break;
+                            default:
+                                msg(channelID, `Missing arguments. Usage: \`@${ bot.username } shit set <@role> | clean\`.`);
+                                break;
+                        }
+                        updateSettings();
+                    }, missing => pc.missage(msg, channelID, missing))
+                    .catch(err => logger.error(err, ''));
                 else msg(channelID, 'Request denied, not admin.');
                 break;
             case 'color':
@@ -1218,16 +1245,18 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (!settings.servers[serverID].color) settings.servers[serverID].color = {};
                         settings.servers[serverID].color.value = color;
 
-                        addColorRole(serverID).catch(err => {
-                            if (err.name === 'Missing permissions!') {
-                                msg(channelID, 'Unable to add color role!')
-                                pc.missage(msg, channelID, ['Manage Roles']);
-                            } else logger.error(err, '');
-                        }).then(() => {
-                            updateSettings();
-                            editColor(serverID, '#' + (color || colors.gerp).toString(16));
-                            msg(channelID, '', new Embed('Color changed!', { color }));
-                        })
+                        addColorRole(serverID)
+                            .catch(err => {
+                                if (err.name === 'Missing permissions!') {
+                                    msg(channelID, 'Unable to add color role!');
+                                    pc.missage(msg, channelID, ['Manage Roles']);
+                                } else logger.error(err, '');
+                            })
+                            .then(() => {
+                                updateSettings();
+                                editColor(serverID, `#${ (color || colors.gerp).toString(16) }`);
+                                msg(channelID, '', new Embed('Color changed!', { color }));
+                            });
                     })
                     .catch(err => msg(channelID, '', new Embed(
                         'Only color you will be seeing is red.',
@@ -1241,25 +1270,27 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 if (!settings.servers[serverID].color) settings.servers[serverID].color = {};
                 if (!settings.servers[serverID].effects) settings.servers[serverID].effects = {
                     rainbow: false, shuffle: false
-                }
+                };
 
                 switch (args[0]) {
                     case 'rainbow':
-                        addColorRole(serverID).then(() => {
-                            if (settings.servers[serverID].effects.rainbow) {
-                                settings.servers[serverID].effects.rainbow = false;
-                                editColor(serverID, '#' + (settings.servers[serverID].color.value || colors.gerp).toString(16));
-                                msg(channelID, 'Rainbow effect deactivated!');
-                            } else {
-                                settings.servers[serverID].effects.rainbow = true;
-                                msg(channelID, 'Rainbow effect activated!');
-                            }
-                            updateSettings();
-                        }).catch(err => {
-                            if (err.name === 'Missing permissions!') {
-                                pc.missage(msg, channelID, ['Manage Roles']);
-                            } else logger.error(err, '');
-                        });
+                        addColorRole(serverID)
+                            .then(() => {
+                                if (settings.servers[serverID].effects.rainbow) {
+                                    settings.servers[serverID].effects.rainbow = false;
+                                    editColor(serverID, `#${ (settings.servers[serverID].color.value || colors.gerp).toString(16) }`);
+                                    msg(channelID, 'Rainbow effect deactivated!');
+                                } else {
+                                    settings.servers[serverID].effects.rainbow = true;
+                                    msg(channelID, 'Rainbow effect activated!');
+                                }
+                                updateSettings();
+                            })
+                            .catch(err => {
+                                if (err.name === 'Missing permissions!') {
+                                    pc.missage(msg, channelID, ['Manage Roles']);
+                                } else logger.error(err, '');
+                            });
                         break;
                     case 'shuffle':
                         if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_CHANGE_NICKNAME'))
@@ -1273,7 +1304,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         }, 1000);
                         else {
                             settings.servers[serverID].effects.shuffle = true;
-                            settings.servers[serverID].nick = bot.servers[serverID].members[bot.id].nick || bot.username
+                            settings.servers[serverID].nick = bot.servers[serverID].members[bot.id].nick || bot.username;
                             msg(channelID, 'Shuffle effect activated!');
                             updateSettings();
                         }
@@ -1336,7 +1367,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
     if (userID == bot.id && evt.d.embeds[0]) {
         const reactionList = [];
-        // vote embed
+        // Only vote embed
         if (evt.d.embeds[0].footer && evt.d.embeds[0].footer.text == 'Vote generated by your\'s truly.') {
             for (const field of evt.d.embeds[0].fields) {
                 if (field.value.substring(field.value.length - 1) == '>') field.value = field.value.substring(0, field.value.length - 1);
@@ -1349,12 +1380,12 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             }, err => { if (err) logger.error(err, ''); });
         }
 
-        // bs embed
+        // Only bs embed
         if (evt.d.embeds[0].title == 'Blue Squares: The Game') {
             reactionList.push('🔼', '▶', '🔽', '◀', '❌');
         }
 
-        // osu! embeds
+        // Only osu! embeds
         switch (osuEmbedIdentifier(evt.d.embeds[0])) {
             case 'profile':
                 reactionList.push('🏆', '🕒');
@@ -1362,15 +1393,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             case 'top':
                 reactionList.push('➕');
                 break;
+            default:
         }
 
-        for (let i = 0; i < reactionList.length; i++)
-            setTimeout(emojiResponse, i * 500, reactionList[i]);
+        for (let i = 0; i < reactionList.length; i++) setTimeout(emojiResponse, i * 500, reactionList[i]);
     }
 
     // Word detection
-    for (let word of message.split(' ')) {
-        if (word.substring(0, 2) === 'r/') msg(channelID, 'https://reddit.com/' + word);
+    for (const word of message.split(' ')) {
+        if (word.substring(0, 2) === 'r/') msg(channelID, `https://reddit.com/${ word }`);
     }
 
     /**
@@ -1393,27 +1424,29 @@ function osuEmbedIdentifier(embed) {
 }
 
 function addOsuPlaysFromReaction(profOwner, evt, offset = 0) {
-    offset = Number(offset)
     if (isNaN(offset)) return;
-    osu.getUserBest(profOwner, offset + 5)
+    osu.getUserBest(profOwner, Number(offset) + 5)
         .then(playList => {
-            playList = playList.slice(offset);
-            const promArr = [];
-            for (const play of playList) promArr.push(
-                osu.singlePlayEmbed(play).then(result => {
-                    result.re.description = result.re.description.replace('<date>',
-                        st.timeAt(st.findTimeZone(settings.tz, [evt.d.user_id, evt.d.guild_id]), new Date(result.date))
-                    );
-                    return result.re;
-                }).catch(err => logger.error(err, ''))
-            )
+            const
+                playListSegment = playList.slice(offset),
+                promArr = [];
+            for (const play of playListSegment) promArr.push(
+                osu.singlePlayEmbed(play)
+                    .then(result => {
+                        result.re.description = result.re.description.replace('<date>',
+                            st.timeAt(st.findTimeZone(settings.tz, [evt.d.user_id, evt.d.guild_id]), new Date(result.date))
+                        );
+                        return result.re;
+                    })
+                    .catch(err => logger.error(err, ''))
+            );
             return Promise.all(promArr);
         })
         .then(reList => {
             const reFirst = reList.shift();
             if (!bot.pending[evt.d.channel_id]) bot.pending[evt.d.channel_id] = [];
             bot.pending[evt.d.channel_id].push(...reList, new Embed(
-                `Showing top ${ offset + 5 } osu! plays from ${ profOwner }`,
+                `Showing top ${ Number(offset) + 5 } osu! plays from ${ profOwner }`,
                 { color: osu.searchColors.user }
             ));
             msg(evt.d.channel_id, '', reFirst);
@@ -1421,36 +1454,34 @@ function addOsuPlaysFromReaction(profOwner, evt, offset = 0) {
         .catch(err => msg(evt.d.channel_id, '', new Embed().error(err)));
 }
 
+// TODO: Refactor this.
 function addLatestMsgToEmbed(me, channelID, limit = 5) {
-    return new Promise((resolve, reject) => {
-        bot.getMessages({ channelID, limit }, (err, msgList) => {
-            if (err) reject(err);
-            else for (const m of msgList) {
-                let extra = '';
-                if (!me.image.url) for (const ext of ['.gif', '.jpg', '.jpeg', '.png']) {
-                    if (m.attachments[0] && m.attachments[0].url.indexOf(ext) > -1) {
-                        me.image.url = m.attachments[0].url;
-                        extra = ' (image below)';
-                    } else for (const url of m.content.split(' ')) if (url.indexOf(ext) > -1 && isUrl(url)) {
-                        me.image.url = url;
-                        extra = ' (image below)';
-                    }
+    return new Promise((resolve, reject) => bot.getMessages({ channelID, limit }, (err, messageList) => {
+        if (err) reject(err);
+        else for (const message of messageList) {
+            let extra = '';
+            if (!me.image.url) for (const ext of ['.gif', '.jpg', '.jpeg', '.png'])
+                if (message.attachments[0] && message.attachments[0].url.indexOf(ext) > -1) {
+                    me.image.url = message.attachments[0].url;
+                    extra = ' (image below)';
+                } else for (const url of message.content.split(' ')) if (url.indexOf(ext) > -1 && isUrl(url)) {
+                    me.image.url = url;
+                    extra = ' (image below)';
                 }
 
-                me.addField(
-                    m.author.username + extra,
-                    m.content || '`<attachment>`'
-                );
-            }
-            me.fields.reverse();
-            resolve(me);
-        });
-    });
+            me.addField(
+                message.author.username + extra,
+                message.content || '`<attachment>`'
+            );
+        }
+        me.fields.reverse();
+        resolve(me);
+    }));
 }
 
 bot.on('disconnect', (err, code) => {
     online = false;
-    logger.warn(`Disconnected! error: ${ err }, code: ${ code } (uptime: ${ new Uptime(timeOf.connection).toString() }).`);
+    logger.warn(`Disconnected! error: ${ err }, code: ${ code } (uptime: ${ new st.Uptime(timeOf.connection).toString() }).`);
     setTimeout(() => {
         logger.info('Trying to reconnect...');
         bot.connect();
@@ -1472,7 +1503,8 @@ bot.on('any', evt => {
 function handleReactions(evt, message) {
     const embed = message.embeds[0];
     if (embed && message.author.id == bot.id) new Promise((resolve, reject) => {
-        // osu! embeds
+
+        // Only osu! embeds
         // TODO: finish after sleep
         switch (osuEmbedIdentifier(embed)) {
             case 'profile':
@@ -1483,32 +1515,35 @@ function handleReactions(evt, message) {
                     case '🕒':
                         console.log('recent');
                         break;
+                    default:
                 }
                 resolve();
                 break;
             case 'top':
                 if (evt.d.emoji.name === '➕') {
-                    args = embed.title.replace('Showing top ', '').replace('osu! plays from ', '').split(' ');
-                    addOsuPlaysFromReaction(args[1], evt, args[0]);
+                    const [offset, profOwner] = embed.title.replace('Showing top ', '').replace('osu! plays from ', '').split(' ');
+                    addOsuPlaysFromReaction(profOwner, evt, offset);
                     bot.deleteMessage({
                         channelID: evt.d.channel_id,
                         messageID: evt.d.message_id
                     });
                 }
                 break;
+            default:
         }
 
         // Blue Squares game movement
         if (embed.title == 'Blue Squares: The Game') {
-            if (!config.canvasEnabled) return msg(channelID, 'Bot owner has not enabled this feature.');
+            if (!config.canvasEnabled) return msg(evt.d.channel_id, 'Bot owner has not enabled this feature.');
             if (bsga.players[evt.d.user_id]) bsga.players[evt.d.user_id].online = true;
             else bsga.players[evt.d.user_id] = new bs.Player(evt.d.user_id, bot.users[evt.d.user_id].username);
             switch (evt.d.emoji.name) {
-                case '🔼': bsga.players[evt.d.user_id].move('up');        break;
-                case '▶': bsga.players[evt.d.user_id].move('right');     break;
-                case '🔽': bsga.players[evt.d.user_id].move('down');      break;
-                case '◀': bsga.players[evt.d.user_id].move('left');      break;
-                case '❌': bsga.players[evt.d.user_id].online = false;   break;
+                case '🔼': bsga.players[evt.d.user_id].move('up'); break;
+                case '▶': bsga.players[evt.d.user_id].move('right'); break;
+                case '🔽': bsga.players[evt.d.user_id].move('down'); break;
+                case '◀': bsga.players[evt.d.user_id].move('left'); break;
+                case '❌': bsga.players[evt.d.user_id].online = false; break;
+                default:
             }
 
             web.addTemp('bsga-image.png', bsga.update().toBuffer())
@@ -1516,8 +1551,7 @@ function handleReactions(evt, message) {
                     const bse = new Embed(embed);
 
                     bsga.extra = bsga.extra === 'a' ? 'b' : 'a';
-                    bse.image.url = config.web.url + '/temp/bsga-image.png' +
-                        `?${ bsga.extra }=${ Math.random() }`;
+                    bse.image.url = `${ config.web.url }/temp/bsga-image.png?${ bsga.extra }=${ Math.random() }`;
 
                     bot.editMessage({
                         channelID: evt.d.channel_id,
@@ -1552,11 +1586,11 @@ function msg(channel, message, embed) {
         if (err.response && err.response.message === 'You are being rate limited.')
             setTimeout(msg, err.response.retry_after, channel, message, embed);
         else logger.error(err, '');
-    }});
+    } });
 }
 
 function updateObjectLib() {
-    // help
+    // Update help
     for (const page in objectLib.help) {
         for (const field of objectLib.help[page].fields) {
             field.name = field.name.split('GerpBot').join(bot.username);
@@ -1565,34 +1599,33 @@ function updateObjectLib() {
         objectLib.help[page].description = objectLib.help[page].description.split('GerpBot').join(bot.username);
     }
 
-    // help color
+    // Update help color
     for (const field of objectLib.help.color.fields) {
         const listOfColors = [];
         for (const color in colors) listOfColors.push(color);
-        field.value = field.value.replace('<list of colors>', listOfColors.join('* • *'))
+        field.value = field.value.replace('<list of colors>', listOfColors.join('* • *'));
     }
 
-    // games
+    // Update games
     for (const game in objectLib.games) {
-        objectLib.games[game] = objectLib.games[game].split('@GerpBot').join('@' + bot.username);
+        objectLib.games[game] = objectLib.games[game].split('@GerpBot').join(`@${ bot.username }`);
     }
 
-    // defaultRes
+    // Update defaultRes
     for (const res in objectLib.defaultRes) {
         objectLib.defaultRes[res] = objectLib.defaultRes[res].split('GerpBot').join(bot.username);
     }
 }
 
 function updateColors() {
-    let color, colorD;
-    for (colorD in Discord.Colors) {
-        color = colorD.toLowerCase().replace('_', ' ');
+    for (const colorD in Discord.Colors) {
+        const color = colorD.toLowerCase().replace('_', ' ');
         if (!colors[color]) colors[color] = Discord.Colors[colorD];
     }
 
     if (osu) {
-        for (color in osu.rankColors) colors['osu ' + color] = osu.rankColors[color];
-        for (color in osu.searchColors) colors['osu ' + color] = osu.searchColors[color];
+        for (const color in osu.rankColors) colors[`osu ${ color }`] = osu.rankColors[color];
+        for (const color in osu.searchColors) colors[`osu ${ color }`] = osu.searchColors[color];
     }
 }
 
@@ -1616,12 +1649,13 @@ function startLoops() {
                 }
 
                 if (settings.servers[server].effects && settings.servers[server].effects.shuffle) {
-                    let newName = settings.servers[server].nick.split('');
-                    newName.forEach((v, i, a) => {
-                        random = Math.floor(Math.random() * a.length);
-                        let help = a[random];
-                        a[random] = v;
-                        a[i] = help;
+                    const newName = settings.servers[server].nick.split('');
+                    newName.forEach((value, i, array) => {
+                        const
+                            random = Math.floor(Math.random() * array.length),
+                            help = array[random];
+                        array[random] = value;
+                        array[i] = help;
                     });
                     editNick(server, newName.join(''));
                 }
@@ -1636,20 +1670,24 @@ function startLoops() {
 function startIle() {
     if (!ile.started) {
         ile.start();
-        ile.on('msg', (channel, message, embed) => {
-            let tzConv = message.split(': ');
+        ile.on('msg', (channel, message, embed = new Embed(ile.getAcronym())) => {
+            const tzConv = message.split(': ');
+            let parsedMessage = '';
             if (tzConv[0] === 'Next checkpoint') {
                 tzConv[1] = st.timeAt(st.findTimeZone(settings.tz, [channel]), new Date(tzConv[1]));
-                message = tzConv.join(': ');
+                parsedMessage = tzConv.join(': ');
             }
 
-            if (embed) for (const field of embed.fields) {
-                let id = field.name.substring(field.name.indexOf('.') + 2);
+            for (const field of embed.fields) {
+                const id = field.name.substring(field.name.indexOf('.') + 2);
                 field.name = field.name.replace(id, bot.users[id].username);
-            } else {
-                embed = new Embed(ile.getAcronym(), message);
-                message = '';
             }
+
+            if (!embed.description) {
+                embed.description = parsedMessage;
+                parsedMessage = '';
+            }
+
             embed.color = colors.gerp;
 
             msg(channel, message, embed.errorIfInvalid());
@@ -1690,7 +1728,7 @@ function getReminderClass() {
 
         activate() {
             if (this.ready()) this.timeout = setTimeout(() => {
-                msg(this.channel, this.mentions, this.toEmbed())
+                msg(this.channel, this.mentions, this.toEmbed());
                 if (this.links.length > 0) setTimeout(msg, 500, this.channel, this.links.join('\n'));
                 if (settings.reminders[this.owner.id] && settings.reminders[this.owner.id].indexOf(this) > -1) settings.reminders[this.owner.id].splice(settings.reminders[this.owner.id].indexOf(this), 1);
                 updateSettings();
@@ -1705,7 +1743,7 @@ function getReminderClass() {
                 footer: { text: `Created by ${ rem.owner.name }` },
             });
         }
-    }
+    };
 
 }
 
@@ -1724,7 +1762,7 @@ function avatarUrl(user = {}) {
 function membersInChannel(channel) {
     channel = st.stripNaNs(channel);
     const members = [];
-    let serverID;
+    let serverID = null;
 
     if (bot.channels[channel]) {
         serverID = bot.channels[channel].guild_id;
@@ -1791,7 +1829,7 @@ function addColorRole(serverID) {
         // Find existing role from server
         for (const role in bot.servers[serverID].roles) {
             if (
-                bot.servers[serverID].roles[role].name === bot.username + ' color' &&
+                bot.servers[serverID].roles[role].name === `${ bot.username } color` &&
                 bot.servers[serverID].roles[role].position <
                 bot.servers[serverID].roles[settings.servers[serverID].roleID].position
             ) return resolve(bot.servers[serverID].roles[role].id);
@@ -1801,20 +1839,21 @@ function addColorRole(serverID) {
         bot.createRole(serverID, (err, res) => err ? reject(err) : bot.editRole({
             serverID,
             roleID: res.id,
-            name: bot.username + ' color',
+            name: `${ bot.username } color`,
             color: colors.gerp
         }, (err, res) => err ? reject(err) : resolve(res.id)));
-    // Assign the found role to the bot
-    }).then(roleID => new Promise((resolve, reject) => bot.addToRole({
-        serverID,
-        userID: bot.id,
-        roleID
-    }, err => err ? reject(err) : resolve(roleID))))
-    .then(roleID => settings.servers[serverID].color.role = roleID);
+    })
+        // Assign the found role to the bot
+        .then(roleID => new Promise((resolve, reject) => bot.addToRole({
+            serverID,
+            userID: bot.id,
+            roleID
+        }, err => err ? reject(err) : resolve(roleID))))
+        .then(roleID => (settings.servers[serverID].color.role = roleID));
 }
 
 function getColor(serverID, targetID, fallBack = true) {
-    let color;
+    let color = colors.default;
     // Check target color
     if (bot.servers[serverID] && targetID) {
         // Check if targetID belongs to a member
@@ -1825,22 +1864,24 @@ function getColor(serverID, targetID, fallBack = true) {
 
     // If target (user/role) color is not available, check fallBack option
     if (!color || color == 0) {
-        // If fallBack is enabled: use bot's color (from server, settings or default Gerp orange).
-        // Otherwise use Discord's default gray.
+
+        /* If fallBack is enabled: use bot's color (from server, settings or default Gerp orange).
+           Otherwise use Discord's default gray. */
         if (fallBack) {
             if (bot.servers[serverID] && bot.servers[serverID].members[bot.id] && bot.servers[serverID].members[bot.id].color)
                 color = bot.servers[serverID].members[bot.id].color;
             else if (settings.servers[serverID] && settings.servers[serverID].color && settings.servers[serverID].color.value)
                 color = settings.servers[serverID].color.value;
-            else color = colors.gerp;
-        } else color = colors.default;
+            else
+                color = colors.gerp;
+        }
     }
 
-    return color
+    return color;
 }
 
 function colorInput(input) {
-    let color;
+    let color = 0;
     // Decimal color input
     if (!isNaN(input)) color = Number(input);
     else if (typeof input === 'string') {
@@ -1859,28 +1900,29 @@ function colorInput(input) {
  */
 function getJSON(file, location = '') {
     const tempObj = {};
-    let fullPath;
+    let fullPath = '';
 
     if (typeof file === 'string') {
         fullPath = path.join(__dirname, location, file);
-        if (fs.existsSync(fullPath + '.json')) return require(fullPath);
+        if (fs.existsSync(`${ fullPath }.json`)) return require(fullPath);
     }
 
     if (typeof file === 'object') for (const key of file) {
         fullPath = path.join(__dirname, location, key);
-        if (fs.existsSync(fullPath + '.json')) tempObj[key] = require(fullPath);
+        if (fs.existsSync(`${ fullPath }.json`)) tempObj[key] = require(fullPath);
     }
     return tempObj;
 }
 
 function updateSettings(retry = false) {
     if (!config.saveSettings) return;
-    json = JSON.stringify(settings, (key, value) => {
+    const json = JSON.stringify(settings, (key, value) => {
         switch (key) {
             case 'timeout':
                 return;
+            default:
+                return value;
         }
-        return value;
     }, 4);
     if (json) fs.writeFile('settings.json', json, err => {
         if (err) logger.error(err, '');
@@ -1890,7 +1932,7 @@ function updateSettings(retry = false) {
                 JSON.parse(data);
                 if (retry) logger.info('setting.json is no longer corrupted.');
             }
-            catch (err) {
+            catch (error) {
                 logger.warn('setting.json was corrupted during update, retrying in 5 seconds.');
                 setTimeout(updateSettings, 5000, true);
             }

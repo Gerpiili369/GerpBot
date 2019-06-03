@@ -8,4 +8,4 @@ module.exports = class GitHub extends Api {
     getReleases(user, repo) {
         return this.apiCall(`/repos/${ user }/${ repo }/releases`, 'releases');
     }
-}
+};

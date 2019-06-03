@@ -7,11 +7,11 @@ const
     fs = require('fs'),
     tempath = path.join(__dirname, '..', 'temp');
 
-!fs.existsSync(tempath) && fs.mkdirSync(tempath);
+if (!fs.existsSync(tempath)) fs.mkdirSync(tempath);
 
 module.exports = {
     activate: new Promise(resolve => {
-        app.use(config.root + '/temp', express.static(tempath));
+        app.use(`${ config.root }/temp`, express.static(tempath));
         http.listen(config.port, config.host, () => {
             resolve('Activated http-service.');
         });
@@ -28,4 +28,4 @@ module.exports = {
             else resolve();
         });
     })
-}
+};

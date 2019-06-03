@@ -33,7 +33,7 @@ class MusicHandler extends common.Api {
                     this.thumbnail = item.thumbnail;
                     this.published = item.published;
                 }
-                return this
+                return this;
             }
 
             toEmbed(serverID) {
@@ -119,36 +119,37 @@ class MusicHandler extends common.Api {
             }
 
             joinUser(userID) {
-                const server = this, voice = bot.servers[this.id].members[userID].voice_channel_id;
+                const server = this,
+                    voice = bot.servers[this.id].members[userID].voice_channel_id;
                 return new Promise((resolve, reject) => {
-                    if (!voice) reject({
-                        name: 'Could not join',
-                        message: 'You are not in a voice channel!'
-                    });
-                    else bot.joinVoiceChannel(voice, err => {
+                    if (voice) bot.joinVoiceChannel(voice, err => {
                         if (err && err.toString().indexOf('Voice channel already active') == -1) reject(err);
                         else {
                             server.voice = voice;
                             resolve(server);
                         }
-                    })
-                })
+                    });
+                    else reject({
+                        name: 'Could not join',
+                        message: 'You are not in a voice channel!'
+                    });
+                });
             }
 
             getStream() {
                 const server = this;
                 return new Promise((resolve, reject) => {
-                    if (!server.voice) reject({
-                        name: 'Could not get audio context',
-                        message: 'Bot is not in a voice channel!'
-                    });
-                    else bot.getAudioContext(server.voice, (err, stream) => {
+                    if (server.voice) bot.getAudioContext(server.voice, (err, stream) => {
                         if (err) reject(err);
                         else {
                             server.stream = stream;
                             resolve(server);
                         }
-                    })
+                    });
+                    else reject({
+                        name: 'Could not get audio context',
+                        message: 'Bot is not in a voice channel!'
+                    });
                 });
             }
 
@@ -158,15 +159,15 @@ class MusicHandler extends common.Api {
                 });
 
                 for (const song of this.queue) ale.addField(
-                    ale.fields.length + 1 + ': ' + song.title, `Requested ${
+                    `${ ale.fields.length + 1 }: ${ song.title }`, `Requested ${
                         song.request.id ? `by: <@${ song.request.id }>\n` : 'at:' } ${ st.timeAt(st.findTimeZone(common.settings.tz, [userID, this.id]), new Date(song.request.time)) }.`
                 );
 
                 if (ale.fields.length > 0) ale.title = 'Queued songs:';
                 if (this.playing) {
-                    ale.title = 'Current song: ' + this.playing.title;
+                    ale.title = `Current song: ${ this.playing.title }`;
                     ale.description = `Requested ${
-                        this.playing.request.id ? `by: <@${ this.playing.request.id }>\n` : 'at:' } ${ st.timeAt(st.findTimeZone(common.settings.tz, [userID, this.id]), new Date(this.playing.request.time))}.`
+                        this.playing.request.id ? `by: <@${ this.playing.request.id }> ` : ' ' }at: ${ st.timeAt(st.findTimeZone(common.settings.tz, [userID, this.id]), new Date(this.playing.request.time)) }.\n`;
 
                     ale.thumbnail.url = this.playing.thumbnail;
 
@@ -190,14 +191,14 @@ class MusicHandler extends common.Api {
         if (!this.servers[id]) {
             this.servers[id] = new this.Server(id);
 
-            if (!common.settings.servers[id].audio) common.settings.servers[id].audio = {};
-            else this.servers[id].loadQueue(common.settings.servers[id].audio.que);
+            if (common.settings.servers[id].audio) this.servers[id].loadQueue(common.settings.servers[id].audio.que);
+            else common.settings.servers[id].audio = {};
 
             common.settings.servers[id].audio.que = this.servers[id].queue;
 
             if (common.settings.servers[id].audio.channel) this.servers[id].acID = common.settings.servers[id].audio.channel;
 
-            common.settings.update()
+            common.settings.update();
         }
     }
 
@@ -213,9 +214,9 @@ class MusicHandler extends common.Api {
             })
             .then(item => new Promise((resolve, reject) => ytdl.getInfo(`http://www.youtube.com/watch?v=${ item.id.videoId }`, (err, info) => {
                 if (err) reject(err);
-                let url;
+                let url = '';
                 info.formats.reverse();
-                for (const format of info.formats) if (typeof format.audioEncoding != 'undefined'){
+                for (const format of info.formats) if (format.audioEncoding) {
                     url = format.url;
                     break;
                 }
@@ -224,10 +225,10 @@ class MusicHandler extends common.Api {
                 resolve(new mh.Song(url, userID).update(item));
             })))
             .catch(err => {
-                if (err.errors) err = {
+                if (err.errors) return Promise.reject({
                     name: err.errors[0].message,
-                    message: err.errors[0].domain + '/' + err.errors[0].reason
-                };
+                    message: `${ err.errors[0].domain }/${ err.errors[0].reason }`
+                });
                 return Promise.reject(err);
             });
     }
