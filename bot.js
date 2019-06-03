@@ -141,54 +141,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         if (commands[cmd]) new commands[cmd](bot, { user, userID, channelID, message, evt }).execute();
         else switch (cmd) {
-            case 'channel':
-                if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
-                    return pc.missage(msg, channelID, ['Embed Links']);
-
-                if (args[0]) {
-                    args[0] = st.stripNaNs(args[0]);
-                    if (!bot.channels[args[0]]) return msg(channelID, 'Channel not found!');
-                }
-
-                const ci = {
-                    id: args[0] || channelID,
-                };
-
-                if (bot.channels[ci.id]) ci.serverID = bot.channels[ci.id].guild_id;
-
-                const ce = new Embed(
-                    `Information about "${ ci.serverID ? `#${ bot.channels[ci.id].name }` : `@${ bot.username }" (DM channel)` }`,
-                    { color: getColor(serverID, userID) }
-                );
-
-                if (ci.serverID) {
-                    if (bot.channels[ci.id].topic) ce.addDesc(`**Topic:** ${ bot.channels[ci.id].topic }\n`);
-                    ce.addDesc(`**Server:** ${ bot.servers[ci.serverID].name }\n`);
-                    if (bot.channels[ci.id].parent_id) ce.addDesc(`**Channel group:** ${ bot.channels[bot.channels[ci.id].parent_id].name.toUpperCase() }\n`);
-                } else ce.thumbnail.url = avatarUrl(bot);
-
-                ce.addDesc(`**Channel created:** \`${ st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), st.sfToDate(ci.id)) }\`\n`);
-                ce.addDesc(`**Age:** \`${ new st.Uptime(st.sfToDate(ci.id)).toString() }\`\n`);
-
-                if (ci.serverID && bot.channels[ci.id].nsfw) ce.addDesc(`*Speaking of age, this channel is marked as NSFW, you have been warned.*\n`);
-
-                ce.addDesc('**Members:** ');
-                if (
-                    !ci.serverID ||
-                    Object.keys(bot.channels[ci.id].permissions.user).length > 0 ||
-                    Object.keys(bot.channels[ci.id].permissions.role).length > 0
-                ) {
-                    ci.members = membersInChannel(ci.id);
-
-                    if (!ci.serverID || ci.members.length !== Object.keys(bot.servers[ci.serverID].members).length)
-                        for (const user of ci.members) ce.addDesc(`<@${ user }>`);
-                    else ce.addDesc(' @everyone');
-                } else ce.addDesc(' @everyone');
-
-                ce.addDesc('\n');
-
-                msg(channelID, 'channel info', ce.errorIfInvalid());
-                break;
             case 'user':
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
