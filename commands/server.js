@@ -4,7 +4,7 @@ const
     Embed = require('../scripts/embed'),
     common = require('../scripts/common');
 
-class Help extends Command {
+class Server extends Command {
     constructor(bot, params) {
         super(bot, params);
 
@@ -90,4 +90,4 @@ class Help extends Command {
     }
 }
 
-module.exports = Help;
+module.exports = Server;
