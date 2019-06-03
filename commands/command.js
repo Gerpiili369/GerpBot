@@ -109,7 +109,7 @@ class Command extends Emitter {
     }
 
     serverOnlyNotice() {
-        this.msg(this.channelID, '', new Embed('This command is only available in servers.').error());
+        this.msg(this.channelID, '', new Embed('Server only', 'This command is only available in servers.').error());
     }
 }
 
