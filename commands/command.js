@@ -50,6 +50,8 @@ class Command extends Emitter {
 
     command() {
         // This method should be is overwritten when after extending this.
+        common.logger.error('Default command method has not been overwritten!', { label: `commands${ this.cmd ? `/${ this.cmd }` : '' }` });
+        this.msg(this.channelID, '', new Embed('Default command', 'This is a default command template. You should not be able to see this.').error());
     }
 
     botHasPerms() {
