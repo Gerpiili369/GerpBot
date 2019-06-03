@@ -33,6 +33,7 @@ const
         'ileAcronym'
     ], 'objectLib'),
     // Constant variables
+    commands = require('./commands'),
     settings = getJSON('settings'),
     Reminder = getReminderClass(),
     bot = new Discord.Client({ token: config.auth.token, autorun: true }),
@@ -138,7 +139,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             cmd = args.shift(),
             admin = serverID && pc.userHasPerm(serverID, userID, 'GENERAL_ADMINISTRATOR');
 
-        switch (cmd) {
+        if (commands[cmd]) new commands[cmd](bot, { user, userID, channelID, message, evt }).execute();
+        else switch (cmd) {
             case 'help':
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
