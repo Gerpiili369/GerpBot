@@ -21,19 +21,18 @@ class Server {
     }
 
     controls(action) {
-        const server = this;
         return new Promise(resolve => {
             switch (action) {
                 case 'stop':
                 case 'skip':
-                    if (server.playing && server.ccp) {
+                    if (this.playing && this.ccp) {
                         if (action === 'stop') {
-                            server.stopped = true;
-                            server.announce('Stopped!');
+                            this.stopped = true;
+                            this.announce('Stopped!');
                         } else
-                            server.announce('Skipped!');
+                            this.announce('Skipped!');
 
-                        server.ccp.kill();
+                        this.ccp.kill();
                     } else resolve(`There is nothing to ${ action }!`);
                     break;
                 default: resolve('Invalid action!');
@@ -55,13 +54,12 @@ class Server {
                 'pipe:1'
             ], { stdio: ['pipe', 'pipe', 'ignore'] });
 
-            const server = this;
-            this.ccp.stdout.once('readable', () => server.stream.send(server.ccp.stdout));
+            this.ccp.stdout.once('readable', () => this.stream.send(this.ccp.stdout));
             this.ccp.stdout.once('end', () => {
                 common.settings.update();
-                server.playing = false;
-                server.playNext();
-                server.stopped = false;
+                this.playing = false;
+                this.playNext();
+                this.stopped = false;
             });
 
             this.announce('Now playing:', this.playing.toEmbed(this.id));
@@ -79,14 +77,13 @@ class Server {
     }
 
     joinUser(userID) {
-        const server = this,
-            voice = this.bot.servers[this.id].members[userID].voice_channel_id;
+        const voice = this.bot.servers[this.id].members[userID].voice_channel_id;
         return new Promise((resolve, reject) => {
-            if (voice) server.bot.joinVoiceChannel(voice, err => {
+            if (voice) this.bot.joinVoiceChannel(voice, err => {
                 if (err && err.toString().indexOf('Voice channel already active') == -1) reject(err);
                 else {
-                    server.voice = voice;
-                    resolve(server);
+                    this.voice = voice;
+                    resolve(this);
                 }
             });
             else reject({
@@ -97,13 +94,12 @@ class Server {
     }
 
     getStream() {
-        const server = this;
         return new Promise((resolve, reject) => {
-            if (server.voice) server.bot.getAudioContext(server.voice, (err, stream) => {
+            if (this.voice) this.bot.getAudioContext(this.voice, (err, stream) => {
                 if (err) reject(err);
                 else {
-                    server.stream = stream;
-                    resolve(server);
+                    this.stream = stream;
+                    resolve(this);
                 }
             });
             else reject({

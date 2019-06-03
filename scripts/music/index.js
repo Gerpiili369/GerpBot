@@ -29,8 +29,7 @@ class MusicHandler extends Api {
     }
 
     searchSong(keywords, userID) {
-        const mh = this;
-        return mh.apiCall(`/search?part=snippet&q=${ keywords.join('+') }&key=${ mh.key }`)
+        return this.apiCall(`/search?part=snippet&q=${ keywords.join('+') }&key=${ this.key }`)
             .then(data => {
                 for (const item of data.items) if (item.id && item.id.kind === 'youtube#video') return item;
                 return Promise.reject({
