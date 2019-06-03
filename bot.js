@@ -59,6 +59,7 @@ if (!settings.reminders) settings.reminders = {};
 
 settings.update = updateSettings;
 common.settings = settings;
+common.objectLib = objectLib;
 
 bot.getColor = getColor;
 bot.pending = {};
