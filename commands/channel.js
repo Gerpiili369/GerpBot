@@ -13,8 +13,6 @@ class Channel extends Command {
             name: 'Embed Links',
         });
 
-        this.otherRequirements.push('serverOnly');
-
         this.argChecks[0] = 'channel';
     }
 
