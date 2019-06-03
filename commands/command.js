@@ -108,6 +108,12 @@ class Command extends Emitter {
                     this.msg(this.channelID, 'Channel not found!');
                 }
                 break;
+            case 'user':
+                if (!this.bot.users[st.stripNaNs(this.args[i])]) {
+                    valid = false;
+                    this.msg(this.channelID, 'User not found!');
+                }
+                break;
             default:
         }
 
