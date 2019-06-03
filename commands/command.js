@@ -36,6 +36,7 @@ class Command extends Emitter {
         this.requiredPerms = [];
 
         this.otherRequirements = [];
+        this.argChecks = [];
 
         // Bindings.
         this.msg = this.msg.bind(this);
@@ -49,6 +50,9 @@ class Command extends Emitter {
 
         // Check other requirements before executing.
         if (await !this.meetsRequirements()) canExecute = false;
+
+        // Check if args meet the checks.
+        if (await !this.validArgs()) canExecute = false;
 
         // Execute command if none of the checks fail.
         if (canExecute) this.command();
@@ -92,6 +96,22 @@ class Command extends Emitter {
         }
 
         return meets;
+    }
+
+    validArgs() {
+        let valid = true;
+
+        for (let i = 0; i < this.args.length; i++) if (this.args[i]) switch (this.argChecks[i]) {
+            case 'channel':
+                if (!this.bot.channels[st.stripNaNs(this.args[i])]) {
+                    valid = false;
+                    this.msg(this.channelID, 'Channel not found!');
+                }
+                break;
+            default:
+        }
+
+        return valid;
     }
 
     msg(channel, message, embed) {
