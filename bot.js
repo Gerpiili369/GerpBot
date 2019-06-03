@@ -20,7 +20,7 @@ const
     Ile = require('./scripts/ile.js'),
     Osu = require('./scripts/osu.js'),
     Embed = require('./scripts/embed'),
-    MusicHandler = require('./scripts/music.js'),
+    MusicHandler = require('./scripts/music'),
     permCheck = require('./scripts/permCheck.js'),
     // Load objectLib
     objectLib = getJSON([
