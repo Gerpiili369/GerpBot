@@ -141,37 +141,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         if (commands[cmd]) new commands[cmd](bot, { user, userID, channelID, message, evt }).execute();
         else switch (cmd) {
-            case 'role':
-                if (!serverID) return msg(channelID, 'Please wait a moment. Let me just check that role in this PM.');
-                if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
-                    return pc.missage(msg, channelID, ['Embed Links']);
-
-                if (args[0]) {
-                    args[0] = st.stripNaNs(args[0]);
-                    const role = bot.servers[serverID].roles[args[0]];
-
-                    if (!role) {
-                        msg(channelID, 'Role not found!');
-                        break;
-                    }
-
-                    const re = new Embed(
-                        `Information about "${ role.name }"`,
-                        `<@&${ role.id }>\n` +
-                        `**Role created:** \`${ st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), st.sfToDate(role.id)) }\`\n` +
-                        `**Age:** ${ new st.Uptime(st.sfToDate(role.id)) }\``,
-                        { color: role.color }
-                    );
-
-                    const rollMembers = [];
-                    for (const user in bot.servers[serverID].members)
-                        if (bot.servers[serverID].members[user].roles.indexOf(role.id) != -1) rollMembers.push(user);
-
-                    for (const user of rollMembers) re.addDesc(`\n<@${ user }>`);
-
-                    msg(channelID, 'Here is the gang:', re.errorIfInvalid());
-                } else msg(channelID, 'What is that supposed to be? It is called "role" not "roll"!');
-                break;
             case 'changes':
                 args.splice(1);
             case 'releases':
