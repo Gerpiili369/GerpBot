@@ -141,16 +141,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         if (commands[cmd]) new commands[cmd](bot, { user, userID, channelID, message, evt }).execute();
         else switch (cmd) {
-            case 'help':
-                if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
-                    return pc.missage(msg, channelID, ['Embed Links']);
-                const help = new Embed((args[0] && objectLib.help[args[0]]) || objectLib.help.main);
-                help.color = getColor(serverID, userID);
-                if (!help.thumbnail.url) help.thumbnail.url = avatarUrl(bot);
-                if (!help.image.url) help.image.url = `https://img.shields.io/badge/bot-${ bot.username.replace(' ', '_') }-${ help.color.toString(16).padStart(6, '0') }.png`;
-                help.isValid();
-                msg(channelID, '', help.pushToIfMulti(bot.pending[channelID]).errorIfInvalid());
-                break;
             case 'server':
                 if (!serverID) return msg(channelID, 'This is a private conversation!');
                 if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
