@@ -68,20 +68,16 @@ class Command extends Emitter {
         let hasPerms = true;
 
         // Check permissions if command originated from server.
-        if (this.serverID) switch(this.requiredPerms.length) {
-            case 0: // No required permissions specified.
-                hasPerms = true;
-                break;
-            case 1: // Single required permission specified.
-                if (this.pc.userHasPerm(this.serverID, this.bot.id, this.requiredPerms[0].key, this.channelID)) {
-                    hasPerms = true;
-                } else {
-                    hasPerms = false;
-                    this.pc.missage(this.msg, this.channelID, [this.requiredPerms[0].name]);
-                }
-                break;
-            default: // Multiple required permissions specified.
+        if (this.serverID && this.requiredPerms.length > 0) {
+            const missingPerms = [];
+            for (const perm of this.requiredPerms) {
+                if (!this.pc.userHasPerm(this.serverID, this.bot.id, perm.key, this.channelID)) missingPerms.push(perm.name);
+            }
 
+            if (missingPerms.length > 0) {
+                hasPerms = false;
+                this.pc.missage(this.msg, this.channelID, missingPerms);
+            }
         }
 
         return hasPerms;
