@@ -276,20 +276,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         msg(channelID, '', new Embed().error(err));
                     });
                 break;
-            case 'bs':
-                if (!config.canvasEnabled) return msg(channelID, 'Bot owner has not enabled this feature.');
-                Promise.resolve(serverID ? pc.multiPerm(serverID, bot.id, [
-                    'TEXT_MANAGE_MESSAGES',
-                    'TEXT_EMBED_LINKS',
-                    'TEXT_READ_MESSAGE_HISTORY',
-                    'TEXT_ADD_REACTIONS'
-                ], channelID) : '')
-                    .then(() => msg(channelID, '', new Embed(
-                        'Blue Squares: The Game',
-                        { color: 255 }
-                    )), missing => pc.missage(msg, channelID, missing))
-                    .catch(err => logger.error(err, ''));
-                break;
             case 'kps':
                 const url = 'https://plssave.help/kps';
 
