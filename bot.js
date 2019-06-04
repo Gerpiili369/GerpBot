@@ -203,12 +203,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     })
                     .catch(err => msg(channelID, '', new Embed().error(err)));
                 break;
-            case 'ping':
-                msg(channelID, 'Pong!');
-                break;
-            case 'pi':
-                msg(channelID, `Here it is: \`${ Math.PI }...\``);
-                break;
             case 'rng':
                 if (args[0]) {
                     const result = [];
@@ -247,13 +241,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID, result.join(', '));
                 } else msg(channelID, 'Syntax: `rng <number>[..<number>] [<amount>]`');
                 break;
-            case 'nerfThis':
-            case 'nt':
-                msg(channelID, 'Leenakop was the only one who died...');
-                break;
-            case 'echo':
-                msg(channelID, args.join(' '));
-                break;
             case 'uptime':
             case 'ut':
                 if (timeOf[args[0]]) {
@@ -264,11 +251,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID, `Missing arguments. Usage: \`@${ bot.username } uptime startUp | connection | lastCommand\`.`);
                 }
                 break;
-            case 'ask':
-                if (args[0]) msg(channelID, objectLib.answers[Math.floor(Math.random() * objectLib.answers.length)]);
-                else msg(channelID, 'You didn\'t ask anything...');
-                break;
-            case 'vote':
+                case 'vote':
                 Promise.resolve(serverID ? pc.multiPerm(serverID, bot.id, [
                     'TEXT_MANAGE_MESSAGES',
                     'TEXT_EMBED_LINKS',
