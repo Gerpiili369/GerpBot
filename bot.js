@@ -1063,27 +1063,6 @@ function getReminderClass() {
 }
 
 /**
- * @arg {Snowflake} channel
- * @return {Snowflake[] | String}
- */
-function membersInChannel(channel) {
-    channel = st.stripNaNs(channel);
-    const members = [];
-    let serverID = null;
-
-    if (bot.channels[channel]) {
-        serverID = bot.channels[channel].guild_id;
-        for (const user in bot.servers[serverID].members) if (pc.userHasPerm(serverID, user, 'TEXT_READ_MESSAGES', channel)) members.push(user);
-    }
-    if (bot.directMessages[channel]) {
-        members.push(bot.id);
-        for (const user of bot.directMessages[channel].recipients) members.push(user.id);
-    }
-
-    return members;
-}
-
-/**
  * @arg {Snowflake} serverID
  * @arg {Number|String} color
  */
