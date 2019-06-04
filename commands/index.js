@@ -11,7 +11,8 @@ fs.readdir(__dirname, (err, files) => {
         for (const file of files) {
             const
                 command = require(path.join(__dirname, file)),
-                key = file.slice(0, file.length - 3);
+                key = file.slice(0, file.length - (file.indexOf('.js') > -1 ? 3 : 0));
+
             if (command.prototype instanceof Command) {
                 commands[key] = command;
                 common.logger.info(`Added "${ key }".`, { label: 'commands' });
