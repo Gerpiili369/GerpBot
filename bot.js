@@ -43,9 +43,6 @@ const
     mh = new MusicHandler(bot, config.auth.tubeKey),
     bsga = config.canvasEnabled ? new bs.GameArea() : null,
     kps = {},
-    timeOf = {
-        startUp: Date.now()
-    },
     // Funky function stuff
     pc = permCheck(bot);
 
@@ -61,6 +58,7 @@ if (!settings.reminders) settings.reminders = {};
 settings.update = updateSettings;
 common.settings = settings;
 common.objectLib = objectLib;
+common.timeOf.startUp = Date.now();
 
 bot.getColor = getColor;
 bot.pending = {};
@@ -71,7 +69,7 @@ updateColors();
 if (config.web) web.activate.then(logger.info);
 
 bot.on('ready', evt => {
-    timeOf.connection = Date.now();
+    common.timeOf.connection = Date.now();
 
     updateObjectLib();
     startIle();
@@ -243,8 +241,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 break;
             case 'uptime':
             case 'ut':
-                if (timeOf[args[0]]) {
-                    const uptime = new st.Uptime(timeOf[args[0]]);
+                if (common.timeOf[args[0]]) {
+                    const uptime = new st.Uptime(common.timeOf[args[0]]);
                     msg(channelID, `Time since '${ args[0] }': ${ uptime.toString() }\``
                     );
                 } else {
@@ -979,7 +977,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 }
                 break;
         }
-        timeOf.lastCommand = Date.now();
+        common.timeOf.lastCommand = Date.now();
     } else {
         // Messages without commands
         if (serverID && settings.servers[serverID].autoCompliment && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
@@ -1136,7 +1134,7 @@ function addLatestMsgToEmbed(me, channelID, limit = 5) {
 
 bot.on('disconnect', (err, code) => {
     online = false;
-    logger.warn(`Disconnected! error: ${ err }, code: ${ code } (uptime: ${ new st.Uptime(timeOf.connection).toString() }).`);
+    logger.warn(`Disconnected! error: ${ err }, code: ${ code } (uptime: ${ new st.Uptime(common.timeOf.connection).toString() }).`);
     setTimeout(() => {
         logger.info('Trying to reconnect...');
         bot.connect();

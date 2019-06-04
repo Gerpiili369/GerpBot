@@ -13,6 +13,8 @@ const
     pkg = require('../package'),
     config = require('../config');
 
+const timeOf = {};
+
 const colors = {
     default: 13290446,
     gerp: 16738816,
@@ -38,6 +40,7 @@ function avatarUrl(user = {}) {
 module.exports = {
     logger,
     pkg,
+    timeOf,
     colors,
     dEsc,
     config,
