@@ -92,6 +92,11 @@ class Command extends Emitter {
             this.serverOnlyNotice();
         }
 
+        if (this.otherRequirements.indexOf('adminOnly') > -1 && this.serverID && !this.pc.userHasPerm(this.serverID, this.userID, 'GENERAL_ADMINISTRATOR')) {
+            meets = false;
+            this.adminOnlyNotice();
+        }
+
         return meets;
     }
 
@@ -147,6 +152,10 @@ class Command extends Emitter {
 
     serverOnlyNotice() {
         this.msg(this.channelID, '', new Embed('Server only', 'This command is only available in servers.').error());
+    }
+
+    adminOnlyNotice() {
+        this.msg(this.channelID, '', new Embed('Admin only', 'Only server admins are allowed to use this command.').error());
     }
 
     /**
