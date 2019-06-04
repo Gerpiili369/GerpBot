@@ -6,29 +6,6 @@ const
     common = require('../scripts/common');
 
 class KPS extends Command {
-    constructor(bot, params) {
-        super(bot, params);
-
-        this.requiredPerms.push(
-            {
-                key: 'TEXT_MANAGE_MESSAGES',
-                name: 'Manage Messages',
-            },
-            {
-                key: 'TEXT_EMBED_LINKS',
-                name: 'Embed Links',
-            },
-            {
-                key: 'TEXT_READ_MESSAGE_HISTORY',
-                name: 'Read Message History',
-            },
-            {
-                key: 'TEXT_ADD_REACTIONS',
-                name: 'Add Reactions',
-            },
-        );
-    }
-
     command() {
         if (!common.kps[this.userID]) {
             common.kps[this.userID] = {
