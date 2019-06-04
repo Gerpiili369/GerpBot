@@ -21,6 +21,7 @@ const
     Osu = require('./scripts/osu.js'),
     Embed = require('./scripts/embed'),
     MusicHandler = require('./scripts/music'),
+    Reminder = require('./scripts/reminder'),
     permCheck = require('./scripts/permCheck.js'),
     // Load objectLib
     objectLib = getJSON([
@@ -34,7 +35,6 @@ const
     // Constant variables
     commands = require('./commands'),
     settings = getJSON('settings'),
-    Reminder = getReminderClass(),
     bot = new Discord.Client({ token: config.auth.token, autorun: true }),
     github = new GitHub(),
     osu = new Osu(config.auth.osu),
@@ -55,10 +55,12 @@ if (!settings.reminders) settings.reminders = {};
 settings.update = updateSettings;
 common.settings = settings;
 common.objectLib = objectLib;
+common.msg = msg;
 common.timeOf.startUp = Date.now();
 common.ile = new Ile(getJSON('ile'), objectLib.ileAcronym);
 
 bot.getColor = getColor;
+bot.addLatestMsgToEmbed = addLatestMsgToEmbed;
 bot.pending = {};
 
 startLoops();
@@ -273,141 +275,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (err instanceof Error) logger.error(err, '');
                         msg(channelID, '', new Embed().error(err));
                     });
-                break;
-            case 'remind':
-                if (args[0]) {
-                    switch (args[0]) {
-                        case 'list':
-                            if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
-                                return pc.missage(msg, channelID, ['Embed Links']);
-
-                            const rle = new Embed('List of your reminders', { color: getColor(serverID, userID) });
-                            let channel = rem.channel;
-
-                            if (bot.channels[rem.channel])
-                                channel = `<#${ rem.channel }> (${ bot.servers[bot.channels[rem.channel].guild_id].name })`;
-                            else if (bot.directMessages[rem.channel])
-                                channel = `<@${ bot.directMessages[rem.channel].recipient.id }> (DM)`;
-                            else if (bot.users[rem.channel])
-                                channel = `<@${ rem.channel }> (DM)`;
-
-
-                            if (settings.reminders[userID]) for (const rem of settings.reminders[userID]) rle.addField(
-                                `Reminder #${ settings.reminders[userID].indexOf(rem) }`,
-                                `Time: ${ st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), new Date(rem.time)) }\n` +
-                                `Channel: ${ channel }\n` +
-                                `Message: ${ rem.message || '' }`
-                            );
-
-                            rle.isValid();
-                            msg(channelID, '', rle.pushToIfMulti(bot.pending[channelID]).errorIfInvalid());
-                            break;
-                        case 'cancel':
-                            if (settings.reminders[userID] && settings.reminders[userID][args[1]]) {
-                                settings.reminders[userID].splice(args[1], 1);
-
-                                updateSettings();
-                                msg(channelID, 'Cancel successful!');
-                            } else msg(channelID, 'Reminder doesn\'t exist!');
-                            break;
-                        default:
-                            const rem = new Reminder({
-                                owner: {
-                                    id: userID,
-                                    name: user
-                                },
-                                channel: st.stripNaNs(args[0]),
-                                color: getColor(serverID, userID)
-                            });
-
-                            // Reminder to other user or channel?
-                            if (bot.users[rem.channel] || bot.channels[rem.channel]) args.shift();
-                            else rem.channel = channelID;
-
-                            // Perms for receiving channel
-                            if (bot.channels[rem.channel] && !pc.userHasPerm(bot.channels[rem.channel].guild_id, bot.id, 'TEXT_EMBED_LINKS', rem.channel)) return pc.missage(msg, channelID, ['Embed Links']);
-
-                            if (isNaN(st.anyTimeToMs(args[0]))) {
-                                rem.time = args.shift();
-
-                                if (settings.tz[userID]) rem.time += settings.tz[userID];
-                                else if (serverID && settings.tz[serverID]) {
-                                    rem.time += settings.tz[serverID];
-                                    msg(channelID, `Using the server default UTC${ settings.tz[serverID] } timezone. You can change your timezone with "\`@${ bot.username } timezone\` -command".`);
-                                } else {
-                                    rem.time += 'Z';
-                                    msg(channelID, `Using the default UTC+00:00 timezone. You can change your timezone with "\`@${ bot.username } timezone\` -command".`);
-                                }
-                                rem.time = st.stripNaNs(rem.time);
-                                if (rem.time == 'Invalid Date') {
-                                    msg(channelID, 'Time syntax: `([<amount>](ms|s|min|h|d|y))...` or `[<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>]`.');
-                                    break;
-                                } else rem.time = rem.time.getTime();
-                            }
-
-                            for (const arg of args) if (isNaN(st.anyTimeToMs(arg))) {
-                                args.splice(0, args.indexOf(arg));
-                                rem.message = args.join(' ');
-                                break;
-                            } else rem.time += st.anyTimeToMs(arg);
-
-                            for (const arg of args) {
-                                if (arg === '@everyone' || arg === '@here') rem.mentions += arg;
-                                else {
-                                    const role = st.stripNaNs(arg);
-                                    if (bot.channels[rem.channel] && bot.servers[bot.channels[rem.channel].guild_id].roles[role]) {
-                                        rem.mentions += `<@&${ role }>`;
-                                    } else if (serverID && bot.servers[serverID].roles[role]) {
-                                        rem.message = rem.message.replace(arg, `@${ bot.servers[serverID].roles[role].name }`);
-                                    } else if (isUrl(arg)) rem.links.push(arg);
-                                }
-                            }
-
-                            if (bot.channels[rem.channel]) for (const mention of evt.d.mentions) {
-                                if (mention.id != bot.id) rem.mentions += `<@${ mention.id }> `;
-                            } else {
-                                // Target Test Color
-                                const ttc = getColor(serverID, rem.channel, false);
-                                if (ttc != colors.default) rem.color = ttc;
-                                rem.mentions = '';
-                            }
-
-                            addLatestMsgToEmbed(rem.toEmbed(), channelID)
-                                .then(embed => {
-                                    if (embed.image.url) {
-                                        rem.image = embed.image.url;
-                                        if (rem.links.indexOf(rem.image) > -1) rem.links.shift();
-                                    }
-
-                                    rem.activate();
-
-                                    if (!settings.reminders[userID]) settings.reminders[userID] = [];
-                                    settings.reminders[userID].push(rem);
-
-                                    updateSettings();
-
-                                    msg(channelID, 'I will remind when the time comes...');
-                                })
-                                .catch(err => logger.error(err, ''));
-                    }
-                } else if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID)) {
-                    pc.missage(msg, channelID, ['Embed Links']);
-                } else new Reminder({
-                    mentions: `<@${ userID }>`,
-                    owner: {
-                        name: bot.username,
-                        id: bot.id
-                    },
-                    color: colors.error,
-                    channel: channelID,
-                    message: `**How to** \n` +
-                        'Do stuff:\n' +
-                        `\`@${ bot.username } remind list | (cancel <number>)\`\n` +
-                        'Set reminder at a specific time:\n' +
-                        `\`@${ bot.username } remind [<#channel>|<@mention>] [<YYYY>-<MM>-<DD>T]<HH>:<MM>[:<SS>] [<message>]...\`\n` +
-                        'Set reminder after set amount of time:\n' +
-                        `\`@${ bot.username } remind [<#channel>|<@mention>] ([<amount>]ms|[<amount>]s|[<amount>]min|[<amount>]h|[<amount>]d|[<amount>]y)... [<message>]...\``
-                }).activate();
                 break;
             case 'timezone':
             case 'tz':
@@ -1019,47 +886,6 @@ function startReminding() {
     const test = new Reminder();
     for (const user in settings.reminders) for (const rem of settings.reminders[user])
         if (test.ready(rem)) settings.reminders[user].splice(settings.reminders[user].indexOf(rem), 1, new Reminder(rem).activate());
-}
-
-function getReminderClass() {
-    return class {
-        constructor (obj = {}) {
-            this.mentions = obj.mentions || '';
-            this.links = obj.links || [];
-            this.owner = obj.owner || {
-                name: '',
-                id: ''
-            };
-            this.message = obj.message || '';
-            this.color = obj.color || '';
-            this.image = obj.image || '';
-            this.time = obj.time || Date.now();
-            this.channel = obj.channel || '';
-        }
-
-        ready(rem = this) {
-            return !rem.timeout && rem.time - Date.now() < 86400000;
-        }
-
-        activate() {
-            if (this.ready()) this.timeout = setTimeout(() => {
-                msg(this.channel, this.mentions, this.toEmbed());
-                if (this.links.length > 0) setTimeout(msg, 500, this.channel, this.links.join('\n'));
-                if (settings.reminders[this.owner.id] && settings.reminders[this.owner.id].indexOf(this) > -1) settings.reminders[this.owner.id].splice(settings.reminders[this.owner.id].indexOf(this), 1);
-                updateSettings();
-            }, this.time - Date.now());
-            return this;
-        }
-
-        toEmbed(rem = this) {
-            return new Embed('Reminder', rem.message, {
-                color: rem.color,
-                image: { url: rem.image },
-                footer: { text: `Created by ${ rem.owner.name }` },
-            });
-        }
-    };
-
 }
 
 /**
