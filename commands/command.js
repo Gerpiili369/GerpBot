@@ -13,6 +13,7 @@ class Command extends Emitter {
         this.bot = bot;
 
         // Parameters originally from "message" -event.
+        this.params = params;
         this.user = params.user;
         this.userID = params.userID;
         this.channelID = params.channelID;
