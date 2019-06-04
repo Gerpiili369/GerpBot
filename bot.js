@@ -203,69 +203,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     })
                     .catch(err => msg(channelID, '', new Embed().error(err)));
                 break;
-            case 'raffle':
-                if (!serverID && !bot.channels[st.stripNaNs(args[0])]) {
-                    msg(channelID, 'When you really think about it, how would that even work?');
-                    break;
-                }
-                if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
-                    return pc.missage(msg, channelID, ['Embed Links']);
-                let
-                    target = args[0],
-                    raffleList = [],
-                    winnerAmt = args[1];
-                if (!target) target = 'everyone';
-
-                switch (target) {
-                    case 'everyone':
-                    case '@everyone':
-                        raffleList = Object.keys(bot.servers[serverID].members);
-                        break;
-                    case 'here':
-                    case '@here':
-                        for (const member in bot.servers[serverID].members) {
-                            const status = bot.servers[serverID].members[member].status;
-                            if (status && status != 'offline') raffleList.push(member);
-                        }
-                        break;
-                    default:
-                        target = st.stripNaNs(target);
-
-                        if (serverID && bot.servers[serverID].roles[target]) {
-                            for (const member in bot.servers[serverID].members) {
-                                if (bot.servers[serverID].members[member].roles.indexOf(bot.servers[serverID].roles[target].id) != -1) raffleList.push(member);
-                            }
-                        } else if (bot.channels[target]) {
-                            raffleList = membersInChannel(target);
-                        } else {
-                            msg(channelID, 'Role or channel not found!');
-                            return;
-                        }
-                }
-
-                if (winnerAmt && !isNaN(winnerAmt));
-                else winnerAmt = 1;
-
-                let winners = [];
-                for (let i = 0; i < winnerAmt; i++)
-                    winners = winners.concat(raffleList.splice(Math.floor(Math.random() * raffleList.length), 1));
-
-                const re = new Embed('Winners', { color: getColor(serverID, userID) });
-
-                if (bot.channels[target] && (!serverID || bot.channels[target].guild_id != serverID)) {
-                    for (const winner of winners) re.addDesc(`\n${ bot.users[winner].username }`);
-                } else {
-                    for (const winner of winners) re.addDesc(`\n<@${ winner }>`);
-                }
-
-                if (winners.length === 1) {
-                    re.title = 'Winner';
-                    re.color = getColor(bot.channels[target] ? bot.channels[target].guild_id : channelID, winners[0], false);
-                    re.thumbnail.url = avatarUrl(bot.users[winners[0]]);
-                }
-
-                msg(channelID, '', re);
-                break;
             case 'ping':
                 msg(channelID, 'Pong!');
                 break;
