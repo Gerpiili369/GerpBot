@@ -1,6 +1,6 @@
 const Command = require('./command');
 
-class Role extends Command {
+class RNG extends Command {
     command() {
         if (this.args[0]) {
             const result = [];
@@ -39,4 +39,4 @@ class Role extends Command {
     }
 }
 
-module.exports = Role;
+module.exports = RNG;
