@@ -201,44 +201,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     })
                     .catch(err => msg(channelID, '', new Embed().error(err)));
                 break;
-            case 'rng':
-                if (args[0]) {
-                    const result = [];
-                    let
-                        max = Number(args[0].split('..')[1]),
-                        min = Number(args[0].split('..')[0]),
-                        amount = 1;
-
-                    if (args[0].indexOf('..') > -1) {
-                        if (isNaN(max) || isNaN(min)) {
-                            msg(channelID, 'Not a number!');
-                            break;
-                        }
-                    } else {
-                        max = Number(args[0]);
-                        min = 0;
-                        if (isNaN(max)) {
-                            msg(channelID, 'Not a number!');
-                            break;
-                        }
-                    }
-
-                    if (max < min) {
-                        const mem = min;
-                        min = max;
-                        max = mem;
-                    }
-                    max++;
-
-                    if (!isNaN(Number(args[1]))) amount = args[1];
-
-                    for (let i = 0; i < amount; i++) {
-                        result.push(Math.floor(Math.random() * (max - min)) + min);
-                    }
-
-                    msg(channelID, result.join(', '));
-                } else msg(channelID, 'Syntax: `rng <number>[..<number>] [<amount>]`');
-                break;
             case 'music':
             case 'play':
                 if (!serverID) return msg(channelID, '`<sassy message about this command being server only>`');
