@@ -379,41 +379,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 }
                 updateSettings();
                 break;
-            case 'shit':
-                if (!serverID) {
-                    msg(channelID, 'no u');
-                    emojiResponse('💩');
-                    break;
-                }
-
-                if (admin) pc.multiPerm(serverID, bot.id, [
-                    'TEXT_READ_MESSAGE_HISTORY',
-                    'TEXT_ADD_REACTIONS'
-                ], channelID)
-                    .then(() => {
-                        switch (args[0]) {
-                            case 'set':
-                                if (args[1]) {
-                                    args[1] = st.stripNaNs(args[1]);
-                                    settings.servers[serverID].autoShit = args[1];
-                                    msg(channelID, `<@&${ args[1] }> has been chosen to be shit.`);
-                                } else {
-                                    msg(channelID, `*Set hit the fan.*`);
-                                }
-                                break;
-                            case 'clean':
-                                settings.servers[serverID].autoShit = null;
-                                msg(channelID, `Shit has been cleaned up...`);
-                                break;
-                            default:
-                                msg(channelID, `Missing arguments. Usage: \`@${ bot.username } shit set <@role> | clean\`.`);
-                                break;
-                        }
-                        updateSettings();
-                    }, missing => pc.missage(msg, channelID, missing))
-                    .catch(err => logger.error(err, ''));
-                else msg(channelID, 'Request denied, not admin.');
-                break;
             case 'color':
                 if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
                     return pc.missage(msg, channelID, ['Embed Links']);
