@@ -239,17 +239,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                     msg(channelID, result.join(', '));
                 } else msg(channelID, 'Syntax: `rng <number>[..<number>] [<amount>]`');
                 break;
-            case 'uptime':
-            case 'ut':
-                if (common.timeOf[args[0]]) {
-                    const uptime = new st.Uptime(common.timeOf[args[0]]);
-                    msg(channelID, `Time since '${ args[0] }': ${ uptime.toString() }\``
-                    );
-                } else {
-                    msg(channelID, `Missing arguments. Usage: \`@${ bot.username } uptime startUp | connection | lastCommand\`.`);
-                }
-                break;
-                case 'vote':
+            case 'vote':
                 Promise.resolve(serverID ? pc.multiPerm(serverID, bot.id, [
                     'TEXT_MANAGE_MESSAGES',
                     'TEXT_EMBED_LINKS',
