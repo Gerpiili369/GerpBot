@@ -137,6 +137,14 @@ class Command extends Emitter {
         });
     }
 
+    emojiResponse(emoji) {
+        this.bot.addReaction({
+            channelID: this.channelID,
+            messageID: this.evt.d.id,
+            reaction: emoji
+        }, err => { if (err) common.logger.error(err, { label: `commands${ this.cmd ? `/${ this.cmd }` : '' }` }); });
+    }
+
     serverOnlyNotice() {
         this.msg(this.channelID, '', new Embed('Server only', 'This command is only available in servers.').error());
     }
