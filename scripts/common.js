@@ -21,6 +21,8 @@ const colors = {
     error: 16711680
 };
 
+const kps = {};
+
 function dEsc(input) {
     return input
         .replace('_', '\\_')
@@ -42,6 +44,7 @@ module.exports = {
     pkg,
     timeOf,
     colors,
+    kps,
     dEsc,
     config,
     avatarUrl,
