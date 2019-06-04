@@ -37,7 +37,6 @@ const
     Reminder = getReminderClass(),
     bot = new Discord.Client({ token: config.auth.token, autorun: true }),
     github = new GitHub(),
-    ile = new Ile(getJSON('ile'), objectLib.ileAcronym),
     osu = new Osu(config.auth.osu),
     mh = new MusicHandler(bot, config.auth.tubeKey),
     bsga = config.canvasEnabled ? new bs.GameArea() : null,
@@ -57,6 +56,7 @@ settings.update = updateSettings;
 common.settings = settings;
 common.objectLib = objectLib;
 common.timeOf.startUp = Date.now();
+common.ile = new Ile(getJSON('ile'), objectLib.ileAcronym);
 
 bot.getColor = getColor;
 bot.pending = {};
@@ -273,27 +273,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                         if (err instanceof Error) logger.error(err, '');
                         msg(channelID, '', new Embed().error(err));
                     });
-                break;
-            case 'ile':
-                switch (args[0]) {
-                    case 'join':
-                        msg(channelID, ile.join(userID));
-                        break;
-                    case 'leave':
-                        msg(channelID, ile.leave(userID));
-                        break;
-                    case 'here':
-                        msg(channelID, ile.attend(userID));
-                        break;
-                    case 'time':
-                        const tzConv = ile.getCheckpoint().split(': ');
-                        tzConv[1] = st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), new Date(tzConv[1]));
-                        msg(channelID, tzConv.join(': '));
-                        break;
-                    default:
-                        msg(channelID, `${ ile.getAcronym() }: command structure: \`ile join | leave | here | time\`.`);
-                        break;
-                }
                 break;
             case 'remind':
                 if (args[0]) {
@@ -1004,9 +983,9 @@ function startLoops() {
 }
 
 function startIle() {
-    if (!ile.started) {
-        ile.start();
-        ile.on('msg', (channel, message, embed = new Embed(ile.getAcronym())) => {
+    if (!common.ile.started) {
+        common.ile.start();
+        common.ile.on('msg', (channel, message, embed = new Embed(common.ile.getAcronym())) => {
             const tzConv = message.split(': ');
             let parsedMessage = '';
             if (tzConv[0] === 'Next checkpoint') {
@@ -1028,7 +1007,7 @@ function startIle() {
 
             msg(channel, message, embed.errorIfInvalid());
         });
-        ile.on('save', data => {
+        common.ile.on('save', data => {
             fs.writeFile('ile.json', JSON.stringify(data, null, 4), err => {
                 if (err) logger.error(err, '');
             });
