@@ -137,19 +137,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         if (commands[cmd]) new commands[cmd](bot, { user, userID, channelID, message, evt }).execute();
         else switch (cmd) {
-            case 'autoAnswer':
-            case 'aa':
-                if (serverID) {
-                    if (settings.servers[serverID].disableAnswers) {
-                        settings.servers[serverID].disableAnswers = false;
-                        msg(channelID, 'Nothing can stop me now!');
-                    } else {
-                        settings.servers[serverID].disableAnswers = true;
-                        msg(channelID, 'You weren\'t asking me? Well, ok then.');
-                    }
-                    updateSettings();
-                } else msg(channelID, 'You can\'t escape me here!');
-                break;
             case 'autoCompliment':
             case 'ac':
                 if (!serverID) {
