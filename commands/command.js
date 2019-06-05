@@ -1,14 +1,11 @@
 const
-    Emitter = require('events'),
     st = require('snowtime'),
     Embed = require('../scripts/embed'),
     permCheck = require('../scripts/permCheck'),
     common = require('../scripts/common');
 
-class Command extends Emitter {
+class Command {
     constructor(bot, params) {
-        super();
-
         // Add reference to the bot.
         this.bot = bot;
 
