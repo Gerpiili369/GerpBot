@@ -115,8 +115,8 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         fileReact = true;
         switch (ext) {
             case '.osr':
-                if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID)) return pc.missage(msg, channelID, ['Embed Links']);
-                osu.readReplay(file.url).then(perf => osu.singlePlayEmbed(perf))
+                if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID)) pc.missage(msg, channelID, ['Embed Links']);
+                else osu.readReplay(file.url).then(perf => osu.singlePlayEmbed(perf))
                     .then(result => {
                         result.re.description = result.re.description.replace('<date>',
                             st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), new Date(result.date))
@@ -239,6 +239,7 @@ function osuEmbedIdentifier(embed) {
         'profile',
         'top',
     ]) if (embed.title.indexOf(type) > -1) return type;
+    return null;
 }
 
 function addOsuPlaysFromReaction(profOwner, evt, offset = 0) {
@@ -352,33 +353,34 @@ function handleReactions(evt, message) {
 
         // Blue Squares game movement
         if (embed.title == 'Blue Squares: The Game') {
-            if (!config.canvasEnabled) return msg(evt.d.channel_id, 'Bot owner has not enabled this feature.');
-            if (bsga.players[evt.d.user_id]) bsga.players[evt.d.user_id].online = true;
-            else bsga.players[evt.d.user_id] = new bs.Player(evt.d.user_id, bot.users[evt.d.user_id].username);
-            switch (evt.d.emoji.name) {
-                case '🔼': bsga.players[evt.d.user_id].move('up'); break;
-                case '▶': bsga.players[evt.d.user_id].move('right'); break;
-                case '🔽': bsga.players[evt.d.user_id].move('down'); break;
-                case '◀': bsga.players[evt.d.user_id].move('left'); break;
-                case '❌': bsga.players[evt.d.user_id].online = false; break;
-                default:
-            }
+            if (config.canvasEnabled) {
+                if (bsga.players[evt.d.user_id]) bsga.players[evt.d.user_id].online = true;
+                else bsga.players[evt.d.user_id] = new bs.Player(evt.d.user_id, bot.users[evt.d.user_id].username);
+                switch (evt.d.emoji.name) {
+                    case '🔼': bsga.players[evt.d.user_id].move('up'); break;
+                    case '▶': bsga.players[evt.d.user_id].move('right'); break;
+                    case '🔽': bsga.players[evt.d.user_id].move('down'); break;
+                    case '◀': bsga.players[evt.d.user_id].move('left'); break;
+                    case '❌': bsga.players[evt.d.user_id].online = false; break;
+                    default:
+                }
 
-            web.addTemp('bsga-image.png', bsga.update().toBuffer())
-                .then(() => {
-                    const bse = new Embed(embed);
+                web.addTemp('bsga-image.png', bsga.update().toBuffer())
+                    .then(() => {
+                        const bse = new Embed(embed);
 
-                    bsga.extra = bsga.extra === 'a' ? 'b' : 'a';
-                    bse.image.url = `${ config.web.url }/temp/bsga-image.png?${ bsga.extra }=${ Math.random() }`;
+                        bsga.extra = bsga.extra === 'a' ? 'b' : 'a';
+                        bse.image.url = `${ config.web.url }/temp/bsga-image.png?${ bsga.extra }=${ Math.random() }`;
 
-                    bot.editMessage({
-                        channelID: evt.d.channel_id,
-                        messageID: evt.d.message_id,
-                        message: '',
-                        embed: bse
-                    }, (err, res) => err ? reject(err) : resolve(res));
-                })
-                .catch(reject);
+                        bot.editMessage({
+                            channelID: evt.d.channel_id,
+                            messageID: evt.d.message_id,
+                            message: '',
+                            embed: bse
+                        }, (err, res) => err ? reject(err) : resolve(res));
+                    })
+                    .catch(reject);
+            } else msg(evt.d.channel_id, 'Bot owner has not enabled this feature.');
         }
     })
         .then(() => bot.removeReaction({
@@ -555,6 +557,7 @@ function getBotRole(serverID) {
             updateSettings();
             return settings.servers[serverID].roleID;
         }
+    return null;
 }
 
 function addColorRole(serverID) {
@@ -574,22 +577,30 @@ function addColorRole(serverID) {
 
     // Fix the gaps
     return new Promise((resolve, reject) => {
+        let isMissingRole = true;
+
         // Find existing role from server
         for (const role in bot.servers[serverID].roles) {
             if (
                 bot.servers[serverID].roles[role].name === `${ bot.username } color` &&
                 bot.servers[serverID].roles[role].position <
                 bot.servers[serverID].roles[settings.servers[serverID].roleID].position
-            ) return resolve(bot.servers[serverID].roles[role].id);
+            ) {
+                isMissingRole = false;
+                resolve(bot.servers[serverID].roles[role].id);
+            }
         }
 
         // Create a new role for the bot
-        bot.createRole(serverID, (err, res) => err ? reject(err) : bot.editRole({
-            serverID,
-            roleID: res.id,
-            name: `${ bot.username } color`,
-            color: colors.gerp
-        }, (err, res) => err ? reject(err) : resolve(res.id)));
+        if (isMissingRole) bot.createRole(serverID, (err, res) => {
+            if (err) reject(err);
+            else bot.editRole({
+                serverID,
+                roleID: res.id,
+                name: `${ bot.username } color`,
+                color: colors.gerp
+            }, (err, res) => err ? reject(err) : resolve(res.id));
+        });
     })
         // Assign the found role to the bot
         .then(roleID => new Promise((resolve, reject) => bot.addToRole({

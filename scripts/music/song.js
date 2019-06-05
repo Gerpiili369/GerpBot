@@ -6,11 +6,11 @@ const
 class Song {
     constructor(url, userID, bot) {
         this.url = url;
-        this.request = typeof userID == 'object' ? userID : {
-            id: userID,
-            time: Date.now()
-        };
         this.bot = bot;
+
+        this.request = typeof userID == 'object' ?
+            userID :
+            { id: userID, time: Date.now() };
     }
 
     update(item) {
