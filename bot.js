@@ -137,26 +137,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         if (commands[cmd]) new commands[cmd](bot, { user, userID, channelID, message, evt }).execute();
         else switch (cmd) {
-            case 'timezone':
-            case 'tz':
-                if (st.isValidTimezone(args[0])) {
-                    switch (args[1]) {
-                        case 'server':
-                            if (serverID && admin) {
-                                settings.tz[serverID] = args[0];
-                                updateSettings();
-                                msg(channelID, `Server timezone is set to: UTC${ args[0] }.`);
-                            } else {
-                                msg(channelID, 'Unauthorized timezoning command. Try to git gud instead.');
-                            }
-                            break;
-                        default:
-                            settings.tz[userID] = args[0];
-                            updateSettings();
-                            msg(channelID, `Your timezone is set to: UTC${ args[0] }.`);
-                    }
-                } else msg(channelID, 'NA timezoning command. Try `+HH:MM` or `-HH:MM` instead.');
-                break;
             case 'autoAnswer':
             case 'aa':
                 if (serverID) {
