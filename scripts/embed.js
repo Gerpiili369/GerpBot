@@ -5,26 +5,32 @@ const
 
 class Embed {
     constructor(title, description = '', opts = {}) {
+        const params = {
+            title,
+            description,
+            opts,
+        };
+
         if (title instanceof Object) {
-            opts = title;
-            title = opts.title;
-            description = opts.description;
+            params.opts = title;
+            params.title = opts.title;
+            params.description = opts.description;
         }
 
         if (description instanceof Object) {
-            opts = description;
-            description = opts.description;
+            params.opts = description;
+            params.description = opts.description;
         }
 
-        this.title = title || '';
-        this.description = description || '';
-        this.url = opts.url || '';
-        if (opts.color) this.color = opts.color;
-        if (opts.timestamp) this.timestamp = opts.timestamp instanceof Date ? opts.timestamp : new Date(opts.timestamp);
-        this.footer = opts.footer || { icon_url: '', text: '' };
-        this.thumbnail = opts.thumbnail || { url: '' };
-        this.image = opts.image || { url: '' };
-        this.author = opts.author || { name: '', url: '', icon_url: '' };
+        this.title = params.title || '';
+        this.description = params.description || '';
+        this.url = params.opts.url || '';
+        if (opts.color) this.color = params.opts.color;
+        if (opts.timestamp) this.timestamp = params.opts.timestamp instanceof Date ? opts.timestamp : new Date(opts.timestamp);
+        this.footer = params.opts.footer || { icon_url: '', text: '' };
+        this.thumbnail = params.opts.thumbnail || { url: '' };
+        this.image = params.opts.image || { url: '' };
+        this.author = params.opts.author || { name: '', url: '', icon_url: '' };
         this.fields = [];
         this.Field = Field;
         this.multiEmbed = [];
@@ -83,13 +89,13 @@ class Embed {
     }
 
     pushToIfMulti(targetArray) {
-        let item = this;
+        let item = null;
         if (this.multiEmbed.length > 0) {
             item = this.multiEmbed.splice(0, 1)[0];
             for (const embed of this.multiEmbed) {
                 targetArray.push(embed.errorIfInvalid());
             }
-        }
+        } else return this;
         return item;
     }
 
