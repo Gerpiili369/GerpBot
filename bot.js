@@ -36,7 +36,6 @@ const
     settings = getJSON('settings'),
     bot = new Discord.Client({ token: config.auth.token, autorun: true }),
     osu = new Osu(config.auth.osu),
-    mh = new MusicHandler(bot, config.auth.tubeKey),
     bsga = config.canvasEnabled ? new bs.GameArea() : null,
     // Funky function stuff
     pc = permCheck(bot);
@@ -56,6 +55,7 @@ common.objectLib = objectLib;
 common.msg = msg;
 common.timeOf.startUp = Date.now();
 common.ile = new Ile(getJSON('ile'), objectLib.ileAcronym);
+common.mh = new MusicHandler(bot, config.auth.tubeKey);
 
 bot.getColor = getColor;
 bot.addLatestMsgToEmbed = addLatestMsgToEmbed;
@@ -137,81 +137,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         if (commands[cmd]) new commands[cmd](bot, { user, userID, channelID, message, evt }).execute();
         else switch (cmd) {
-            case 'music':
-            case 'play':
-                if (!serverID) return msg(channelID, '`<sassy message about this command being server only>`');
-                mh.addServer(serverID);
-                mh.servers[serverID].temp = channelID;
-
-                if (cmd === 'music') switch (args[0]) {
-                    case 'cancel':
-                        if (args[1]) {
-                            const index = Number(args[1]) - 1;
-                            if (mh.servers[serverID].queue[index]) {
-                                if (mh.servers[serverID].queue[index].request.id == userID) {
-                                    mh.servers[serverID].queue.splice(index, 1);
-                                    updateSettings();
-                                    msg(channelID, 'Cancel successful!');
-                                } else msg(channelID, 'That\'s not yours!');
-                            } else msg(channelID, 'Song doesn\'t exist!');
-                        } else msg(channelID, 'Nothing could be cancelled!');
-                        break;
-                    case 'skip':
-                    case 'stop':
-                        mh.servers[serverID].controls(args[0]).then(res => {
-                            if (res) msg(channelID, res);
-                        });
-                        break;
-                    case 'list':
-                        if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
-                            return pc.missage(msg, channelID, ['Embed Links']);
-                        const qe = mh.servers[serverID].queueEmbed(userID);
-                        qe.isValid();
-                        msg(channelID, '', qe.pushToIfMulti(bot.pending[channelID]).errorIfInvalid());
-                        break;
-                    case 'channel':
-                        const acID = st.stripNaNs(args[1]);
-                        if (admin && bot.channels[acID] && bot.channels[acID].type == 0 && bot.channels[acID].guild_id == serverID) {
-                            if (!pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', acID))
-                                return pc.missage(msg, channelID, ['Embed Links']);
-                            settings.servers[serverID].audio.channel = mh.servers[serverID].acID = acID;
-                            updateSettings();
-                            msg(channelID, 'Channel set!');
-                        } else msg(channelID, 'Invalid channel or not admin.');
-                        break;
-                    default:
-                } else pc.multiPerm(serverID, bot.id, [
-                    'TEXT_READ_MESSAGES',
-                    'VOICE_CONNECT',
-                    'VOICE_SPEAK',
-                ], bot.servers[serverID].members[userID].voice_channel_id)
-                    .then(() => mh.servers[serverID]
-                        .joinUser(userID)
-                        .then(server => server.getStream())
-                        .then(() => {
-                            let result = null;
-                            if (evt.d.attachments.length === 1) result = new mh.Song(evt.d.attachments[0].url, userID).update({
-                                title: evt.d.attachments[0].filename,
-                                description: `File uploaded by ${ user }`,
-                                thumbnail: avatarUrl(bot.users[userID]),
-                                published: st.sfToDate(evt.d.attachments[0].id)
-                            });
-                            else if (args[0]) result = mh.searchSong(args, userID);
-                            return result;
-                        })
-                        .then(song => {
-                            if (song instanceof mh.Song) return mh.servers[serverID].queueSong(song);
-                        })
-                        .then(() => {
-                            if (!mh.servers[serverID].playing) mh.servers[serverID].playNext(channelID, getColor(channelID, userID));
-                        }),
-                    missing => pc.missage(msg, channelID, missing)
-                    )
-                    .catch(err => {
-                        if (err instanceof Error) logger.error(err, '');
-                        msg(channelID, '', new Embed().error(err));
-                    });
-                break;
             case 'timezone':
             case 'tz':
                 if (st.isValidTimezone(args[0])) {
@@ -932,6 +857,8 @@ function updateSettings(retry = false) {
     const json = JSON.stringify(settings, (key, value) => {
         switch (key) {
             case 'timeout':
+                return;
+            case 'bot':
                 return;
             default:
                 return value;
