@@ -35,11 +35,9 @@ module.exports = class Osu extends Api {
     }
 
     getUser(userName) {
-        const
-            osu = this,
-            oue = new Embed();
+        const oue = new Embed();
         let user = null;
-        return new Promise((resolve, reject) => osu.apiCall(`/get_user?k=${ osu.key }&u=${ userName }`)
+        return new Promise((resolve, reject) => this.apiCall(`/get_user?k=${ this.key }&u=${ userName }`)
             .then(userList => {
                 if (userList.length === 0) resolve(oue.error({
                     name: 'User not found', message: 'Couldn\'t find user with this name!'
@@ -52,7 +50,7 @@ module.exports = class Osu extends Api {
                     `**Total Play Count:** \`${ user.playcount }\`\n` +
                     `**Total Play Time:** \`${ new Uptime(0, user.total_seconds_played * 1000).toString() }\`\n`;
                 oue.url = `https://osu.ppy.sh/users/${ user.user_id }`;
-                oue.color = osu.searchColors.user;
+                oue.color = this.searchColors.user;
                 oue.image.url = `https://osu.ppy.sh/images/flags/${ user.country }.png`;
 
                 oue
@@ -119,15 +117,15 @@ module.exports = class Osu extends Api {
 
                 return user.user_id;
             })
-            .then(user => osu.getUserBest(user, 5))
-            .then(playList => osu.playsToString(playList))
+            .then(user => this.getUserBest(user, 5))
+            .then(playList => this.playsToString(playList))
             .then(playsListStr => {
                 if (playsListStr) oue.addField('*Best performance*', playsListStr);
                 return user.user_id;
             })
-            .then(user => osu.getUserRecentPlays(user, 50))
-            .then(osu.removeFails)
-            .then(playList => osu.playsToString(playList.splice(playList.length - 5)))
+            .then(user => this.getUserRecentPlays(user, 50))
+            .then(this.removeFails)
+            .then(playList => this.playsToString(playList.splice(playList.length - 5)))
             .then(playsListStr => {
                 if (playsListStr) oue.addField('*Recent plays*', playsListStr);
                 return user.user_id;
@@ -158,22 +156,21 @@ module.exports = class Osu extends Api {
     }
 
     getBestReplay(username, playNumber = 1) {
-        const osu = this;
         return new Promise((resolve, reject) => {
             let
                 play = null,
                 mapHash = '';
 
-            osu.getUserBest(username, 100)
+            this.getUserBest(username, 100)
                 .then(data => {
                     if (data[playNumber - 1]) play = data[playNumber - 1];
                     else reject({ name: 'Not found', message: 'User or top play not found!' });
                 })
-                .then(() => osu.getMap(play.beatmap_id))
+                .then(() => this.getMap(play.beatmap_id))
                 .then(data => (mapHash = data[0].file_md5))
-                .then(() => osu.getReplayData(play.user_id, play.beatmap_id))
+                .then(() => this.getReplayData(play.user_id, play.beatmap_id))
                 .then(replayData => {
-                    if (replayData.error) return reject(new Error(replayData.error));
+                    if (replayData.error) throw new Error(replayData.error);
 
                     const
                         cdr = Buffer.from(replayData.content, replayData.encoding),
@@ -207,9 +204,7 @@ module.exports = class Osu extends Api {
     }
 
     readReplay(url) {
-        const
-            osu = this,
-            pa = [];
+        const pa = [];
         return fetch(url)
             .then(res => res.buffer())
             .then(data => {
@@ -271,16 +266,15 @@ module.exports = class Osu extends Api {
                         .toISOString()
                         .slice(0, -5)
                         .replace('T', ' '),
-                    rank: osu.rankCalc(pa[5], pa[6], pa[7], pa[10], pa[14]),
+                    rank: this.rankCalc(pa[5], pa[6], pa[7], pa[10], pa[14]),
                 };
             });
     }
 
     singlePlayEmbed(perf) {
-        const osu = this;
         return new Promise(resolve => {
-            if (perf.beatmap_id.length === 32) resolve(osu.getMapWithHash(perf.beatmap_id));
-            else resolve(osu.getMap(perf.beatmap_id));
+            if (perf.beatmap_id.length === 32) resolve(this.getMapWithHash(perf.beatmap_id));
+            else resolve(this.getMap(perf.beatmap_id));
         }).then(maps => {
             if (maps.length === 0) return Promise.reject({
                 name: 'Map not found',
@@ -289,14 +283,14 @@ module.exports = class Osu extends Api {
             });
 
             perf.rank = perf.rank.replace('X', 'SS').replace('H', '+');
-            perf.accuracy = osu.accCalc(perf.count300, perf.count100, perf.count50, perf.enabled_mods);
+            perf.accuracy = this.accCalc(perf.count300, perf.count100, perf.count50, perf.enabled_mods);
 
             const
                 map = maps[0],
                 re = new Embed(`${ common.dEsc(map.artist) } - ${ common.dEsc(map.title) } [${ common.dEsc(map.version) }]`,
                     `Beatmap by ${ map.creator }\n` +
                     `Played${ perf.username ? ` by ${ perf.username }` : '' } on \`<date>\``, {
-                        color: osu.rankColors[perf.rank.toLowerCase().replace('+', '')],
+                        color: this.rankColors[perf.rank.toLowerCase().replace('+', '')],
                         thumbnail: { url: `https://osu.ppy.sh/images/badges/score-ranks/Score-${ perf.rank.replace('+', 'Plus').replace('D', 'F') }-Small-60.png` },
                         image: { url: `https://assets.ppy.sh/beatmaps/${ map.beatmapset_id }/covers/cover.jpg` }
                     }
@@ -321,16 +315,14 @@ module.exports = class Osu extends Api {
     }
 
     modulator(input) {
-        const
-            osu = this,
-            activeMods = [];
+        const activeMods = [];
         Number(input).toString(2)
             .split('')
             .reverse()
             .forEach((value, i) => {
-                if (value == 1) activeMods.push(osu.mods[i]);
-                if (osu.mods[i] === 'NC') activeMods.splice(activeMods.indexOf('DT'), 1);
-                if (osu.mods[i] === 'PF') activeMods.splice(activeMods.indexOf('SD'), 1);
+                if (value == 1) activeMods.push(this.mods[i]);
+                if (this.mods[i] === 'NC') activeMods.splice(activeMods.indexOf('DT'), 1);
+                if (this.mods[i] === 'PF') activeMods.splice(activeMods.indexOf('SD'), 1);
             });
         return activeMods;
     }
@@ -384,10 +376,9 @@ module.exports = class Osu extends Api {
     }
 
     playsToString(playList) {
-        const osu = this;
         return new Promise(resolve => {
             const mapFetchList = [];
-            for (const perf of playList) mapFetchList.push(osu.getMap(perf.beatmap_id));
+            for (const perf of playList) mapFetchList.push(this.getMap(perf.beatmap_id));
             resolve(Promise.all(mapFetchList));
         })
             .then(mapList => {
@@ -397,7 +388,7 @@ module.exports = class Osu extends Api {
                 for (const perf of playList) {
                     const
                         mInfo = mapInfos[perf.beatmap_id],
-                        am = osu.modulator(perf.enabled_mods);
+                        am = this.modulator(perf.enabled_mods);
                     result += `**${ perf.rank.replace('X', 'SS').replace('H', '+') }** ${ common.dEsc(mInfo.artist) } - ${ common.dEsc(mInfo.title) } [${ common.dEsc(mInfo.version) }] ${
                         am.length > 0 ? `\`[${ am.join(',') }]\` ` : ''
                     }${ perf.pp ? `**${ Math.round(perf.pp) }pp**` : '' }\n`;
