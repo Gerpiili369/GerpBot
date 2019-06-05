@@ -5,7 +5,6 @@ const
         config,
         logger,
         colors,
-        avatarUrl,
     } = common,
     // Node modules
     Discord = require('discord.io'),
@@ -134,21 +133,15 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         // Messages with commands
 
         if (st.stripNaNs(args[0]) == bot.id) args.shift();
-        const
-            cmd = args.shift(),
-            admin = serverID && pc.userHasPerm(serverID, userID, 'GENERAL_ADMINISTRATOR');
+        const cmd = args.shift();
 
         if (commands[cmd]) new commands[cmd](bot, { user, userID, channelID, message, evt }).execute();
-        else switch (cmd) {
-            case '':
-                if (fileReact) break;
-            default:
-                if (message.indexOf('?') != -1 && (!serverID || !settings.servers[serverID].disableAnswers)) {
-                    msg(channelID, objectLib.answers[Math.floor(Math.random() * objectLib.answers.length)]);
-                } else {
-                    msg(channelID, objectLib.defaultRes[Math.floor(Math.random() * objectLib.defaultRes.length)]);
-                }
-                break;
+        else if (!fileReact) {
+            if (message.indexOf('?') != -1 && (!serverID || !settings.servers[serverID].disableAnswers)) {
+                msg(channelID, objectLib.answers[Math.floor(Math.random() * objectLib.answers.length)]);
+            } else {
+                msg(channelID, objectLib.defaultRes[Math.floor(Math.random() * objectLib.defaultRes.length)]);
+            }
         }
         common.timeOf.lastCommand = Date.now();
     } else {
