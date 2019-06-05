@@ -30,7 +30,7 @@ class Color extends Command {
                         if (err.name === 'Missing permissions!') {
                             this.msg(this.channelID, 'Unable to add color role!');
                             this.pc.missage(this.msg, this.channelID, ['Manage Roles']);
-                        } else common.logger.error(err, { label: `commands${ this.cmd ? `/${ this.cmd }` : '' }` });
+                        } else common.logger.error(err, this.loggerMeta);
                     })
                     .then(() => {
                         common.settings.update();

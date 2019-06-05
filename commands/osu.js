@@ -20,7 +20,7 @@ class Osu extends Command {
             case 1:
                 osuApi.getUser(this.args[0])
                     .then(embed => this.msg(this.channelID, '', embed))
-                    .catch(err => common.logger.error(err, { label: `commands${ this.cmd ? `/${ this.cmd }` : '' }` }));
+                    .catch(err => common.logger.error(err, this.loggerMeta));
                 break;
             case 2:
                 if (this.serverID && !this.pc.userHasPerm(this.serverID, this.bot.id, 'TEXT_ATTACH_FILES', this.channelID))

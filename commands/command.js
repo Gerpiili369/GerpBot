@@ -39,6 +39,9 @@ class Command extends Emitter {
         this.otherRequirements = [];
         this.argChecks = [];
 
+        // Object used with common.logger.
+        this.loggerMeta = { label: `commands${ this.cmd ? `/${ this.cmd }` : '' }` };
+
         // Bindings.
         this.msg = this.msg.bind(this);
     }
@@ -64,7 +67,7 @@ class Command extends Emitter {
 
     command() {
         // This method should be is overwritten when after extending this.
-        common.logger.error('Default command method has not been overwritten!', { label: `commands${ this.cmd ? `/${ this.cmd }` : '' }` });
+        common.logger.error('Default command method has not been overwritten!', this.loggerMeta);
         this.msg(this.channelID, '', new Embed('Default command', 'This is a default command template. You should not be able to see this.').error());
     }
 
@@ -140,7 +143,7 @@ class Command extends Emitter {
             if (err) {
                 if (err.response && err.response.message === 'You are being rate limited.')
                     setTimeout(this.msg, err.response.retry_after, channel, message, embed);
-                else common.logger.error(err, '');
+                else common.logger.error(err, this.loggerMeta);
             }
         });
     }
@@ -150,7 +153,7 @@ class Command extends Emitter {
             channelID: this.channelID,
             messageID: this.evt.d.id,
             reaction: emoji
-        }, err => { if (err) common.logger.error(err, { label: `commands${ this.cmd ? `/${ this.cmd }` : '' }` }); });
+        }, err => { if (err) common.logger.error(err, this.loggerMeta); });
     }
 
     serverOnlyNotice() {

@@ -44,7 +44,7 @@ class Changes extends Command {
                 missing => this.pc.missage(this.msg, this.channelID, missing)
             )
             .catch(err => {
-                if (err instanceof Error) common.logger.error(err, { label: `commands${ this.cmd ? `/${ this.cmd }` : '' }` });
+                if (err instanceof Error) common.logger.error(err, this.loggerMeta);
                 this.msg(this.channelID, '', new Embed().error(err));
             });
     }

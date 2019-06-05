@@ -62,7 +62,7 @@ class RemindCreate extends Command {
 
                         this.msg(this.channelID, 'I will remind when the time comes...');
                     })
-                    .catch(err => this.logger.error(err, { label: `commands${ this.cmd ? `/${ this.cmd }` : '' }` }));
+                    .catch(err => this.logger.error(err, this.loggerMeta));
             }
         }
     }

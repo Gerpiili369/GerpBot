@@ -19,7 +19,7 @@ class EffectRainbow extends Command {
             .catch(err => {
                 if (err.name === 'Missing permissions!') {
                     this.pc.missage(this.msg, this.channelID, ['Manage Roles']);
-                } else common.colorlogger.error(err, { label: `commands${ this.cmd ? `/${ this.cmd }` : '' }` });
+                } else common.colorlogger.error(err, this.loggerMeta);
             });
     }
 }
