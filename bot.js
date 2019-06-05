@@ -143,7 +143,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 msg(channelID, objectLib.defaultRes[Math.floor(Math.random() * objectLib.defaultRes.length)]);
             }
         }
-        common.timeOf.lastCommand = Date.now();
     } else {
         // Messages without commands
         if (serverID && settings.servers[serverID].autoCompliment && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {

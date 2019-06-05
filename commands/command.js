@@ -57,6 +57,9 @@ class Command extends Emitter {
 
         // Execute command if none of the checks fail.
         if (canExecute) this.command();
+
+        // Update time of last command.
+        common.timeOf.lastCommand = Date.now();
     }
 
     command() {
