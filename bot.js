@@ -60,6 +60,7 @@ common.mh = new MusicHandler(bot, config.auth.tubeKey);
 bot.getColor = getColor;
 bot.addColorRole = addColorRole;
 bot.editColor = editColor;
+bot.editNick = editNick;
 bot.addLatestMsgToEmbed = addLatestMsgToEmbed;
 bot.pending = {};
 
@@ -139,57 +140,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         if (commands[cmd]) new commands[cmd](bot, { user, userID, channelID, message, evt }).execute();
         else switch (cmd) {
-            case 'effect':
-                if (!serverID) return msg(channelID, 'I think that is a bad idea...');
-                if (!admin) return msg(channelID, 'Request denied, not admin!');
-
-                if (!settings.servers[serverID].color) settings.servers[serverID].color = {};
-                if (!settings.servers[serverID].effects) settings.servers[serverID].effects = {
-                    rainbow: false, shuffle: false
-                };
-
-                switch (args[0]) {
-                    case 'rainbow':
-                        addColorRole(serverID)
-                            .then(() => {
-                                if (settings.servers[serverID].effects.rainbow) {
-                                    settings.servers[serverID].effects.rainbow = false;
-                                    editColor(serverID, `#${ (settings.servers[serverID].color.value || colors.gerp).toString(16) }`);
-                                    msg(channelID, 'Rainbow effect deactivated!');
-                                } else {
-                                    settings.servers[serverID].effects.rainbow = true;
-                                    msg(channelID, 'Rainbow effect activated!');
-                                }
-                                updateSettings();
-                            })
-                            .catch(err => {
-                                if (err.name === 'Missing permissions!') {
-                                    pc.missage(msg, channelID, ['Manage Roles']);
-                                } else logger.error(err, '');
-                            });
-                        break;
-                    case 'shuffle':
-                        if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_CHANGE_NICKNAME'))
-                            return pc.missage(msg, channelID, ['Change Nickname']);
-
-                        if (settings.servers[serverID].effects.shuffle) setTimeout(() => {
-                            settings.servers[serverID].effects.shuffle = false;
-                            editNick(serverID, settings.servers[serverID].nick);
-                            msg(channelID, 'Shuffle effect deactivated!');
-                            updateSettings();
-                        }, 1000);
-                        else {
-                            settings.servers[serverID].effects.shuffle = true;
-                            settings.servers[serverID].nick = bot.servers[serverID].members[bot.id].nick || bot.username;
-                            msg(channelID, 'Shuffle effect activated!');
-                            updateSettings();
-                        }
-                        break;
-                    default:
-                        msg(channelID, 'Shuffle or rainbow?');
-                        break;
-                }
-                break;
             case '':
                 if (fileReact) break;
             default:
