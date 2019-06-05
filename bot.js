@@ -16,7 +16,6 @@ const
     // Scripts
     web = require('./scripts/web.js'),
     bs = config.canvasEnabled ? require('./scripts/bs.js') : null,
-    GitHub = require('./scripts/github.js'),
     Ile = require('./scripts/ile.js'),
     Osu = require('./scripts/osu.js'),
     Embed = require('./scripts/embed'),
@@ -36,7 +35,6 @@ const
     commands = require('./commands'),
     settings = getJSON('settings'),
     bot = new Discord.Client({ token: config.auth.token, autorun: true }),
-    github = new GitHub(),
     osu = new Osu(config.auth.osu),
     mh = new MusicHandler(bot, config.auth.tubeKey),
     bsga = config.canvasEnabled ? new bs.GameArea() : null,
@@ -139,68 +137,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         if (commands[cmd]) new commands[cmd](bot, { user, userID, channelID, message, evt }).execute();
         else switch (cmd) {
-            case 'changes':
-                args.splice(1);
-            case 'releases':
-                if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
-                    return pc.missage(msg, channelID, ['Embed Links']);
-
-                const repo = {},
-                    color = getColor(serverID, cmd === 'changes' ? '' : userID);
-                let max = Infinity;
-
-                switch (args.length) {
-                    case 1:
-                        max = args[0];
-                    case 0:
-                        if (common.pkg.repository && common.pkg.repository.url) {
-                            const urlray = common.pkg.repository.url.split('/');
-                            repo.host = urlray[2];
-                            if (repo.host === 'github.com') {
-                                repo.owner = urlray[3];
-                                repo.name = urlray[4].slice(0, urlray[4].indexOf('.git'));
-                            }
-                        }
-                        break;
-                    case 3:
-                        max = args[2];
-                    case 2:
-                        repo.owner = args[0];
-                        repo.name = args[1];
-                        break;
-                    default: return msg(channelID, '', new Embed('Too many arguments!').error());
-                }
-
-                if (isNaN(max) || max < 1) return msg(channelID, '', new Embed('Release amount must be a number largen than 0!').error());
-
-                github.getReleases(repo.owner, repo.name)
-                    .then(data => {
-                        if (data.message === 'Not Found') return msg(channelID, '', new Embed('Repository not found!').error());
-                        if (data.length < 1) return msg(channelID, '', new Embed('No releases available.').error());
-
-                        const titleEmbed = new Embed(`Releases for ${ data[0].html_url.split('/')[3] }/${ data[0].html_url.split('/')[4] }`, { color });
-                        if (args.length < 2) bot.pending[channelID].push(titleEmbed);
-
-                        for (let i = 0; i < data.length && i < max; i++)
-                            bot.pending[channelID].push(new Embed(data[i].name, data[i].body, {
-                                color,
-                                timestamp: data[i].published_at,
-                                author: {
-                                    name: data[i].tag_name,
-                                    url: data[i].html_url
-
-                                },
-                                footer: {
-                                    text: `Published by ${ data[i].author.login }`,
-                                    icon_url: data[i].author.avatar_url
-                                }
-                            }));
-
-                        if (args.length < 2) msg(channelID, '', new Embed(`Current version: ${ common.pkg.version }`, { color }));
-                        else msg(channelID, '', titleEmbed);
-                    })
-                    .catch(err => msg(channelID, '', new Embed().error(err)));
-                break;
             case 'music':
             case 'play':
                 if (!serverID) return msg(channelID, '`<sassy message about this command being server only>`');
