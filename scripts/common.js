@@ -39,6 +39,19 @@ function avatarUrl(user = {}) {
         }.png`;
 }
 
+function colorInput(input) {
+    let color = 0;
+    // Decimal color input
+    if (!isNaN(input)) color = Number(input);
+    else if (typeof input === 'string') {
+        // Hex color input
+        if (input[0] === '#') color = parseInt(input.substring(1), 16);
+        // Check if input is a color found in common.colors
+        else if (colors[input]) color = colors[input];
+    }
+    return color;
+}
+
 module.exports = {
     logger,
     pkg,
@@ -48,4 +61,5 @@ module.exports = {
     dEsc,
     config,
     avatarUrl,
+    colorInput,
 };

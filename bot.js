@@ -58,6 +58,8 @@ common.ile = new Ile(getJSON('ile'), objectLib.ileAcronym);
 common.mh = new MusicHandler(bot, config.auth.tubeKey);
 
 bot.getColor = getColor;
+bot.addColorRole = addColorRole;
+bot.editColor = editColor;
 bot.addLatestMsgToEmbed = addLatestMsgToEmbed;
 bot.pending = {};
 
@@ -137,37 +139,6 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         if (commands[cmd]) new commands[cmd](bot, { user, userID, channelID, message, evt }).execute();
         else switch (cmd) {
-            case 'color':
-                if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID))
-                    return pc.missage(msg, channelID, ['Embed Links']);
-
-                new Promise((resolve, reject) => {
-                    const color = colorInput(args.join(' '));
-                    if (color && serverID && admin) resolve(color);
-                    else reject();
-                })
-                    .then(color => {
-                        if (!settings.servers[serverID].color) settings.servers[serverID].color = {};
-                        settings.servers[serverID].color.value = color;
-
-                        addColorRole(serverID)
-                            .catch(err => {
-                                if (err.name === 'Missing permissions!') {
-                                    msg(channelID, 'Unable to add color role!');
-                                    pc.missage(msg, channelID, ['Manage Roles']);
-                                } else logger.error(err, '');
-                            })
-                            .then(() => {
-                                updateSettings();
-                                editColor(serverID, `#${ (color || colors.gerp).toString(16) }`);
-                                msg(channelID, '', new Embed('Color changed!', { color }));
-                            });
-                    })
-                    .catch(err => msg(channelID, '', new Embed(
-                        'Only color you will be seeing is red.',
-                        'This command is server only, admin only AND requires one argument which must be hex or decimal color code or a color I know by name.',
-                    ).error(err)));
-                break;
             case 'effect':
                 if (!serverID) return msg(channelID, 'I think that is a bad idea...');
                 if (!admin) return msg(channelID, 'Request denied, not admin!');
@@ -712,19 +683,6 @@ function getColor(serverID, targetID, fallBack = true) {
         }
     }
 
-    return color;
-}
-
-function colorInput(input) {
-    let color = 0;
-    // Decimal color input
-    if (!isNaN(input)) color = Number(input);
-    else if (typeof input === 'string') {
-        // Hex color input
-        if (input[0] === '#') color = parseInt(input.substring(1), 16);
-        // Check if input is a color found in common.colors
-        else if (colors[input]) color = colors[input];
-    }
     return color;
 }
 
