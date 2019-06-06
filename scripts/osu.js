@@ -11,6 +11,7 @@ const
     graph = require('../objectLib/osuSignature'),
     FileCoder = require('./fileCoder.js');
 
+/* eslint camelcase: ["warn", { allow: ["beatmap_id", "enabled_mods"]}] */
 module.exports = class Osu extends Api {
     constructor(key) {
         super('https://osu.ppy.sh/api', key);
@@ -299,8 +300,8 @@ module.exports = class Osu extends Api {
 
             re.addField(`Score **${ perf.score }**`,
                 `300 \`${ perf.count300 }x\`\n` +
-                ` 100 \`${ perf.count100 }x\`\n` +
-                `      50 \`${ perf.count50 }x\``,
+                ` 100 \`${ perf.count100 }x\`\n` + // eslint-disable-line no-irregular-whitespace
+                `      50 \`${ perf.count50 }x\``, // eslint-disable-line no-irregular-whitespace
                 true
             ).addField(`**${ perf.pp ? `${ Math.round(perf.pp) }pp` : '•' }**`,
                 `激 \`${ perf.countgeki }x\`\n` +

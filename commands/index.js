@@ -10,7 +10,7 @@ fs.readdir(__dirname, (err, files) => {
     else {
         for (const file of files) {
             const
-                command = require(path.join(__dirname, file)),
+                command = require(path.join(__dirname, file)), // eslint-disable-line global-require
                 key = file.slice(0, file.length - (file.indexOf('.js') > -1 ? 3 : 0));
 
             if (command.prototype instanceof Command) {

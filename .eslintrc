@@ -44,7 +44,14 @@
             "always"
         ],
         "callback-return": "error",
-        "camelcase": "warn",
+        "camelcase": [
+            "error",
+            {
+                "allow": [
+                    "icon_url"
+                ]
+            }
+        ],
         "capitalized-comments": "warn",
         "class-methods-use-this": "off",
         "comma-dangle": "off",
