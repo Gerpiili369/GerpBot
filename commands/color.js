@@ -19,7 +19,7 @@ class Color extends Command {
         new Promise((resolve, reject) => {
             const color = common.colorInput(this.args.join(' '));
             if (color) resolve(color);
-            else reject();
+            else reject(new Error());
         })
             .then(color => {
                 if (!common.settings.servers[this.serverID].color) common.settings.servers[this.serverID].color = {};

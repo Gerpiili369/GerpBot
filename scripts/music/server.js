@@ -2,6 +2,7 @@ const
     cp = require('child_process'),
     st = require('snowtime'),
     common = require('../common'),
+    CustomError = require('../error'),
     Embed = require('../embed'),
     Song = require('./song');
 
@@ -86,10 +87,10 @@ class Server {
                     resolve(this);
                 }
             });
-            else reject({
+            else reject(new CustomError({
                 name: 'Could not join',
                 message: 'You are not in a voice channel!'
-            });
+            }));
         });
     }
 
@@ -102,10 +103,10 @@ class Server {
                     resolve(this);
                 }
             });
-            else reject({
+            else reject(new CustomError({
                 name: 'Could not get audio context',
                 message: 'Bot is not in a voice channel!'
-            });
+            }));
         });
     }
 

@@ -1,5 +1,6 @@
 const
     Api = require('../api'),
+    CustomError = require('../error'),
     common = require('../common'),
     Song = require('./song'),
     Server = require('./server'),
@@ -32,10 +33,10 @@ class MusicHandler extends Api {
         return this.apiCall(`/search?part=snippet&q=${ keywords.join('+') }&key=${ this.key }`)
             .then(data => {
                 for (const item of data.items) if (item.id && item.id.kind === 'youtube#video') return item;
-                return Promise.reject({
+                return Promise.reject(new CustomError({
                     name: 'Song not found',
                     message: 'No results found with given keywords.'
-                });
+                }));
             })
             .then(item => new Promise((resolve, reject) => ytdl.getInfo(`http://www.youtube.com/watch?v=${ item.id.videoId }`, (err, info) => {
                 if (err) reject(err);
@@ -50,10 +51,10 @@ class MusicHandler extends Api {
                 resolve(new Song(url, userID, this.bot).update(item));
             })))
             .catch(err => {
-                if (err.errors) return Promise.reject({
+                if (err.errors) return Promise.reject(new CustomError({
                     name: err.errors[0].message,
                     message: `${ err.errors[0].domain }/${ err.errors[0].reason }`
-                });
+                }));
                 return Promise.reject(err);
             });
     }

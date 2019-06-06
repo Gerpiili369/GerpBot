@@ -17,6 +17,7 @@ const
     bs = config.canvasEnabled ? require('./scripts/bs.js') : null,
     Ile = require('./scripts/ile.js'),
     Osu = require('./scripts/osu.js'),
+    CustomError = require('./scripts/error'),
     Embed = require('./scripts/embed'),
     MusicHandler = require('./scripts/music'),
     Reminder = require('./scripts/reminder'),
@@ -562,9 +563,9 @@ function getBotRole(serverID) {
 
 function addColorRole(serverID) {
     // Check bot's permission to Manage Roles
-    if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_MANAGE_ROLES')) return Promise.reject({
+    if (!pc.userHasPerm(serverID, bot.id, 'GENERAL_MANAGE_ROLES')) return Promise.reject(new CustomError({
         name: 'Missing permissions!', message: 'Manage Roles'
-    });
+    }));
 
     // Return if role is saved to settings, exists in the server and is assigned to the bot
     if (settings.servers[serverID].color.role &&

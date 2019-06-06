@@ -5,6 +5,7 @@ const
     parser = new DomParser(),
     { Uptime } = require('snowtime'),
     Api = require('./api'),
+    CustomError = require('./error'),
     Embed = require('./embed'),
     common = require('./common.js'),
     graph = require('../objectLib/osuSignature'),
@@ -164,7 +165,7 @@ module.exports = class Osu extends Api {
             this.getUserBest(username, 100)
                 .then(data => {
                     if (data[playNumber - 1]) play = data[playNumber - 1];
-                    else reject({ name: 'Not found', message: 'User or top play not found!' });
+                    else reject(new CustomError({ name: 'Not found', message: 'User or top play not found!' }));
                 })
                 .then(() => this.getMap(play.beatmap_id))
                 .then(data => (mapHash = data[0].file_md5))
@@ -276,11 +277,11 @@ module.exports = class Osu extends Api {
             if (perf.beatmap_id.length === 32) resolve(this.getMapWithHash(perf.beatmap_id));
             else resolve(this.getMap(perf.beatmap_id));
         }).then(maps => {
-            if (maps.length === 0) return Promise.reject({
+            if (maps.length === 0) return Promise.reject(new CustomError({
                 name: 'Map not found',
                 message: 'The map could not be found!',
                 code: 404
-            });
+            }));
 
             perf.rank = perf.rank.replace('X', 'SS').replace('H', '+');
             perf.accuracy = this.accCalc(perf.count300, perf.count100, perf.count50, perf.enabled_mods);
