@@ -13,20 +13,20 @@ class Embed {
 
         if (title instanceof Object) {
             params.opts = title;
-            params.title = opts.title;
-            params.description = opts.description;
+            params.title = title.title;
+            params.description = title.description;
         }
 
         if (description instanceof Object) {
             params.opts = description;
-            params.description = opts.description;
+            params.description = description.description;
         }
 
         this.title = params.title || '';
         this.description = params.description || '';
         this.url = params.opts.url || '';
-        if (opts.color) this.color = params.opts.color;
-        if (opts.timestamp) this.timestamp = params.opts.timestamp instanceof Date ? opts.timestamp : new Date(opts.timestamp);
+        if (params.opts.color) this.color = params.opts.color;
+        if (params.opts.timestamp) this.timestamp = params.opts.timestamp instanceof Date ? params.opts.timestamp : new Date(params.opts.timestamp);
         this.footer = params.opts.footer || { icon_url: '', text: '' };
         this.thumbnail = params.opts.thumbnail || { url: '' };
         this.image = params.opts.image || { url: '' };
@@ -35,7 +35,7 @@ class Embed {
         this.Field = Field;
         this.multiEmbed = [];
 
-        if (opts.fields instanceof Array) for (const field of opts.fields) this.addField(field.name, field.value, field.inline);
+        if (params.opts.fields instanceof Array) for (const field of params.opts.fields) this.addField(field.name, field.value, field.inline);
     }
 
     addField(name, value, inline) {
