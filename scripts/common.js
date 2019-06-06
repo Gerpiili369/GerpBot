@@ -4,6 +4,7 @@ const
         format: format.combine(
             format.timestamp(),
             format.colorize(),
+            format.errors({ stack: true }),
             format.metadata({ fillExcept: ['timestamp', 'level', 'stack', 'message'] }),
             format.printf(info => `${ info.timestamp } ${ info.level } [${ info.metadata.label || 'bot' }]: ${ info.stack || info.message }`),
         ),
