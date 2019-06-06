@@ -14,7 +14,8 @@ const
     st = require('snowtime'),
     // Scripts
     web = require('./scripts/web.js'),
-    bs = config.canvasEnabled ? require('./scripts/bs.js') : null,
+    BSGameArea = require('./scripts/bsGameArea.js'),
+    BSPlayer = require('./scripts/bsPlayer.js'),
     Ile = require('./scripts/ile.js'),
     Osu = require('./scripts/osu.js'),
     CustomError = require('./scripts/error'),
@@ -36,7 +37,7 @@ const
     settings = getJSON('settings'),
     bot = new Discord.Client({ token: config.auth.token, autorun: true }),
     osu = new Osu(config.auth.osu),
-    bsga = config.canvasEnabled ? new bs.GameArea() : null,
+    bsga = config.canvasEnabled ? new BSGameArea(300, 300) : null,
     // Funky function stuff
     pc = permCheck(bot);
 
@@ -388,7 +389,7 @@ function handleReactions(evt, message) {
         if (embed.title == 'Blue Squares: The Game') {
             if (config.canvasEnabled) {
                 if (bsga.players[evt.d.user_id]) bsga.players[evt.d.user_id].online = true;
-                else bsga.players[evt.d.user_id] = new bs.Player(evt.d.user_id, bot.users[evt.d.user_id].username);
+                else bsga.players[evt.d.user_id] = new BSPlayer(evt.d.user_id, bot.users[evt.d.user_id].username, bsga.canvas);
                 switch (evt.d.emoji.name) {
                     case '🔼': bsga.players[evt.d.user_id].move('up'); break;
                     case '▶': bsga.players[evt.d.user_id].move('right'); break;

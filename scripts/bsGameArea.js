@@ -1,16 +1,11 @@
-const
-    Canvas = require('canvas').Canvas,
-    map = {
-        width: 300,
-        height: 300
-    };
+const Canvas = require('canvas').Canvas;
 
 class GameArea {
-    constructor() {
+    constructor(width, height) {
         this.players = {};
         this.sSize = 20;
 
-        this.canvas = new Canvas(map.width, map.height);
+        this.canvas = new Canvas(width, height);
         this.c = this.canvas.getContext('2d');
         this.c.textBaseline = 'alphabetic';
         this.c.font = '8pt Serif';
@@ -18,7 +13,7 @@ class GameArea {
 
     disconnect(id) {
         this.players[id].online = false;
-        this.msg('disconnected', id);
+        this.message('disconnected', id);
         this.update();
     }
 
@@ -55,41 +50,9 @@ class GameArea {
         return this.canvas;
     }
 
-    msg(msg, id) {
-        console.log('msg', `[${ this.players[id].username || id }] ${ msg }`);
+    message(message, id) {
+        return `message [${ this.players[id].username || id }] ${ message }`;
     }
 }
 
-class Player {
-    constructor(id, username) {
-        this.id = id;
-        this.username = username;
-        this.online = true;
-        this.speed = new GameArea().sSize;
-        this.x = 0;
-        this.y = 0;
-    }
-
-    move(dir) {
-        switch (dir) {
-            case 'left':
-                if (this.x - this.speed >= 0) this.x -= this.speed;
-                break;
-            case 'up':
-                if (this.y - this.speed >= 0) this.y -= this.speed;
-                break;
-            case 'right':
-                if (this.x + this.speed < map.width) this.x += this.speed;
-                break;
-            case 'down':
-                if (this.y + this.speed < map.height) this.y += this.speed;
-                break;
-            default:
-        }
-    }
-}
-
-module.exports = {
-    GameArea,
-    Player
-};
+module.exports = GameArea;
