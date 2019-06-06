@@ -274,29 +274,57 @@ function addOsuPlaysFromReaction(profOwner, evt, offset = 0) {
         .catch(err => msg(evt.d.channel_id, '', new Embed().error(err)));
 }
 
-// TODO: Refactor this.
 function addLatestMsgToEmbed(me, channelID, limit = 5) {
     return new Promise((resolve, reject) => bot.getMessages({ channelID, limit }, (err, messageList) => {
         if (err) reject(err);
-        else for (const message of messageList) {
-            let extra = '';
-            if (!me.image.url) for (const ext of ['.gif', '.jpg', '.jpeg', '.png'])
-                if (message.attachments[0] && message.attachments[0].url.indexOf(ext) > -1) {
-                    me.image.url = message.attachments[0].url;
-                    extra = ' (image below)';
-                } else for (const url of message.content.split(' ')) if (url.indexOf(ext) > -1 && isUrl(url)) {
-                    me.image.url = url;
-                    extra = ' (image below)';
-                }
-
-            me.addField(
-                message.author.username + extra,
-                message.content || '`<attachment>`'
-            );
+        else {
+            for (const message of messageList) addMessageToEmbed(message, me);
+            me.fields.reverse();
+            resolve(me);
         }
-        me.fields.reverse();
-        resolve(me);
     }));
+}
+
+function addMessageToEmbed(message, embed = new Embed('Message')) {
+    let extra = '';
+    if (!embed.image.url) {
+        const imageUrls = getMessageImageUrls(message);
+        if (imageUrls.length > 0) {
+            embed.image.url = imageUrls[0];
+            extra = ' (image below)';
+        }
+    }
+
+    embed.addField(
+        message.author.username + extra,
+        message.content || '`<attachment>`'
+    );
+
+    return embed;
+}
+
+function getMessageImageUrls(message) {
+    const imageUrls = [];
+
+    // Find images from message attachments.
+    imageUrls.push(...message.attachments
+        .map(value => value.url)
+        .filter(isImageUrl)
+    );
+
+    // Find images from message content.
+    imageUrls.push(...message.content.split(' ')
+        .filter(value => isUrl(value))
+        .filter(isImageUrl)
+    );
+
+    return imageUrls;
+}
+
+function isImageUrl(url) {
+    let isImage = false;
+    for (const ext of ['.gif', '.jpg', '.jpeg', '.png']) if (url.indexOf(ext) > -1) isImage = true;
+    return isImage;
 }
 
 bot.on('disconnect', (err, code) => {
