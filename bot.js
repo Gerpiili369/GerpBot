@@ -369,7 +369,11 @@ function handleReactions(evt, message) {
                 break;
             case 'top':
                 if (evt.d.emoji.name === '➕') {
-                    const [offset, profOwner] = embed.title.replace('Showing top ', '').replace('osu! plays from ', '').split(' ');
+                    const [offset, profOwner] = embed.title
+                        .replace('Showing top ', '')
+                        .replace('osu! plays from ', '')
+                        .split(' ');
+
                     addOsuPlaysFromReaction(profOwner, evt, offset);
                     bot.deleteMessage({
                         channelID: evt.d.channel_id,
@@ -694,9 +698,9 @@ function updateSettings(retry = false) {
     const json = JSON.stringify(settings, (key, value) => {
         switch (key) {
             case 'timeout':
-                return;
+                return null;
             case 'bot':
-                return;
+                return null;
             default:
                 return value;
         }
