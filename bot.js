@@ -66,7 +66,7 @@ bot.pending = {};
 startLoops();
 updateColors();
 
-if (config.web) web.activate.then(logger.info);
+if (config.web) web.activate.then(message => logger.info(message, { label: 'web' }));
 
 bot.on('ready', evt => {
     common.timeOf.connection = Date.now();
@@ -171,7 +171,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
                 addLatestMsgToEmbed(me, channelID)
                     .then(me => msg(channel, 'This channel was mentioned on another channel.', me.errorIfInvalid()))
-                    .catch(err => logger.error(err, ''));
+                    .catch(err => logger.error(err, { label: 'actions/channelMention' }));
             }
         }
     }
@@ -195,7 +195,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             bot.pinMessage({
                 channelID: channelID,
                 messageID: evt.d.id
-            }, err => { if (err) logger.error(err, ''); });
+            }, err => { if (err) logger.error(err, { label: 'actions/selfEmbed' }); });
         }
 
         // Only bs embed
@@ -230,7 +230,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
             channelID: channelID,
             messageID: evt.d.id,
             reaction: emoji
-        }, err => { if (err) logger.error(err, ''); });
+        }, err => { if (err) logger.error(err, { label: 'actions/emojiResponse' }); });
     }
 });
 
@@ -257,7 +257,7 @@ function addOsuPlaysFromReaction(profOwner, evt, offset = 0) {
                         );
                         return result.re;
                     })
-                    .catch(err => logger.error(err, ''))
+                    .catch(err => logger.error(err, { label: 'reactions/osu' }))
             );
             return Promise.all(promArr);
         })
@@ -389,7 +389,7 @@ function handleReactions(evt, message) {
             userID: evt.d.user_id,
             reaction: evt.d.emoji.name
         }))
-        .catch(err => logger.error(err, ''));
+        .catch(err => logger.error(err, { label: 'reactions/bs' }));
 }
 
 /**
@@ -405,7 +405,7 @@ function msg(channel, message, embed) {
     }, err => { if (err) {
         if (err.response && err.response.message === 'You are being rate limited.')
             setTimeout(msg, err.response.retry_after, channel, message, embed);
-        else logger.error(err, '');
+        else logger.error(err, 'bot/msg');
     } });
 }
 
@@ -514,7 +514,7 @@ function startIle() {
         });
         common.ile.on('save', data => {
             fs.writeFile('ile.json', JSON.stringify(data, null, 4), err => {
-                if (err) logger.error(err, '');
+                if (err) logger.error(err, { label: 'fs/ile' });
             });
         });
     }
@@ -535,7 +535,7 @@ function editColor(serverID, color) {
         serverID,
         roleID: settings.servers[serverID].color.role,
         color
-    }, err => { if (err) logger.error(err, ''); });
+    }, err => { if (err) logger.error(err, { label: 'bot/edit' }); });
 }
 
 /**
@@ -547,7 +547,7 @@ function editNick(serverID, newName) {
         serverID,
         userID: bot.id,
         nick: newName
-    }, err => { if (err) logger.error(err, ''); });
+    }, err => { if (err) logger.error(err, { label: 'bot/edit' }); });
 }
 
 function getBotRole(serverID) {
@@ -673,15 +673,15 @@ function updateSettings(retry = false) {
         }
     }, 4);
     if (json) fs.writeFile('settings.json', json, err => {
-        if (err) logger.error(err, '');
+        if (err) logger.error(err, { label: 'fs/settings' });
         else fs.readFile('settings.json', 'utf8', (err, data) => {
-            if (err) logger.error(err, '');
+            if (err) logger.error(err, { label: 'fs/settings' });
             try {
                 JSON.parse(data);
-                if (retry) logger.info('setting.json is no longer corrupted.');
+                if (retry) logger.info('setting.json is no longer corrupted.', { label: 'fs/settings' });
             }
             catch (error) {
-                logger.warn('setting.json was corrupted during update, retrying in 5 seconds.');
+                logger.warn('setting.json was corrupted during update, retrying in 5 seconds.', { label: 'fs/settings' });
                 setTimeout(updateSettings, 5000, true);
             }
         });
