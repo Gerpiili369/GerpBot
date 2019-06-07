@@ -2,17 +2,19 @@ const
     fs = require('fs'),
     path = require('path'),
     Ile = require('./ile.js'),
-    common = require('./common');
+    common = require('./common'),
+    settingsPath = path.join(__dirname, '..', 'settings.json'),
+    objectLibPath = path.join(__dirname, '..', 'objectLib'),
+    ilePath = path.join(__dirname, '..', 'ile.json');
 
 async function initialize() {
     await initializeSettings();
-    await initializeObjectLib();
-
-    common.ile = new Ile(await common.getJSON('ile'), common.objectLib.ileAcronym);
+    common.objectLib = await loadObjectLib();
+    common.ile = new Ile(await common.loadJSON(ilePath) || {}, common.objectLib.ileAcronym);
 }
 
 async function initializeSettings() {
-    common.settings = await common.getJSON('settings');
+    common.settings = await common.loadJSON(settingsPath);
 
     if (!common.settings.servers) common.settings.servers = {};
     if (!common.settings.tz) common.settings.tz = {};
@@ -47,16 +49,18 @@ async function initializeSettings() {
     };
 }
 
-async function initializeObjectLib() {
+function loadObjectLib() {
     // Load objectLib
-    common.objectLib = await common.getJSON([
-        'help',
-        'compliments',
-        'defaultRes',
-        'games',
-        'answers',
-        'ileAcronym'
-    ], path.join('..', 'objectLib'));
+    return new Promise((resolve, reject) => fs.readdir(objectLibPath, (err, files) => {
+        if (err) reject(err);
+        else Promise.all(files.map(value => common.loadJSON(path.join(objectLibPath, value))))
+            .then(dataList => {
+                const objectLib = {};
+                files.forEach((value, i) => (objectLib[value.substring(0, value.indexOf('.json'))] = dataList[i]));
+                resolve(objectLib);
+            })
+            .catch(reject);
+    }));
 }
 
 module.exports = initialize;
