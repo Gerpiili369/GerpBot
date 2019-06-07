@@ -9,33 +9,22 @@ const
     // Node modules
     Discord = require('discord.io'),
     fs = require('fs'),
-    path = require('path'),
     isUrl = require('is-url'),
     st = require('snowtime'),
     // Scripts
     web = require('./scripts/web.js'),
+    initialize = require('./scripts/initialize'),
     BSGameArea = require('./scripts/bsGameArea.js'),
     BSPlayer = require('./scripts/bsPlayer.js'),
-    Ile = require('./scripts/ile.js'),
     Osu = require('./scripts/osu.js'),
     CustomError = require('./scripts/error'),
     Embed = require('./scripts/embed'),
     MusicHandler = require('./scripts/music'),
     Reminder = require('./scripts/reminder'),
     permCheck = require('./scripts/permCheck.js'),
-    // Load objectLib
-    objectLib = getJSON([
-        'help',
-        'compliments',
-        'defaultRes',
-        'games',
-        'answers',
-        'ileAcronym'
-    ], 'objectLib'),
     // Constant variables
     commands = require('./commands'),
-    settings = getJSON('settings'),
-    bot = new Discord.Client({ token: config.auth.token, autorun: true }),
+    bot = new Discord.Client({ token: config.auth.token }),
     osu = new Osu(config.auth.osu),
     bsga = config.canvasEnabled ? new BSGameArea(300, 300) : null,
     // Funky function stuff
@@ -46,16 +35,8 @@ let
     startedOnce = false,
     online = false;
 
-if (!settings.servers) settings.servers = {};
-if (!settings.tz) settings.tz = {};
-if (!settings.reminders) settings.reminders = {};
-
-settings.update = updateSettings;
-common.settings = settings;
-common.objectLib = objectLib;
 common.msg = msg;
 common.timeOf.startUp = Date.now();
-common.ile = new Ile(getJSON('ile'), objectLib.ileAcronym);
 common.mh = new MusicHandler(bot, config.auth.tubeKey);
 
 bot.getColor = getColor;
@@ -70,13 +51,17 @@ updateColors();
 
 if (config.web) web.activate.then(message => logger.info(message, { label: 'web' }));
 
+initialize()
+    .then(() => bot.connect())
+    .catch(err => logger.error(err));
+
 bot.on('ready', evt => {
     common.timeOf.connection = Date.now();
 
     updateObjectLib();
     startIle();
     startReminding();
-    updateSettings();
+    common.settings.update();
 
     logger.info(startedOnce ? 'Reconnection successful!' : `${ evt.d.user.username } (user ${ evt.d.user.id }) ready for world domination!`);
 
@@ -121,7 +106,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
                 else osu.readReplay(file.url).then(perf => osu.singlePlayEmbed(perf))
                     .then(result => {
                         result.re.description = result.re.description.replace('<date>',
-                            st.timeAt(st.findTimeZone(settings.tz, [userID, serverID]), new Date(result.date))
+                            st.timeAt(st.findTimeZone(common.settings.tz, [userID, serverID]), new Date(result.date))
                         );
                         msg(channelID, userID == bot.id ? '' : 'osu! replay information:', result.re.errorIfInvalid());
                     })
@@ -139,16 +124,16 @@ bot.on('message', (user, userID, channelID, message, evt) => {
 
         if (commands[cmd]) new commands[cmd](bot, { user, userID, channelID, message, evt }).execute();
         else if (!fileReact) {
-            if (message.indexOf('?') != -1 && (!serverID || !settings.servers[serverID].disableAnswers)) {
-                msg(channelID, objectLib.answers[Math.floor(Math.random() * objectLib.answers.length)]);
+            if (message.indexOf('?') != -1 && (!serverID || !common.settings.servers[serverID].disableAnswers)) {
+                msg(channelID, common.objectLib.answers[Math.floor(Math.random() * common.objectLib.answers.length)]);
             } else {
-                msg(channelID, objectLib.defaultRes[Math.floor(Math.random() * objectLib.defaultRes.length)]);
+                msg(channelID, common.objectLib.defaultRes[Math.floor(Math.random() * common.objectLib.defaultRes.length)]);
             }
         }
     } else {
         // Messages without commands
-        if (serverID && settings.servers[serverID].autoCompliment && settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && settings.servers[serverID].autoCompliment.enabled == true) {
-            msg(channelID, `<@${ userID }> ${ objectLib.compliments[Math.floor(Math.random() * objectLib.compliments.length)] }`);
+        if (serverID && common.settings.servers[serverID].autoCompliment && common.settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && common.settings.servers[serverID].autoCompliment.enabled == true) {
+            msg(channelID, `<@${ userID }> ${ common.objectLib.compliments[Math.floor(Math.random() * common.objectLib.compliments.length)] }`);
         }
 
         const mentionedChannels = [];
@@ -179,9 +164,9 @@ bot.on('message', (user, userID, channelID, message, evt) => {
     }
 
     // All messages''
-    if (serverID && typeof settings.servers[serverID].autoShit == 'string' &&
+    if (serverID && typeof common.settings.servers[serverID].autoShit == 'string' &&
         bot.servers[serverID].members[userID] &&
-        bot.servers[serverID].members[userID].roles.indexOf(settings.servers[serverID].autoShit) != -1 &&
+        bot.servers[serverID].members[userID].roles.indexOf(common.settings.servers[serverID].autoShit) != -1 &&
         pc.userHasPerm(serverID, bot.id, 'TEXT_ADD_REACTIONS')
     ) emojiResponse('💩');
 
@@ -255,7 +240,7 @@ function addOsuPlaysFromReaction(profOwner, evt, offset = 0) {
                 osu.singlePlayEmbed(play)
                     .then(result => {
                         result.re.description = result.re.description.replace('<date>',
-                            st.timeAt(st.findTimeZone(settings.tz, [evt.d.user_id, evt.d.guild_id]), new Date(result.date))
+                            st.timeAt(st.findTimeZone(common.settings.tz, [evt.d.user_id, evt.d.guild_id]), new Date(result.date))
                         );
                         return result.re;
                     })
@@ -340,7 +325,7 @@ bot.on('disconnect', (err, code) => {
 // Special events
 bot.on('any', evt => {
     if (evt.t === 'GUILD_CREATE') {
-        if (!settings.servers[evt.d.id]) settings.servers[evt.d.id] = {};
+        if (!common.settings.servers[evt.d.id]) common.settings.servers[evt.d.id] = {};
     }
 
     if (evt.t === 'MESSAGE_REACTION_ADD' && evt.d.user_id != bot.id) bot.getMessage({
@@ -445,29 +430,29 @@ function msg(channel, message, embed) {
 
 function updateObjectLib() {
     // Update help
-    for (const page in objectLib.help) {
-        for (const field of objectLib.help[page].fields) {
+    for (const page in common.objectLib.help) {
+        for (const field of common.objectLib.help[page].fields) {
             field.name = field.name.split('GerpBot').join(bot.username);
             field.value = field.value.split('GerpBot').join(bot.username);
         }
-        objectLib.help[page].description = objectLib.help[page].description.split('GerpBot').join(bot.username);
+        common.objectLib.help[page].description = common.objectLib.help[page].description.split('GerpBot').join(bot.username);
     }
 
     // Update help color
-    for (const field of objectLib.help.color.fields) {
+    for (const field of common.objectLib.help.color.fields) {
         const listOfColors = [];
         for (const color in colors) listOfColors.push(color);
         field.value = field.value.replace('<list of colors>', listOfColors.join('* • *'));
     }
 
     // Update games
-    for (const game in objectLib.games) {
-        objectLib.games[game] = objectLib.games[game].split('@GerpBot').join(`@${ bot.username }`);
+    for (const game in common.objectLib.games) {
+        common.objectLib.games[game] = common.objectLib.games[game].split('@GerpBot').join(`@${ bot.username }`);
     }
 
     // Update defaultRes
-    for (const res in objectLib.defaultRes) {
-        objectLib.defaultRes[res] = objectLib.defaultRes[res].split('GerpBot').join(bot.username);
+    for (const res in common.objectLib.defaultRes) {
+        common.objectLib.defaultRes[res] = common.objectLib.defaultRes[res].split('GerpBot').join(bot.username);
     }
 }
 
@@ -486,7 +471,7 @@ function updateColors() {
 function startLoops() {
     setInterval(() => bot.setPresence({
         game: {
-            name: objectLib.games[Math.floor(Math.random() * objectLib.games.length)],
+            name: common.objectLib.games[Math.floor(Math.random() * common.objectLib.games.length)],
             type: 0
         }
     }), 60000);
@@ -497,13 +482,13 @@ function startLoops() {
         if (online) {
             if (i >= rainbowColors.length) i = 0;
 
-            for (const server in settings.servers) if (bot.servers[server]) {
-                if (settings.servers[server].effects && settings.servers[server].effects.rainbow) {
+            for (const server in common.settings.servers) if (bot.servers[server]) {
+                if (common.settings.servers[server].effects && common.settings.servers[server].effects.rainbow) {
                     editColor(server, rainbowColors[i]);
                 }
 
-                if (settings.servers[server].effects && settings.servers[server].effects.shuffle) {
-                    const newName = settings.servers[server].nick.split('');
+                if (common.settings.servers[server].effects && common.settings.servers[server].effects.shuffle) {
+                    const newName = common.settings.servers[server].nick.split('');
                     newName.forEach((value, i, array) => {
                         const
                             random = Math.floor(Math.random() * array.length),
@@ -528,7 +513,7 @@ function startIle() {
             const tzConv = message.split(': ');
             let parsedMessage = '';
             if (tzConv[0] === 'Next checkpoint') {
-                tzConv[1] = st.timeAt(st.findTimeZone(settings.tz, [channel]), new Date(tzConv[1]));
+                tzConv[1] = st.timeAt(st.findTimeZone(common.settings.tz, [channel]), new Date(tzConv[1]));
                 parsedMessage = tzConv.join(': ');
             }
 
@@ -556,8 +541,8 @@ function startIle() {
 
 function startReminding() {
     const test = new Reminder();
-    for (const user in settings.reminders) for (const rem of settings.reminders[user])
-        if (test.ready(rem)) settings.reminders[user].splice(settings.reminders[user].indexOf(rem), 1, new Reminder(rem).activate());
+    for (const user in common.settings.reminders) for (const rem of common.settings.reminders[user])
+        if (test.ready(rem)) common.settings.reminders[user].splice(common.settings.reminders[user].indexOf(rem), 1, new Reminder(rem).activate());
 }
 
 /**
@@ -567,7 +552,7 @@ function startReminding() {
 function editColor(serverID, color) {
     if (pc.userHasPerm(serverID, bot.id, 'GENERAL_MANAGE_ROLES')) bot.editRole({
         serverID,
-        roleID: settings.servers[serverID].color.role,
+        roleID: common.settings.servers[serverID].color.role,
         color
     }, err => { if (err) logger.error(err, { label: 'bot/edit' }); });
 }
@@ -587,9 +572,9 @@ function editNick(serverID, newName) {
 function getBotRole(serverID) {
     for (const role of bot.servers[serverID].members[bot.id].roles)
         if (bot.servers[serverID].roles[role].name === bot.username) {
-            settings.servers[serverID].roleID = bot.servers[serverID].roles[role].id;
-            updateSettings();
-            return settings.servers[serverID].roleID;
+            common.settings.servers[serverID].roleID = bot.servers[serverID].roles[role].id;
+            common.settings.update();
+            return common.settings.servers[serverID].roleID;
         }
     return null;
 }
@@ -601,13 +586,13 @@ function addColorRole(serverID) {
     }));
 
     // Return if role is saved to settings, exists in the server and is assigned to the bot
-    if (settings.servers[serverID].color.role &&
-        bot.servers[serverID].roles[settings.servers[serverID].color.role] &&
-        bot.servers[serverID].members[bot.id].roles.indexOf(settings.servers[serverID].color.role) > 0
-    ) return Promise.resolve(settings.servers[serverID].color.role);
+    if (common.settings.servers[serverID].color.role &&
+        bot.servers[serverID].roles[common.settings.servers[serverID].color.role] &&
+        bot.servers[serverID].members[bot.id].roles.indexOf(common.settings.servers[serverID].color.role) > 0
+    ) return Promise.resolve(common.settings.servers[serverID].color.role);
 
     // Make sure roleID is defined
-    if (!settings.servers[serverID].roleID) getBotRole(serverID);
+    if (!common.settings.servers[serverID].roleID) getBotRole(serverID);
 
     // Fix the gaps
     return new Promise((resolve, reject) => {
@@ -618,7 +603,7 @@ function addColorRole(serverID) {
             if (
                 bot.servers[serverID].roles[role].name === `${ bot.username } color` &&
                 bot.servers[serverID].roles[role].position <
-                bot.servers[serverID].roles[settings.servers[serverID].roleID].position
+                bot.servers[serverID].roles[common.settings.servers[serverID].roleID].position
             ) {
                 isMissingRole = false;
                 resolve(bot.servers[serverID].roles[role].id);
@@ -642,7 +627,7 @@ function addColorRole(serverID) {
             userID: bot.id,
             roleID
         }, err => err ? reject(err) : resolve(roleID))))
-        .then(roleID => (settings.servers[serverID].color.role = roleID));
+        .then(roleID => (common.settings.servers[serverID].color.role = roleID));
 }
 
 function getColor(serverID, targetID, fallBack = true) {
@@ -663,63 +648,14 @@ function getColor(serverID, targetID, fallBack = true) {
         if (fallBack) {
             if (bot.servers[serverID] && bot.servers[serverID].members[bot.id] && bot.servers[serverID].members[bot.id].color)
                 color = bot.servers[serverID].members[bot.id].color;
-            else if (settings.servers[serverID] && settings.servers[serverID].color && settings.servers[serverID].color.value)
-                color = settings.servers[serverID].color.value;
+            else if (common.settings.servers[serverID] && common.settings.servers[serverID].color && common.settings.servers[serverID].color.value)
+                color = common.settings.servers[serverID].color.value;
             else
                 color = colors.gerp;
         }
     }
 
     return color;
-}
-
-/**
- * @arg {String|String[]} file
- * @arg {String} [location]
- * @returns {Object}
- */
-function getJSON(file, location = '') {
-    const tempObj = {};
-    let fullPath = '';
-
-    if (typeof file === 'string') {
-        fullPath = path.join(__dirname, location, file);
-        if (fs.existsSync(`${ fullPath }.json`)) return require(fullPath);
-    }
-
-    if (typeof file === 'object') for (const key of file) {
-        fullPath = path.join(__dirname, location, key);
-        if (fs.existsSync(`${ fullPath }.json`)) tempObj[key] = require(fullPath);
-    }
-    return tempObj;
-}
-
-function updateSettings(retry = false) {
-    if (!config.saveSettings) return;
-    const json = JSON.stringify(settings, (key, value) => {
-        switch (key) {
-            case 'timeout':
-                return null;
-            case 'bot':
-                return null;
-            default:
-                return value;
-        }
-    }, 4);
-    if (json) fs.writeFile('settings.json', json, err => {
-        if (err) logger.error(err, { label: 'fs/settings' });
-        else fs.readFile('settings.json', 'utf8', (err, data) => {
-            if (err) logger.error(err, { label: 'fs/settings' });
-            try {
-                JSON.parse(data);
-                if (retry) logger.info('setting.json is no longer corrupted.', { label: 'fs/settings' });
-            }
-            catch (error) {
-                logger.warn('setting.json was corrupted during update, retrying in 5 seconds.', { label: 'fs/settings' });
-                setTimeout(updateSettings, 5000, true);
-            }
-        });
-    });
 }
 
 /**

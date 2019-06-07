@@ -1,4 +1,6 @@
 const
+    fs = require('fs'),
+    path = require('path'),
     { format, createLogger, transports } = require('winston'),
     logger = createLogger({
         format: format.combine(
@@ -52,6 +54,27 @@ function colorInput(input) {
     return color;
 }
 
+/**
+ * @arg {String|String[]} file
+ * @arg {String} [location]
+ * @returns {Object}
+ */
+function getJSON(file, location = '') {
+    const tempObj = {};
+    let fullPath = '';
+
+    if (typeof file === 'string') {
+        fullPath = path.join(__dirname, location, file);
+        if (fs.existsSync(`${ fullPath }.json`)) return require(fullPath);
+    }
+
+    if (typeof file === 'object') for (const key of file) {
+        fullPath = path.join(__dirname, location, key);
+        if (fs.existsSync(`${ fullPath }.json`)) tempObj[key] = require(fullPath);
+    }
+    return tempObj;
+}
+
 module.exports = {
     logger,
     pkg,
@@ -62,4 +85,5 @@ module.exports = {
     config,
     avatarUrl,
     colorInput,
+    getJSON,
 };
