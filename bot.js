@@ -24,6 +24,7 @@ const
     permCheck = require('./scripts/permCheck.js'),
     // Commands and commandlike.
     commands = require('./commands'),
+    AttachmentsMessgeHandler = require('./commandlike/AttachmentsMessageHandler'),
     NormalMessageHandler = require('./commandlike/normalMessageHandler'),
     EveryMessageHandler = require('./commandlike/everyMessageHandler'),
     // Constant variables
@@ -97,27 +98,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         msg(channelID, str, embed instanceof Embed && embed.errorIfInvalid());
     }
 
-    if (evt.d.attachments.length > 0) for (const file of evt.d.attachments) {
-        // Messages with attachments
-        const ext = file.url.substring(file.url.length - file.url.split('').reverse()
-            .join('')
-            .indexOf('.') - 1).toLowerCase();
-        fileReact = true;
-        switch (ext) {
-            case '.osr':
-                if (serverID && !pc.userHasPerm(serverID, bot.id, 'TEXT_EMBED_LINKS', channelID)) pc.missage(msg, channelID, ['Embed Links']);
-                else osu.readReplay(file.url).then(perf => osu.singlePlayEmbed(perf))
-                    .then(result => {
-                        result.re.description = result.re.description.replace('<date>',
-                            st.timeAt(st.findTimeZone(common.settings.tz, [userID, serverID]), new Date(result.date))
-                        );
-                        msg(channelID, userID == bot.id ? '' : 'osu! replay information:', result.re.errorIfInvalid());
-                    })
-                    .catch(err => msg(channelID, '', new Embed().error(err)));
-                break;
-            default: fileReact = true;
-        }
-    }
+    if (evt.d.attachments.length > 0) fileReact = new AttachmentsMessgeHandler(bot, { user, userID, channelID, message, evt }).execute();
 
     if ((!serverID || st.stripNaNs(args[0]) == bot.id) && !bot.users[userID].bot) {
         // Messages with commands
