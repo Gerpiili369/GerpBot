@@ -18,7 +18,7 @@ class AutoAnswer extends Command {
             common.settings.servers[this.serverID].disableAnswers = true;
             this.msg(this.channelID, 'You weren\'t asking me? Well, ok then.');
         }
-        this.settings.update();
+        common.settings.update();
     }
 
     serverOnlyNotice() {
