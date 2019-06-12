@@ -68,6 +68,14 @@ function loadJSON(file) {
     }));
 }
 
+function osuEmbedIdentifier(embed) {
+    if (embed && embed.title && embed.title.indexOf('osu!') > -1) for (const type of [
+        'profile',
+        'top',
+    ]) if (embed.title.indexOf(type) > -1) return type;
+    return null;
+}
+
 module.exports = {
     logger,
     pkg,
@@ -79,4 +87,5 @@ module.exports = {
     avatarUrl,
     colorInput,
     loadJSON,
+    osuEmbedIdentifier,
 };
