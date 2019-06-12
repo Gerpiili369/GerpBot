@@ -9,6 +9,12 @@ const
     common = require('../scripts/common');
 
 class MessageEventHandler extends Command {
+    constructor(bot, params) {
+        super(bot, params);
+
+        this.args = this.message.split(' ');
+    }
+
     execute() {
         let fileReact = false;
 
@@ -30,7 +36,7 @@ class MessageEventHandler extends Command {
 
         if (this.evt.d.attachments.length > 0) fileReact = new AttachmentsMessgeHandler(this.bot, this.params).execute();
 
-        if ((!this.serverID || st.stripNaNs(this.args[0]) == this.bot.id) && !this.bot.users[this.userID].this.bot) {
+        if ((!this.serverID || st.stripNaNs(this.args[0]) == this.bot.id) && !this.bot.users[this.userID].bot) {
             // Messages with commands
 
             if (st.stripNaNs(this.args[0]) == this.bot.id) this.args.shift();
