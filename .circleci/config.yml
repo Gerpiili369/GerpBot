@@ -29,3 +29,57 @@ jobs:
           prefix: coverage
       - store_test_results:
           path: test-results.xml
+  deploy:
+    machine:
+      enabled: true
+    steps:
+      - run:
+          name: Pull latest changes
+          command: |
+            ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH && git pull"
+      - run:
+          name: Update packages
+          command: |
+            ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH && npm i"
+      - run:
+          name: Restart process
+          command: |
+            ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH && pm2 restart $DEPLOY_ID"
+  deploy-dev:
+    machine:
+      enabled: true
+    steps:
+      - run:
+          name: Pull latest changes
+          command: |
+            ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH_DEV && git checkout $CIRCLE_BRANCH"
+      - run:
+          name: Pull latest changes
+          command: |
+            ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH_DEV && git pull"
+      - run:
+          name: Update packages
+          command: |
+            ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH_DEV && npm i"
+      - run:
+          name: Restart process
+          command: |
+            ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH_DEV && pm2 restart $DEPLOY_ID_DEV"
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - deploy-dev:
+          requires:
+            - build
+          filters:
+            branches:
+              ignore: master
