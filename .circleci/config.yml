@@ -52,11 +52,11 @@ jobs:
       - run:
           name: Pull latest changes
           command: |
-            ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH_DEV && git checkout $CIRCLE_BRANCH"
-      - run:
-          name: Pull latest changes
-          command: |
             ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH_DEV && git pull"
+      - run:
+          name: Checkout correct development branch
+          command: |
+            ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH_DEV && git checkout $CIRCLE_BRANCH"
       - run:
           name: Update packages
           command: |
