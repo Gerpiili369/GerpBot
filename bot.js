@@ -182,15 +182,11 @@ function handleReactions(evt, message) {
     if (embed && message.author.id == bot.id) new Promise((resolve, reject) => {
 
         // Only osu! embeds
-        // TODO: finish after sleep
         switch (common.osuEmbedIdentifier(embed)) {
             case 'profile':
                 switch (evt.d.emoji.name) {
                     case '🏆':
                         addOsuPlaysFromReaction(embed.title.replace('\'s osu! profile', ''), evt);
-                        break;
-                    case '🕒':
-                        console.log('recent');
                         break;
                     default:
                 }
