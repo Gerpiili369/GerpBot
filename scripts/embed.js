@@ -100,104 +100,133 @@ class Embed {
     }
 
     isValid() {
-        const
-            urls2check = [],
-            countList = [],
-            fails = [];
-        let total = 0;
+        const props = {
+            urls2check: [],
+            countList: [],
+            fails: [],
+            total: 0,
+        };
 
-        // Check title
-        if (this.title) countList.push([this.title, 256, 'title']);
+        // Check title, desciption, url, color and time.
+        checkBasic(this, props);
 
-        // Check description
-        if (this.description) countList.push([this.description, 2048, 'description']);
+        // Check footer, thumbnail, image and author.
+        checkObjects(this, props);
 
-        // Check url
-        if (this.url) urls2check.push([this.url, 'url']);
+        // Check field amount and each name value and inline.
+        checkFields(this, props);
 
-        // Check color
-        if (this.color && !(typeof this.color === 'string' || typeof this.color === 'number')) fails.push('Color must be a string or a number!');
-
-        // Check time
-        if (this.time && !(this.time instanceof Date)) fails.push('Time must be a Date!');
-
-        // Check footer
-        if (this.footer) {
-            if (this.footer instanceof Object) {
-                if (this.footer.icon_url) urls2check.push([this.footer.icon_url, 'footer icon url']);
-                if (this.footer.text) countList.push([this.footer.text, 2048, 'footer text']);
-            } else fails.push('Footer must be an object!');
-        }
-
-        // Check thumbnail
-        if (this.thumbnail) {
-            if (this.thumbnail instanceof Object) {
-                if (this.thumbnail.url) urls2check.push([this.thumbnail.url, 'thumbnail url']);
-            } else fails.push('Thumbnail must be an object!');
-        }
-
-        // Check image
-        if (this.image) {
-            if (this.image instanceof Object) {
-                if (this.image.url) urls2check.push([this.image.url, 'image url']);
-            } else fails.push('Image must be an object!');
-        }
-
-        // Check author
-        if (this.author) {
-            if (this.author instanceof Object) {
-                if (this.author.name) countList.push([this.author.name, 256, 'author name']);
-                if (this.author.icon_url) urls2check.push([this.author.icon_url, 'author icon url']);
-                if (this.author.url) urls2check.push([this.author.url, 'author url']);
-            } else fails.push('Author must be an object!');
-        }
-
-        // Check field amount
-        if (this.fields.length > 25) this.fieldSplit();
-
-        // Check field name, value and inline
-        for (const field of this.fields) {
-            const fn = this.fields.indexOf(field) + 1;
-
-            if (field.name === '') fails.push(`Field #${ fn } name cannot be empty string!`);
-            if (field.value === '') fails.push(`Field #${ fn } value cannot be empty string!`);
-
-            if (field.inline && (typeof field.inline !== 'boolean')) fails.push(`Field #${ fn } inline is not a boolean!`);
-
-            countList.push(
-                [field.name, 256, `field #${ fn } name`],
-                [field.value, 1024, `field #${ fn } value`]
-            );
-        }
-
-        // Check url strings
-        for (const url of urls2check) {
-            if (typeof url[0] === 'string') {
-                if (!isUrl(url[0])) fails.push(`URL "${ url[1] }" is not a string!`);
-            } else fails.push(`URL "${ url[1] }" is not a string!`);
-        }
-
-        // Check normal (countable) strings
-        for (const countable of countList) {
-            if (typeof countable[0] === 'string') {
-                if (countable[0].length > countable[1]) fails.push(`Countable "${ countable[3] }" is too long! Length: ${ countable[0].length }, max length: ${ countList[1] }.`);
-                total += countable[0].length;
-            } else fails.push(`Countable "${ countable[3] }" is not a string!`);
-        }
+        // Check that url values are actual urls and make sure strings are not too long.
+        checkStrings(props);
 
         // Check embed size
-        if (total > 6000) fails.push(`Embed is too big! Current size: ${ total }, max size 6000.`);
+        if (props.total > 6000) props.fails.push(`Embed is too big! Current size: ${ props.total }, max size 6000.`);
 
         // Update class properties
-        this.length = total;
-        this.fails = fails;
+        this.length = props.total;
+        this.fails = props.fails;
 
-        return fails.length === 0;
+        return props.fails.length === 0;
     }
 
     errorIfInvalid() {
         return this.isValid() ? this : new this.constructor('Embed failed', this.fails.join('\n')).error();
     }
+}
+
+function checkBasic(embed = new Embed(), props = { urls2check: [], countList: [], fails: [] }) {
+    // Check title
+    if (embed.title) props.countList.push([embed.title, 256, 'title']);
+
+    // Check description
+    if (embed.description) props.countList.push([embed.description, 2048, 'description']);
+
+    // Check url
+    if (embed.url) props.urls2check.push([embed.url, 'url']);
+
+    // Check color
+    if (embed.color && !(typeof embed.color === 'string' || typeof embed.color === 'number')) props.fails.push('Color must be a string or a number!');
+
+    // Check time
+    if (embed.time && !(embed.time instanceof Date)) props.fails.push('Time must be a Date!');
+
+    return props;
+}
+
+function checkObjects(embed = new Embed(), props = { urls2check: [], countList: [], fails: [] }) {
+    // Check footer
+    if (embed.footer) {
+        if (embed.footer instanceof Object) {
+            if (embed.footer.icon_url) props.urls2check.push([embed.footer.icon_url, 'footer icon url']);
+            if (embed.footer.text) props.countList.push([embed.footer.text, 2048, 'footer text']);
+        } else props.fails.push('Footer must be an object!');
+    }
+
+    // Check thumbnail
+    if (embed.thumbnail) {
+        if (embed.thumbnail instanceof Object) {
+            if (embed.thumbnail.url) props.urls2check.push([embed.thumbnail.url, 'thumbnail url']);
+        } else props.fails.push('Thumbnail must be an object!');
+    }
+
+    // Check image
+    if (embed.image) {
+        if (embed.image instanceof Object) {
+            if (embed.image.url) props.urls2check.push([embed.image.url, 'image url']);
+        } else props.fails.push('Image must be an object!');
+    }
+
+    // Check author
+    if (embed.author) {
+        if (embed.author instanceof Object) {
+            if (embed.author.name) props.countList.push([embed.author.name, 256, 'author name']);
+            if (embed.author.icon_url) props.urls2check.push([embed.author.icon_url, 'author icon url']);
+            if (embed.author.url) props.urls2check.push([embed.author.url, 'author url']);
+        } else props.fails.push('Author must be an object!');
+    }
+
+    return props;
+}
+
+function checkFields(embed = new Embed(), props = { countList: [], fails: [] }) {
+    // Check field amount
+    if (embed.fields.length > 25) embed.fieldSplit();
+
+    // Check field name, value and inline
+    for (const field of embed.fields) {
+        const fn = embed.fields.indexOf(field) + 1;
+
+        if (field.name === '') props.fails.push(`Field #${ fn } name cannot be empty string!`);
+        if (field.value === '') props.fails.push(`Field #${ fn } value cannot be empty string!`);
+
+        if (field.inline && (typeof field.inline !== 'boolean')) props.fails.push(`Field #${ fn } inline is not a boolean!`);
+
+        props.countList.push(
+            [field.name, 256, `field #${ fn } name`],
+            [field.value, 1024, `field #${ fn } value`]
+        );
+    }
+
+    return props;
+}
+
+function checkStrings(props = { urls2check: [], countList: [], fails: [], total: 0 }) {
+    // Check url strings
+    for (const url of props.urls2check) {
+        if (typeof url[0] === 'string') {
+            if (!isUrl(url[0])) props.fails.push(`URL "${ url[1] }" is not a string!`);
+        } else props.fails.push(`URL "${ url[1] }" is not a string!`);
+    }
+
+    // Check normal (countable) strings
+    for (const countable of props.countList) {
+        if (typeof countable[0] === 'string') {
+            if (countable[0].length > countable[1]) props.fails.push(`Countable "${ countable[3] }" is too long! Length: ${ countable[0].length }, max length: ${ props.countList[1] }.`);
+            props.total += countable[0].length;
+        } else props.fails.push(`Countable "${ countable[3] }" is not a string!`);
+    }
+
+    return props;
 }
 
 module.exports = Embed;
