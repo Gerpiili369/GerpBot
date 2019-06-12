@@ -50,7 +50,7 @@ jobs:
       enabled: true
     steps:
       - run:
-          name: Pull latest changes
+          name: Checkout correct development branch
           command: |
             ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH_DEV && git checkout $CIRCLE_BRANCH"
       - run:
