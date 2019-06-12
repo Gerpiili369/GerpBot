@@ -22,8 +22,10 @@ const
     MusicHandler = require('./scripts/music'),
     Reminder = require('./scripts/reminder'),
     permCheck = require('./scripts/permCheck.js'),
-    // Constant variables
+    // Commands and commandlike.
     commands = require('./commands'),
+    NormalMessageHandler = require('./commandlike/normalMessageHandler'),
+    // Constant variables
     bot = new Discord.Client({ token: config.auth.token }),
     osu = new Osu(config.auth.osu),
     bsga = config.canvasEnabled ? new BSGameArea(300, 300) : null,
@@ -132,35 +134,7 @@ bot.on('message', (user, userID, channelID, message, evt) => {
         }
     } else {
         // Messages without commands
-        if (serverID && common.settings.servers[serverID].autoCompliment && common.settings.servers[serverID].autoCompliment.targets.indexOf(userID) != -1 && common.settings.servers[serverID].autoCompliment.enabled == true) {
-            msg(channelID, `<@${ userID }> ${ common.objectLib.compliments[Math.floor(Math.random() * common.objectLib.compliments.length)] }`);
-        }
-
-        const mentionedChannels = [];
-        for (const word of message.split(' ')) {
-            const mChannel = st.stripNaNs(word);
-            if (
-                bot.channels[mChannel] &&
-                channelID != mChannel &&
-                mentionedChannels.indexOf(mChannel) < 0
-            ) mentionedChannels.push(mChannel);
-        }
-
-        for (const channel of mentionedChannels) {
-            if (bot.channels[channel] && !pc.userHasPerm(bot.channels[channel].guild_id, bot.id, 'TEXT_EMBED_LINKS', channel))
-                pc.missage(msg, channel, ['Embed Links']);
-            else {
-                const me = new Embed(
-                    `#${ bot.channels[channelID].name } (${ bot.servers[serverID].name })`,
-                    `*Latest messages:*`,
-                    { color: getColor(serverID, userID) }
-                );
-
-                addLatestMsgToEmbed(me, channelID)
-                    .then(me => msg(channel, 'This channel was mentioned on another channel.', me.errorIfInvalid()))
-                    .catch(err => logger.error(err, { label: 'actions/channelMention' }));
-            }
-        }
+        new NormalMessageHandler(bot, { user, userID, channelID, message, evt }).execute();
     }
 
     // All messages''
