@@ -23,10 +23,7 @@ const
     Reminder = require('./scripts/reminder'),
     permCheck = require('./scripts/permCheck.js'),
     // Commands and commandlike.
-    commands = require('./commands'),
-    AttachmentsMessgeHandler = require('./commandlike/AttachmentsMessageHandler'),
-    NormalMessageHandler = require('./commandlike/normalMessageHandler'),
-    EveryMessageHandler = require('./commandlike/everyMessageHandler'),
+    MessageEventHandler = require('./commandlike/messageEventHandler'),
     // Constant variables
     bot = new Discord.Client({ token: config.auth.token }),
     osu = new Osu(config.auth.osu),
@@ -73,55 +70,7 @@ bot.on('ready', evt => {
     startedOnce = true;
 });
 
-bot.on('message', (user, userID, channelID, message, evt) => {
-    const args = message.split(' ');
-    let
-        serverID = null,
-        fileReact = false;
-
-    if (bot.channels[channelID]) serverID = bot.channels[channelID].guild_id;
-    else if (!bot.directMessages[channelID]) return;
-
-    if (!bot.pending[channelID]) bot.pending[channelID] = [];
-    if (userID === bot.id && bot.pending[channelID].length > 0) {
-        const pi = bot.pending[channelID].splice(0, 1)[0];
-        let
-            str = '',
-            embed = null;
-
-        if (typeof pi === 'string') str = pi;
-        else if (pi instanceof Embed) embed = pi;
-        else if (pi instanceof Array) {
-            str = pi[0];
-            embed = pi[1];
-        }
-        msg(channelID, str, embed instanceof Embed && embed.errorIfInvalid());
-    }
-
-    if (evt.d.attachments.length > 0) fileReact = new AttachmentsMessgeHandler(bot, { user, userID, channelID, message, evt }).execute();
-
-    if ((!serverID || st.stripNaNs(args[0]) == bot.id) && !bot.users[userID].bot) {
-        // Messages with commands
-
-        if (st.stripNaNs(args[0]) == bot.id) args.shift();
-        const cmd = args.shift();
-
-        if (commands[cmd]) new commands[cmd](bot, { user, userID, channelID, message, evt }).execute();
-        else if (!fileReact) {
-            if (message.indexOf('?') != -1 && (!serverID || !common.settings.servers[serverID].disableAnswers)) {
-                msg(channelID, common.objectLib.answers[Math.floor(Math.random() * common.objectLib.answers.length)]);
-            } else {
-                msg(channelID, common.objectLib.defaultRes[Math.floor(Math.random() * common.objectLib.defaultRes.length)]);
-            }
-        }
-    } else {
-        // Messages without commands
-        new NormalMessageHandler(bot, { user, userID, channelID, message, evt }).execute();
-    }
-
-    // All messages''
-    new EveryMessageHandler(bot, { user, userID, channelID, message, evt }).execute();
-});
+bot.on('message', (user, userID, channelID, message, evt) => new MessageEventHandler(bot, { user, userID, channelID, message, evt }).execute());
 
 function addOsuPlaysFromReaction(profOwner, evt, offset = 0) {
     if (isNaN(offset)) return;
