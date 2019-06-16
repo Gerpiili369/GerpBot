@@ -16,7 +16,15 @@ describe('Initialize', () => {
             .on('disconnect', reject)
             .on('ready', resolve)
         )
-            .then(() => done())
+            .then(() => {
+                tester.setPresence({
+                    game: {
+                        name: 'Automated tests...',
+                        type: 0
+                    }
+                });
+                done();
+            })
             .catch(done);
 
         tester.connect();
