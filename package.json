@@ -28,6 +28,7 @@
         "ytdl-core": "^0.28.3"
     },
     "devDependencies": {
+        "chai": "^4.2.0",
         "eslint": "^5.16.0",
         "mocha": "^6.1.4",
         "nodemon": "^1.19.1"
