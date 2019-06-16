@@ -70,6 +70,7 @@ function commandSuite(command, tests) {
                         if (err) done(err);
 
                         // Remove after debugging
+                        // eslint-disable-next-line no-console
                         if (err) console.error(err);
                     });
                 }
