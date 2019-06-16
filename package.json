@@ -6,7 +6,7 @@
     "scripts": {
         "linter": "eslint .",
         "fixer": "eslint . --fix",
-        "test": "mocha",
+        "test": "mocha --exit",
         "start": "nodemon"
     },
     "repository": {
