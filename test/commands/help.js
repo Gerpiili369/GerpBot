@@ -19,7 +19,7 @@ module.exports = commandSuite => {
                 values.res.evt.d.embeds
                     .should.have.lengthOf(1);
             });
-            it('embed has descripion', () => expect(values.res.evt.d.embeds[0].description).to.exist);
+            it('embed has description', () => expect(values.res.evt.d.embeds[0].description).to.exist);
             it('embed has thumbnail', () => expect(values.res.evt.d.embeds[0].thumbnail).to.exist);
             it('embed has fields', () => {
                 values.res.evt.d.embeds[0]
@@ -42,7 +42,7 @@ module.exports = commandSuite => {
                 it('embed has descripion', () => expect(values.res.evt.d.embeds[0].thumbnail).to.exist);
                 it('embed has thumbnail', () => expect(values.res.evt.d.embeds[0].thumbnail).to.exist);
 
-                it('has currect title', () => {
+                it('has correct title', () => {
                     const embed = values.res.evt.d.embeds[0];
                     switch(command) {
                         case 'main':
