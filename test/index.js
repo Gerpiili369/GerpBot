@@ -68,6 +68,9 @@ function commandSuite(command, tests) {
                         message: `<@${ botID }> ${ command }`
                     }, err => {
                         if (err) done(err);
+
+                        // Remove after debugging
+                        if (err) console.error(err);
                     });
                 }
             });
