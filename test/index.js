@@ -38,6 +38,22 @@ describe('Test commands', () => {
     testHelp(commandSuite);
 });
 
+function msg(channel, message, embed) {
+    return new Promise(err => tester.sendMessage({
+        to: channel,
+        message,
+        embed
+    }, err))
+        .then(err => {
+            if (err) {
+                if (err.response && err.response.message === 'You are being rate limited.')
+                    return new Promise(resolve => setTimeout(resolve, err.response.retry_after, [channel, message, embed])).then(params => msg(...params));
+                return Promise.reject(err);
+            }
+            return Promise.resolve();
+        });
+}
+
 function commandSuite(command, tests) {
     describe(command, function () {
         const values = {};
@@ -63,16 +79,7 @@ function commandSuite(command, tests) {
                         };
                         done();
                     });
-                    tester.sendMessage({
-                        to: values.channelID,
-                        message: `<@${ botID }> ${ command }`
-                    }, err => {
-                        if (err) done(err);
-
-                        // Remove after debugging
-                        // eslint-disable-next-line no-console
-                        if (err) console.error(err);
-                    });
+                    msg(values.channelID, `<@${ botID }> ${ command }`).catch(done);
                 }
             });
         });
