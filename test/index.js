@@ -42,7 +42,7 @@ function commandSuite(command, tests) {
     describe(command, function () {
         const values = {};
 
-        before('commandBefore', function (done) {
+        before('execute command and get response', function (done) {
             this.timeout(10000);
 
             tester.createChannel({
