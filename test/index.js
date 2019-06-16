@@ -63,7 +63,7 @@ function commandSuite(command, tests) {
 
             tester.createChannel({
                 serverID,
-                name: `test help`,
+                name: `testing ${ command }`,
             }, (err, res) => {
                 if (err) done(err);
                 else {
