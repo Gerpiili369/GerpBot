@@ -66,6 +66,8 @@ function commandSuite(command, tests) {
                     tester.sendMessage({
                         to: values.channelID,
                         message: `<@${ botID }> ${ command }`
+                    }, err => {
+                        if (err) done(err);
                     });
                 }
             });
