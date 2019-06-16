@@ -6,6 +6,7 @@
     "scripts": {
         "linter": "eslint .",
         "fixer": "eslint . --fix",
+        "test": "mocha",
         "start": "nodemon"
     },
     "repository": {
@@ -28,6 +29,7 @@
     },
     "devDependencies": {
         "eslint": "^5.16.0",
+        "mocha": "^6.1.4",
         "nodemon": "^1.19.1"
     },
     "nodemonConfig": {

@@ -21,6 +21,12 @@ jobs:
       - run:
           name: linter
           command: npm run linter
+      - run:
+          name: config
+          command: node .circleci/createConfig.js
+      - run:
+          name: tests
+          command: npm test
       - store_artifacts:
           path: test-results.xml
           prefix: tests
