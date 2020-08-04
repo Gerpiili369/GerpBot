@@ -212,7 +212,7 @@
         ]
     }, 
     "changes": {
-        "title": "Help for `releases` -command",
+        "title": "Help for `changes` -command",
         "description": "Usage: `@GerpBot changes [<number of releases>]`\nShows changelog from bot's GitHub repository's releases. Number of releases can be specified. Listing order is from newest to oldest.",
         "fields": [
             {
