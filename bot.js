@@ -474,9 +474,11 @@ function getColor(serverID, targetID, fallBack = true) {
     // Check target color
     if (bot.servers[serverID] && targetID) {
         // Check if targetID belongs to a member
-        if (bot.servers[serverID].members[targetID]) color = bot.servers[serverID].members[targetID].color;
+        if (bot.servers[serverID].members[targetID] && bot.servers[serverID].members[targetID].color)
+            color = bot.servers[serverID].members[targetID].color;
         // Check if targetID belongs to a role
-        else if (bot.servers[serverID].roles[targetID]) color = bot.servers[serverID].roles[targetID].color;
+        else if (bot.servers[serverID].roles[targetID] && bot.servers[serverID].roles[targetID].color)
+            color = bot.servers[serverID].roles[targetID].color;
     }
 
     // If target (user/role) color is not available, check fallBack option
