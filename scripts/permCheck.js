@@ -1,118 +1,63 @@
-const permDic = require('discord.io').Permissions,
-    Embed = require('./embed');
+const { Permissions } = require('discord.io'),
+    Embed = require('./embed'),
+    NONE = 0,
+    ALL = Object.values(Permissions).reduce((all, permission) => all | (1 << permission), NONE);
 
 module.exports = bot => ({
-    roleHasPerm(serverID, role, perm = 'GENERAL_ADMINISTRATOR', channelID = '') {
-        // Admin override
-        if (bot.servers[serverID].roles[role]._permissions
-            .toString(2).split('')
-            .reverse()[3] == 1
-        ) return true;
-
-        const permdex = permDic[perm];
-        let hasPerm = false;
-
-        // Server everyone permissions
-        if (bot.servers[serverID].roles[serverID]._permissions
-            .toString(2).split('')
-            .reverse()[permdex] == 1
-        ) hasPerm = true;
-
-        // Server role permissions
-        if (bot.servers[serverID].roles[role]._permissions
-            .toString(2).split('')
-            .reverse()[permdex] == 1
-        ) hasPerm = true;
-
-        // Channel role permissions
-        if (channelID) {
-            // Channel role deny
-            if (bot.channels[channelID].permissions.role[role].deny
-                .toString(2).split('')
-                .reverse()[permdex] == 1
-            ) hasPerm = false;
-
-            // Channel role allow
-            if (bot.channels[channelID].permissions.role[role].allow
-                .toString(2).split('')
-                .reverse()[permdex] == 1
-            ) hasPerm = true;
-        }
-
-        return hasPerm;
-    },
-    userHasPerm(serverID, user = bot.id, perm = 'GENERAL_ADMINISTRATOR', channelID = '') {
+    calculateOverrides(serverID, userID = bot.id, channelID = '') {
         // Owner override
-        if (user == bot.servers[serverID].owner_id) return true;
+        if (userID == bot.servers[serverID].owner_id) return ALL;
 
-        const permdex = permDic[perm];
-        let hasPerm = false;
         // Server everyone permissions
-        if (bot.servers[serverID].roles[serverID]._permissions
-            .toString(2).split('')
-            .reverse()[permdex] == 1
-        ) hasPerm = true;
+        let permissions = bot.servers[serverID].roles[serverID]._permissions;
 
         // Server role permissions
-        for (const role of bot.servers[serverID].members[user].roles) {
-            // Admin override
-            if (this.roleHasPerm(serverID, role)) return true;
-            if (this.roleHasPerm(serverID, role, perm)) hasPerm = true;
-        }
+        for (const role of bot.servers[serverID].members[userID].roles)
+            permissions |= bot.servers[serverID].roles[role]._permissions;
+
+        // Admin override
+        if (permissions & 8) return ALL;
 
         if (bot.channels[channelID]) {
             if (bot.channels[channelID].permissions.role[serverID]) {
                 // Channel everyone deny
-                if (bot.channels[channelID].permissions.role[serverID].deny
-                    .toString(2).split('')
-                    .reverse()[permdex] == 1
-                ) hasPerm = false;
-
+                permissions &= ~bot.channels[channelID].permissions.role[serverID].deny;
                 // Channel everyone allow
-                if (bot.channels[channelID].permissions.role[serverID].allow
-                    .toString(2).split('')
-                    .reverse()[permdex] == 1
-                ) hasPerm = true;
+                permissions |= bot.channels[channelID].permissions.role[serverID].allow;
             }
 
-            for (const role in bot.channels[channelID].permissions.role) {
-                if (hasPerm) break;
-                if (bot.servers[serverID].members[user].roles.indexOf(role) != -1) {
-                    // Channel role deny
-                    if (bot.channels[channelID].permissions.role[role].deny
-                        .toString(2).split('')
-                        .reverse()[permdex] == 1
-                    ) hasPerm = false;
-
-                    // Channel role allow
-                    if (bot.channels[channelID].permissions.role[role].allow
-                        .toString(2).split('')
-                        .reverse()[permdex] == 1
-                    ) hasPerm = true;
+            let allow = NONE,
+                deny = NONE;
+            for (const role of bot.servers[serverID].members[userID].roles) {
+                if (bot.channels[channelID].permissions.role[role]) {
+                    allow |= bot.channels[channelID].permissions.role[role].allow;
+                    deny |= bot.channels[channelID].permissions.role[role].deny;
                 }
             }
+            // Channel role deny
+            permissions &= ~deny;
+            // Channel role allow
+            permissions |= allow;
 
-            if (bot.channels[channelID].permissions.user[user]) {
+            if (bot.channels[channelID].permissions.user[userID]) {
                 // Channel user deny
-                if (bot.channels[channelID].permissions.user[user].allow
-                    .toString(2).split('')
-                    .reverse()[permdex] == 1
-                ) hasPerm = true;
-
+                permissions &= ~bot.channels[channelID].permissions.user[userID].deny;
                 // Channel user allow
-                if (bot.channels[channelID].permissions.user[user].deny
-                    .toString(2).split('')
-                    .reverse()[permdex] == 1
-                ) hasPerm = false;
+                permissions |= bot.channels[channelID].permissions.user[userID].allow;
             }
         }
 
-        return hasPerm;
+        return permissions;
     },
-    multiPerm(serverID, user = bot.id, perms = [], channelID = '') {
+    userHasPerm(serverID, userID = bot.id, perm = 'GENERAL_ADMINISTRATOR', channelID = '') {
+        const PERMISSION = 1 << Permissions[perm];
+        return (this.calculateOverrides(serverID, userID, channelID) & PERMISSION) == PERMISSION;
+    },
+    multiPerm(serverID, userID = bot.id, perms = [], channelID = '') {
         return new Promise((resolve, reject) => {
-            const missing = [];
-            for (const perm of perms) if (!this.userHasPerm(serverID, user, perm, channelID)) missing.push(perm);
+            const missing = [],
+                permissions = this.calculateOverrides(serverID, userID, channelID);
+            for (const perm of perms) if (permissions & (1 << Permissions[perm]) == 0) missing.push(perm);
             if (missing.length === 0) resolve(perms);
             else reject(missing);
         });
