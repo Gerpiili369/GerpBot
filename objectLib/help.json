@@ -28,6 +28,10 @@
                 "value": "Gives information about the role."
             },
             {
+                "name": "`@GerpBot perms`",
+                "value": "Gives information about user's permissions."
+            },
+            {
                 "name": "`@GerpBot changes`",
                 "value": "Check bot changelog."
             },
@@ -181,6 +185,32 @@
             }
         ]
     },
+    "perms": {
+        "title": "Help for `perms` -command",
+        "description": "Usage: `@GerpBot perms [<@mention> [<#channel>]]`\nGives information about user's permissions.",
+        "fields": [
+            {
+                "name": "`@GerpBot perms`",
+                "value": "Shows your permissions for the current server."
+            },
+            {
+                "name": "`@GerpBot perms <@mention>`",
+                "value": "Shows user's permissions for the current server"
+            },
+            {
+                "name": "`@GerpBot perms <@mention> <#channel>`",
+                "value": "Shows user's permissions for the channel."
+            },
+            {
+                "name": "Server only",
+                "value": "Permissions only exist in servers."
+            },
+            {
+                "name": "Permission info",
+                "value": "`Embed Links` - required. Permission information is delivered inside an embed."
+            }
+        ]
+    }, 
     "changes": {
         "title": "Help for `releases` -command",
         "description": "Usage: `@GerpBot changes [<number of releases>]`\nShows changelog from bot's GitHub repository's releases. Number of releases can be specified. Listing order is from newest to oldest.",
