@@ -126,7 +126,7 @@ module.exports = class Osu extends Api {
                 return user.user_id;
             })
             .then(user => this.getUserRecentPlays(user, 50))
-            .then(this.removeFails)
+            .then(playList => playList.filter(perf => perf.rank !== 'F'))
             .then(playList => this.playsToString(playList.splice(playList.length - 5)))
             .then(playsListStr => {
                 if (playsListStr) oue.addField('*Recent plays*', playsListStr);
@@ -317,15 +317,9 @@ module.exports = class Osu extends Api {
     }
 
     modulator(input) {
-        const activeMods = [];
-        Number(input).toString(2)
-            .split('')
-            .reverse()
-            .forEach((value, i) => {
-                if (value == 1) activeMods.push(this.mods[i]);
-                if (this.mods[i] === 'NC') activeMods.splice(activeMods.indexOf('DT'), 1);
-                if (this.mods[i] === 'PF') activeMods.splice(activeMods.indexOf('SD'), 1);
-            });
+        const activeMods = this.mods.filter((mod, i) => (input & (1 << i)) !== 0);
+        if (activeMods.includes('NC')) activeMods.splice(activeMods.indexOf('DT'), 1);
+        if (activeMods.includes('PF')) activeMods.splice(activeMods.indexOf('SD'), 1);
         return activeMods;
     }
 
@@ -369,12 +363,6 @@ module.exports = class Osu extends Api {
         else if (count.n300 / total > 0.6) rank = 'C';
 
         return rank;
-    }
-
-    removeFails(playList) {
-        const playListNew = [];
-        for (const perf of playList) if (perf.rank !== 'F') playListNew.push(perf);
-        return playListNew;
     }
 
     playsToString(playList) {
