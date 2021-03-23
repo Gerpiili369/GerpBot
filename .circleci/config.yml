@@ -34,6 +34,10 @@ jobs:
       enabled: true
     steps:
       - run:
+          name: Update ssh
+          command: |
+            apt install openssh-server
+      - run:
           name: Pull latest changes
           command: |
             ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH && git pull"
