@@ -36,7 +36,7 @@ jobs:
       - run:
           name: Update ssh
           command: |
-            apt install openssh-server
+            sudo apt install openssh-server
       - run:
           name: Pull latest changes
           command: |
@@ -56,7 +56,7 @@ jobs:
       - run:
           name: Update ssh
           command: |
-            apt install openssh-server
+            sudo apt install openssh-server
       - run:
           name: Pull latest changes
           command: |
